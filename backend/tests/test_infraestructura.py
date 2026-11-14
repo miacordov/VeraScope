@@ -40,7 +40,7 @@ def test_gzip_no_altera_el_json_publico(cliente):
         "lat": -5.0,
         "lon": -80.5,
         "inicio": 1981,
-        "fin": 2025,
+        "fin": 1990,
     }
     comprimida = cliente.get(
         "/api/v1/analyze", params=parametros, headers={"Accept-Encoding": "gzip"}

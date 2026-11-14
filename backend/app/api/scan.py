@@ -4,6 +4,7 @@ from fastapi import Query, Request
 
 from app.api import router
 from app.api.simulados import escenario
+from app.api.validacion import exigir_seleccion
 from app.contracts import FeedRespuesta, LayerRespuesta, TipoFeed, Variable
 
 
@@ -21,4 +22,7 @@ def feed(request: Request, tipo: TipoFeed, pagina: int = Query(default=0, ge=0))
 
 @router.get("/scan/layer", response_model=LayerRespuesta)
 def layer(request: Request, variable: Variable):
-    return escenario(request, "layer")
+    """Ejemplo de lluvia (PRECTOTCORR); otras variables sin JSON reciben 422."""
+    respuesta = escenario(request, "layer")
+    exigir_seleccion({"variable": variable}, {"variable": respuesta.variable})
+    return respuesta

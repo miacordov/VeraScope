@@ -5,11 +5,12 @@ import os
 from contextlib import asynccontextmanager
 from time import perf_counter
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException
 
 from app.api import analyze, catalogo, compare_periods, router, scan, teleconnect  # noqa: F401
 from app.api.simulados import cargar_escenarios
@@ -73,6 +74,7 @@ def error_http(request: Request, exc: HTTPException):
     return JSONResponse(
         status_code=exc.status_code,
         content=ErrorRespuesta(error=detalle).model_dump(mode="json"),
+        headers=exc.headers,
     )
 
 
