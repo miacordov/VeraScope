@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VeraScope · Centro de datos</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+/*__FUENTES__*/
+:root{
+  --fondo:#0E0F11; --capa:#15171A; --capa2:#1B1E22; --linea:#2A2D32; --linea2:#383C42;
+  --texto:#F2F2F0; --suave:#A3A7AE; --tenue:#767A82;
+  --rojo:#E04A3A; --cian:#4FC3F7; --ambar:#F2A93B; --gris:#5C6068;
+  --radio:14px;
+  --sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --display:'Inter Display','Inter',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{color-scheme:dark}
+body{margin:0;background:var(--fondo);color:var(--texto);font:400 15px/1.55 var(--sans);
+  font-feature-settings:'tnum','calt';-webkit-font-smoothing:antialiased;min-height:100vh;
+  background-image:radial-gradient(900px 380px at 8% -8%,rgba(224,74,58,.10),transparent 70%),
+                   radial-gradient(800px 380px at 100% -4%,rgba(79,195,247,.06),transparent 70%);
+  background-repeat:no-repeat}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--cian);text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--cian);outline-offset:3px;border-radius:6px}
+.contenedor{max-width:1240px;margin:0 auto;padding:0 24px}
+
+/* ---------- barra ---------- */
+.barra{display:flex;align-items:center;gap:14px;padding:16px 0}
+.marca{display:flex;align-items:center;gap:12px;min-width:0}
+.marca img{width:38px;height:38px;border-radius:50%;flex:none}
+.marca b{font-weight:600;font-size:16px;letter-spacing:-.01em}
+.marca span{color:var(--suave);font-size:14px}
+.barra .resto{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.pill{display:inline-flex;align-items:center;gap:9px;padding:6px 13px 6px 11px;border:1px solid var(--linea);border-radius:99px;
+  font-size:13.5px;color:var(--suave);max-width:46ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill i{width:8px;height:8px;border-radius:50%;background:var(--gris);flex:none}
+.pill.trabajando{color:var(--texto);border-color:rgba(242,169,59,.5)}
+.pill.trabajando i{background:var(--ambar);animation:latido 1.4s ease-in-out infinite}
+.pill.listo i{background:var(--cian)} .pill.error{color:var(--texto);border-color:rgba(224,74,58,.6)} .pill.error i{background:var(--rojo)}
+@keyframes latido{50%{opacity:.25;transform:scale(.7)}}
+
+/* ---------- botones ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--linea2);background:transparent;
+  padding:9px 16px;border-radius:10px;cursor:pointer;font-weight:500;font-size:14px;line-height:1.2;transition:background .15s,border-color .15s,opacity .15s}
+.btn:hover:not(:disabled){background:var(--capa2);border-color:#4a4f56}
+.btn:disabled{opacity:.38;cursor:not-allowed}
+.btn.primario{background:var(--texto);color:#0E0F11;border-color:var(--texto);font-weight:600}
+.btn.primario:hover:not(:disabled){background:#fff;border-color:#fff}
+.btn.grande{padding:13px 24px;font-size:16px;border-radius:12px}
+.btn.alto{border-color:rgba(224,74,58,.7);color:#ff8a7c} .btn.alto:hover:not(:disabled){background:rgba(224,74,58,.12);border-color:var(--rojo)}
+.btn.chico{padding:6px 11px;font-size:13px;border-radius:8px}
+.enlace{background:none;border:0;color:var(--suave);cursor:pointer;padding:4px 2px;font-size:13.5px;text-decoration:underline;text-underline-offset:3px}
+.enlace:hover{color:var(--texto)}
+
+/* ---------- portada ---------- */
+.portada{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px 40px;align-items:end;padding:34px 0 22px}
+h1{font:300 clamp(34px,4.6vw,60px)/1.04 var(--display);letter-spacing:-.035em;margin:0 0 14px;max-width:16ch}
+.portada p.sub{margin:0;color:var(--suave);font-size:17px;max-width:52ch}
+.acciones{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end}
+.aviso{grid-column:1/-1;margin:0;color:var(--suave);font-size:14.5px;min-height:1.5em;display:flex;gap:10px;align-items:baseline}
+.aviso b{color:var(--texto);font-weight:500}
+.aviso .punto{width:8px;height:8px;border-radius:50%;background:var(--gris);flex:none;transform:translateY(-1px)}
+.aviso.bien .punto{background:var(--cian)} .aviso.mal .punto{background:var(--rojo)} .aviso.ojo .punto{background:var(--ambar)}
+
+/* ---------- mapa ---------- */
+.mapa{position:relative;border-top:1px solid var(--linea);border-bottom:1px solid var(--linea)}
+.mapa .lienzo{position:relative;max-width:1240px;margin:0 auto}
+#mapa{display:block;width:100%;height:auto}
+.etiqueta-mapa{position:absolute;pointer-events:none;background:rgba(14,15,17,.92);border:1px solid var(--linea2);border-radius:8px;
+  padding:6px 10px;font-size:13px;white-space:nowrap;transform:translate(-50%,-130%);opacity:0;transition:opacity .1s}
+.etiqueta-mapa.ver{opacity:1}
+.vacio-mapa{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:20px;
+  background:rgba(14,15,17,.72);color:var(--suave);font-size:15px}
+.vacio-mapa.ver{display:flex}
+.lectura{display:grid;grid-template-columns:auto minmax(160px,1fr) auto;gap:6px 28px;align-items:center;padding:20px 0 6px}
+.lectura .num{font:300 46px/1 var(--display);letter-spacing:-.03em}
+.lectura .num small{font-size:20px;color:var(--suave);margin-left:2px}
+.lectura .txt{color:var(--suave);font-size:14px;line-height:1.4}
+.lectura .txt b{color:var(--texto);font-weight:500}
+.barrita{height:5px;border-radius:5px;background:var(--linea);overflow:hidden;position:relative}
+.barrita>i{display:block;height:100%;width:0;background:var(--cian);border-radius:5px;transition:width .6s ease}
+.barrita.indef>i{width:32%;position:absolute;animation:vaiven 1.5s ease-in-out infinite alternate}
+@keyframes vaiven{from{left:0}to{left:68%}}
+.eta{color:var(--suave);font-size:14px;text-align:right;min-width:12ch}
+.controles{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;padding:10px 0 22px}
+.seg{display:inline-flex;border:1px solid var(--linea2);border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:none;padding:6px 14px;border-radius:7px;cursor:pointer;color:var(--suave);font-size:13.5px}
+.seg button[aria-pressed=true]{background:var(--capa2);color:var(--texto)}
+.controles select{background:var(--capa);border:1px solid var(--linea2);border-radius:9px;padding:7px 10px;font-size:13.5px}
+.leyenda{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--suave);font-size:13.5px;margin-left:auto}
+.leyenda span{display:inline-flex;align-items:center;gap:7px}
+.leyenda i{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
+.leyenda i.anillo{background:none;border:2px solid var(--c)}
+
+/* ---------- cuerpo ---------- */
+.cuerpo{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:48px;padding:40px 0 20px}
+h2{font:600 20px/1.25 var(--sans);letter-spacing:-.015em;margin:0 0 6px}
+.intro{color:var(--suave);margin:0 0 24px;max-width:60ch}
+
+/* pasos */
+.pasos{list-style:none;margin:0;padding:0}
+.paso{position:relative;display:grid;grid-template-columns:44px minmax(0,1fr);gap:0 16px;padding:18px 18px 18px 14px;border-radius:var(--radio);margin-left:-14px}
+.paso::before{content:'';position:absolute;left:35px;top:56px;bottom:-18px;width:2px;background:var(--linea)}
+.paso:last-child::before{display:none}
+.paso.listo::before{background:linear-gradient(var(--cian),var(--linea))}
+.paso.activo{background:var(--capa);box-shadow:inset 0 0 0 1px rgba(242,169,59,.35)}
+.insignia{--p:0;--c:var(--linea2);position:relative;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:15px;
+  background:conic-gradient(var(--c) calc(var(--p)*1%),var(--linea) 0)}
+.insignia::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--fondo)}
+.paso.activo .insignia::after{background:var(--capa)}
+.insignia span{position:relative;z-index:1}
+.paso.listo .insignia{--c:var(--cian);--p:100;color:var(--cian)}
+.paso.parcial .insignia{--c:var(--cian)}
+.paso.activo .insignia{--c:var(--ambar)}
+.paso.activo.indef .insignia{animation:latido 1.6s ease-in-out infinite}
+.paso h3{font:600 17px/1.3 var(--sans);letter-spacing:-.01em;margin:5px 0 3px;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}
+.paso h3 small{font-weight:400;font-size:13.5px;color:var(--tenue);letter-spacing:0}
+.paso .que{margin:0 0 10px;color:var(--suave);max-width:62ch}
+.estado{display:flex;gap:9px;align-items:baseline;font-size:14px;margin:0 0 12px;color:var(--suave)}
+.estado i{width:8px;height:8px;border-radius:50%;background:var(--gris);flex:none;transform:translateY(-1px)}
+.paso.listo .estado i{background:var(--cian)} .paso.parcial .estado i{background:var(--ambar)}
+.estado b{color:var(--texto);font-weight:500}
+.paso .barrita{margin:-2px 0 14px;max-width:520px}
+.botones{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.opciones{display:flex;flex-wrap:wrap;gap:8px 16px;margin:0 0 12px;font-size:13.5px;color:var(--suave)}
+.opciones label{display:inline-flex;align-items:center;gap:7px;cursor:pointer}
+input[type=checkbox]{accent-color:var(--cian);width:16px;height:16px}
+details.avanzado{margin-top:12px;font-size:13.5px;color:var(--suave)}
+details.avanzado summary{cursor:pointer;width:fit-content}
+details.avanzado p{margin:8px 0}
+input[type=text],input[type=password]{width:100%;background:var(--fondo);border:1px solid var(--linea2);border-radius:9px;padding:9px 12px;font-size:14px}
+input[type=text]:focus,input[type=password]:focus{outline:2px solid var(--cian);outline-offset:1px}
+.soltar{display:block;margin-top:14px;border:1.5px dashed var(--linea2);border-radius:12px;padding:14px 16px;color:var(--suave);font-size:14px;cursor:pointer;transition:border-color .15s,background .15s}
+.soltar:hover,.soltar.sobre{border-color:var(--cian);background:rgba(79,195,247,.06);color:var(--texto)}
+.soltar input{display:none}
+
+/* lateral */
+.lateral section{padding:0 0 28px}
+.lateral h2{font-size:17px}
+.cuenta{display:flex;flex-direction:column;gap:12px;padding:16px 0 0}
+.cuenta .fila{display:flex;align-items:center;gap:10px;font-size:14px}
+.cuenta .fila i{width:9px;height:9px;border-radius:50%;background:var(--ambar);flex:none}
+.cuenta.lista .fila i{background:var(--cian)}
+.cuenta p{margin:0;color:var(--suave);font-size:14px}
+.vars{list-style:none;margin:14px 0 0;padding:0}
+.vars .grupo{margin:18px 0 6px;color:var(--tenue);font-size:13px}
+.vars li.v{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:2px 10px;padding:7px 0;align-items:baseline;border-top:1px solid var(--linea)}
+.vars .id{color:var(--tenue);font-size:13px}
+.vars .n{font-size:14px;line-height:1.3}
+.vars .c{font-size:13px;color:var(--suave);text-align:right}
+.vars .tira{grid-column:2/-1;height:3px;border-radius:3px;background:var(--linea);overflow:hidden}
+.vars .tira i{display:block;height:100%;width:0;background:var(--c);transition:width .6s}
+
+/* ---------- historia correcta ---------- */
+.historia{padding:34px 0 10px;border-top:1px solid var(--linea)}
+.historia .dos{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:44px;margin-top:22px}
+.grafico{position:relative}
+#espejo{display:block;width:100%;height:280px}
+.vacio{border:1.5px dashed var(--linea);border-radius:var(--radio);padding:34px 22px;color:var(--suave);text-align:center;min-height:200px;display:grid;place-items:center}
+.lecturas{list-style:none;margin:0;padding:0;display:grid;gap:16px}
+.lecturas li{display:grid;grid-template-columns:14px 1fr;gap:2px 10px;font-size:14.5px}
+.lecturas i{width:14px;height:4px;border-radius:2px;background:var(--c);margin-top:10px}
+.lecturas b{font-weight:600}
+.lecturas span{color:var(--suave)}
+.lecturas .ok{color:var(--cian)} .lecturas .no{color:#ff8a7c}
+.veredicto{margin:18px 0 0;padding:14px 16px;border-radius:12px;background:var(--capa);font-size:14.5px}
+.veredicto b{font-weight:600}
+.resultados{display:grid;gap:14px}
+.res{display:grid;grid-template-columns:150px minmax(0,1fr) auto;gap:12px;align-items:center;font-size:14px}
+.res .tira{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--linea)}
+.res .tira i{display:block;height:100%}
+.res .tot{color:var(--suave);font-size:13px;min-width:7ch;text-align:right}
+.leyenda-res{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:14px;color:var(--suave);font-size:13px}
+.leyenda-res span{display:inline-flex;align-items:center;gap:7px}
+.leyenda-res i{width:9px;height:9px;border-radius:2px;background:var(--c)}
+
+/* ---------- registro ---------- */
+.registro{padding:34px 0 20px;border-top:1px solid var(--linea);margin-top:30px}
+.registro summary{cursor:pointer;font:600 20px/1.25 var(--sans);letter-spacing:-.015em;list-style:none;display:flex;gap:10px;align-items:center}
+.registro summary::-webkit-details-marker{display:none}
+.registro summary::before{content:'';width:8px;height:8px;border-right:2px solid var(--suave);border-bottom:2px solid var(--suave);transform:rotate(-45deg);transition:transform .15s}
+.registro[open] summary::before{transform:rotate(45deg)}
+.registro .cabeza{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0}
+.registro .cabeza p{margin:0;color:var(--suave);font-size:14px;flex:1 1 280px}
+pre#log{margin:0;background:#0A0B0C;border:1px solid var(--linea);border-radius:12px;padding:14px 16px;height:300px;overflow:auto;
+  font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#D5D7DA;white-space:pre-wrap;word-break:break-word}
+pre#log:empty::before{content:"Todavía no se ejecutó nada. Cuando pulses un botón, aquí verás lo que hace el programa.";color:var(--tenue)}
+pre#log .ok{color:var(--cian)} pre#log .mal{color:#ff8a7c} pre#log .marca{color:var(--ambar)}
+.fallos{margin:12px 0 0;font-size:14px;color:var(--suave)}
+.fallos ul{margin:8px 0 0;padding-left:18px}
+.fallos li{margin:3px 0;word-break:break-word}
+
+footer{padding:26px 0 46px;border-top:1px solid var(--linea);margin-top:10px;display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;color:var(--tenue);font-size:13.5px}
+footer .ruta{flex:1 1 300px;word-break:break-all}
+footer .ruta b{color:var(--suave);font-weight:500}
+
+dialog{background:var(--capa);color:var(--texto);border:1px solid var(--linea2);border-radius:18px;padding:26px;max-width:440px;width:calc(100% - 32px)}
+dialog::backdrop{background:rgba(5,6,7,.7)}
+dialog h2{margin-bottom:8px}
+dialog p{color:var(--suave);margin:0 0 16px;font-size:14.5px}
+dialog label{display:block;font-size:13.5px;color:var(--suave);margin:12px 0 5px}
+dialog .pie{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
+.aviso-toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--capa2);border:1px solid var(--linea2);border-radius:12px;
+  padding:12px 18px;font-size:14.5px;opacity:0;pointer-events:none;transition:.25s;z-index:30;max-width:min(560px,calc(100% - 32px))}
+.aviso-toast.ver{opacity:1;transform:translate(-50%,0)}
+.apagado{position:fixed;inset:0;background:var(--fondo);display:none;place-items:center;text-align:center;z-index:50;padding:30px}
+.apagado.ver{display:grid}
+.apagado h2{font:300 34px/1.1 var(--display)}
+.solo-lectura{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+@media (max-width:1020px){
+  .cuerpo{grid-template-columns:1fr;gap:20px}
+  .historia .dos{grid-template-columns:1fr;gap:26px}
+  .portada{grid-template-columns:1fr}
+  .acciones{justify-content:flex-start}
+}
+@media (max-width:640px){
+  .contenedor{padding:0 16px}
+  .lectura{grid-template-columns:auto 1fr} .lectura .eta{grid-column:1/-1;text-align:left}
+  .leyenda{margin-left:0}
+  .res{grid-template-columns:110px minmax(0,1fr) auto}
+  .marca span{display:none}
+  .paso{padding:16px 10px 16px 6px;margin-left:-6px;grid-template-columns:38px minmax(0,1fr);gap:0 12px}
+  .paso::before{left:25px}
+  .insignia{width:34px;height:34px;font-size:14px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="contenedor">
+
+  <header class="barra">
+    <div class="marca"><img src="/logo.svg" alt=""><b>VeraScope</b><span>Centro de datos</span></div>
+    <div class="resto">
+      <span class="pill" id="pill" role="status" aria-live="polite"><i></i><em id="pillTxt" style="font-style:normal">Conectando…</em></span>
+    </div>
+  </header>
+
+  <section class="portada" aria-labelledby="titulo">
+    <div>
+      <h1 id="titulo">Prepara los datos de VeraScope</h1>
+      <p class="sub">Descarga lo que falta de NASA y NOAA, calcula qué cambió de verdad en cada punto del mapa y deja todo listo para el equipo.</p>
+    </div>
+    <div class="acciones">
+      <button class="btn grande primario" id="btnTodo">Hacer todo</button>
+      <button class="btn grande" id="btnRapida">Prueba rápida</button>
+      <button class="btn grande alto" id="btnDetener" hidden>Detener</button>
+    </div>
+    <p class="aviso" id="aviso"><span class="punto"></span><span id="avisoTxt"></span></p>
+  </section>
+</div>
+
+<section class="mapa" aria-label="Mapa de puntos descargados">
+  <div class="lienzo" id="lienzo">
+    <canvas id="mapa" role="img" aria-label="Mapa del Pacífico con la cuadrícula de puntos que se van descargando"></canvas>
+    <div class="etiqueta-mapa" id="etiquetaMapa"></div>
+    <div class="vacio-mapa" id="vacioMapa"></div>
+  </div>
+</section>
+
+<div class="contenedor">
+  <div class="lectura" aria-live="polite">
+    <div class="num"><span id="pct">0</span><small>%</small></div>
+    <div>
+      <div class="barrita" id="barraMapa"><i></i></div>
+      <div class="txt" id="txtMapa" style="margin-top:8px"></div>
+    </div>
+    <div class="eta" id="eta"></div>
+  </div>
+  <div class="controles">
+    <div class="seg" role="group" aria-label="Qué mostrar en el mapa">
+      <button id="modoDescarga" aria-pressed="true">Descarga</button>
+      <button id="modoResultados" aria-pressed="false">Resultados</button>
+    </div>
+    <select id="varRes" aria-label="Variable de los resultados" hidden></select>
+    <div class="leyenda" id="leyenda"></div>
+  </div>
+
+  <div class="cuerpo">
+    <section aria-labelledby="hPasos">
+      <h2 id="hPasos">Paso a paso</h2>
+      <p class="intro">Puedes hacerlos todos de una vez con «Hacer todo», o uno por uno. Si se corta internet o cierras la laptop, al volver a ejecutar sigue donde se quedó.</p>
+      <ol class="pasos" id="pasos"></ol>
+    </section>
+
+    <aside class="lateral">
+      <section aria-labelledby="hCuenta">
+        <h2 id="hCuenta">Tu cuenta de NASA</h2>
+        <div class="cuenta" id="cuenta"></div>
+      </section>
+      <section aria-labelledby="hVars">
+        <h2 id="hVars">Las 13 variables</h2>
+        <ul class="vars" id="vars"></ul>
+      </section>
+    </aside>
+  </div>
+
+  <section class="historia" aria-labelledby="hHist">
+    <h2 id="hHist">¿Los datos cuentan la historia correcta?</h2>
+    <p class="intro" style="margin-bottom:0">Cuando el Pacífico se calienta (El Niño), Piura debe recibir más lluvia y Borneo, menos. Si en tus datos pasa lo contrario, algo se descargó mal.</p>
+    <div class="dos">
+      <div class="grafico" id="graficoEspejo"></div>
+      <div id="lecturasEspejo"></div>
+    </div>
+  </section>
+
+  <section class="historia" aria-labelledby="hRes" style="margin-top:34px">
+    <h2 id="hRes">Qué cambió en cada punto del mapa</h2>
+    <p class="intro" style="margin-bottom:0">Para cada variable y cada punto, el programa separa el cambio real del que solo se explica por El Niño.</p>
+    <div id="resumenRes" style="margin-top:22px"></div>
+  </section>
+
+  <details class="registro" id="registro" open>
+    <summary>Registro del programa</summary>
+    <div class="cabeza">
+      <p>Aquí aparece lo que hace el programa por dentro. Si algo falla, copia el registro y pégaselo a quien te ayuda.</p>
+      <button class="btn chico" id="copiarLog">Copiar registro</button>
+      <button class="btn chico" id="limpiarLog">Limpiar vista</button>
+    </div>
+    <pre id="log" tabindex="0" aria-label="Registro del programa"></pre>
+    <div class="fallos" id="fallos"></div>
+  </details>
+
+  <footer>
+    <span class="ruta"><b>Tus datos están en</b> <span id="ruta"></span></span>
+    <button class="btn chico" id="btnCarpeta">Abrir carpeta de datos</button>
+    <button class="btn chico" id="btnApagar">Apagar panel</button>
+    <span>Versión __VERSION__</span>
+  </footer>
+</div>
+
+<dialog id="dlgCuenta" aria-labelledby="tCuenta">
+  <h2 id="tCuenta">Tu cuenta de NASA Earthdata</h2>
+  <p>La piden las variables de satélite (V8 a V12). Es gratis y se crea en un minuto. Tu contraseña vive solo mientras este panel esté abierto y no se guarda en ningún archivo.</p>
+  <p style="margin-bottom:0"><a href="https://urs.earthdata.nasa.gov/users/new" target="_blank" rel="noopener">Crear cuenta gratis en NASA Earthdata</a></p>
+  <form method="dialog" id="formCuenta">
+    <label for="cuUser">Usuario</label><input type="text" id="cuUser" autocomplete="username" spellcheck="false">
+    <label for="cuPass">Contraseña</label><input type="password" id="cuPass" autocomplete="current-password">
+    <div class="pie">
+      <button class="btn primario" value="guardar" id="cuGuardar">Guardar</button>
+      <button class="btn" value="cancelar" formnovalidate>Cancelar</button>
+      <button class="enlace" type="button" id="cuQuitar" style="margin-left:auto">Quitar cuenta</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="aviso-toast" id="toast" role="status"></div>
+<div class="apagado" id="apagado"><div><h2>Panel apagado</h2><p style="color:var(--suave)">Puedes cerrar esta pestaña. Para volver, abre otra vez el programa.</p></div></div>
+
+<script>
+"use strict";
+const TOKEN = "__TOKEN__";
+const TIERRA = new Path2D("__TIERRA__");
+const $ = s => document.querySelector(s);
+const REDUCIR = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const fmt = n => Number(n).toLocaleString("es-PE");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const NOMBRE_LUGAR = n => n.split(" (")[0];
+
+async function api(ruta, cuerpo) {
+  const r = await fetch(ruta, {
+    method: cuerpo === undefined ? "GET" : "POST",
+    headers: {"X-Token": TOKEN, "Content-Type": "application/json"},
+    body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo)
+  });
+  const j = await r.json().catch(() => ({error: "Respuesta no válida del programa."}));
+  if (!r.ok) throw new Error(j.error || `Error ${r.status}`);
+  return j;
+}
+let toastT = 0;
+function aviso(txt) {
+  const t = $("#toast"); t.textContent = txt; t.classList.add("ver");
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("ver"), 5200);
+}
+
+/* ======================================================= pasos (la secuencia real del proceso) */
+const PASOS = [
+  {id: "indices", titulo: "Índices de El Niño", fuente: "NOAA", vars: "V6, V7 y V13", tiempo: "unos segundos",
+   que: "La señal que mueve todo lo demás: cuánto se calienta o se enfría el Pacífico cada mes.",
+   acciones: [{t: "Descargar", orden: "indices", primario: true}],
+   avanzado: {campo: "carpeta", resumen: "Mi internet bloquea NOAA y tengo los archivos",
+              ayuda: "Escribe la carpeta donde están oni.ascii.txt, sstoi.indices y co2_mm_mlo.txt."}},
+  {id: "power", titulo: "Lluvia, temperatura y humedad", fuente: "NASA POWER", vars: "V1 a V5", tiempo: "cerca de 71 min el mapa completo",
+   que: "Una serie mensual desde 1981 para cada punto del mapa. Empieza por Piura, Borneo y el norte de Australia, que son las demos.",
+   acciones: [{t: "Prueba rápida, solo 3 lugares", orden: "power", op: {solo_demos: true}},
+              {t: "Descargar todo el mapa", orden: "power", primario: true}]},
+  {id: "satelites", titulo: "Satélites", fuente: "GPM, GLDAS y MODIS", vars: "V8 a V12", tiempo: "de minutos a horas",
+   que: "Lluvia vista desde el espacio, evaporación, escorrentía, humedad del suelo y vegetación, solo para las 3 demos. Necesita tu cuenta de NASA.",
+   opciones: [["imerg", "Lluvia (GPM)"], ["gldas", "Suelo y agua (GLDAS)"], ["ndvi", "Vegetación (MODIS)"]],
+   acciones: [{t: "Descargar satélites", orden: "satelites", primario: true}],
+   avanzado: {campo: "archivos_locales", resumen: "Ya tengo los archivos descargados",
+              ayuda: "Escribe la carpeta que contiene las subcarpetas imerg, gldas y ndvi."}},
+  {id: "calcular", titulo: "Calcular tendencias", fuente: "en tu computadora", vars: "",  tiempo: "unos 8 min",
+   que: "Para cada punto: ¿hay un cambio real? Calcula la tendencia con y sin El Niño y corrige para no inventar falsos positivos.",
+   acciones: [{t: "Calcular", orden: "calcular", primario: true}]},
+  {id: "demos", titulo: "Respaldo para presentar sin internet", fuente: "en tu computadora", vars: "", tiempo: "segundos",
+   que: "Un archivo por lugar con sus 13 variables. El día de la presentación el sitio funciona aunque falle el wifi.",
+   acciones: [{t: "Crear respaldo", orden: "demos", primario: true}]},
+  {id: "empaquetar", titulo: "Paquete para el equipo", fuente: "en tu computadora", vars: "", tiempo: "segundos",
+   que: "Un solo archivo con todo. Los demás integrantes lo instalan en segundos y no tienen que descargar nada.",
+   acciones: [{t: "Crear paquete", orden: "empaquetar", primario: true}]},
+];
+const COLOR_CAPA = {vivo: "var(--cian)", indice: "var(--rojo)", precalculada: "var(--ambar)", contexto: "var(--gris)"};
+const VEREDICTOS = [
+  ["cambio_robusto", "Cambio real", "#E04A3A", "El cambio sigue ahí aunque se quite El Niño"],
+  ["sensible_a_el_nino", "Se explica por El Niño", "#F2A93B", "Parecía un cambio, pero desaparece al quitar El Niño"],
+  ["cambio_oculto", "Cambio oculto por El Niño", "#4FC3F7", "Solo aparece al quitar El Niño"],
+  ["sin_tendencia", "Sin cambio claro", "#5C6068", "No hay tendencia detectable"],
+];
+const NOMBRES_POWER = {PRECTOTCORR: "Lluvia", T2M: "Temperatura", GWETROOT: "Suelo, raíces", GWETTOP: "Suelo, superficie", RH2M: "Humedad del aire"};
+
+let E = null, logPos = 0, muestras = [], mapaDesc = null, marcaDesc = null, mapaRes = null, marcaRes = null;
+let modo = "descarga", varRes = "T2M", claveEspejo = "", marcaCalc = undefined, tickT = 0, ultimoFin = null, primeraVez = true;
+let arcoInicio = performance.now(), arcoP = REDUCIR ? 1 : 0, hover = -1;
+const nuevas = new Map();
+
+function construirPasos() {
+  const ol = $("#pasos");
+  PASOS.forEach((p, k) => {
+    const li = document.createElement("li"); li.className = "paso"; li.id = "paso-" + p.id;
+    li.innerHTML = `
+      <div class="insignia"><span>${k + 1}</span></div>
+      <div>
+        <h3>${esc(p.titulo)}<small>${esc(p.fuente)}${p.vars ? ", " + esc(p.vars) : ""}</small></h3>
+        <p class="que">${esc(p.que)}</p>
+        <p class="estado"><i></i><span class="est"></span></p>
+        <div class="barrita" hidden><i></i></div>
+        ${p.opciones ? `<div class="opciones">${p.opciones.map(([v, t]) => `<label><input type="checkbox" data-sat="${v}" checked> ${esc(t)}</label>`).join("")}</div>` : ""}
+        <div class="botones">${p.acciones.map((a, j) => `<button class="btn${a.primario ? " primario" : ""}" data-j="${j}">${esc(a.t)}</button>`).join("")}
+          ${p.id === "satelites" ? `<button class="enlace" data-cuenta hidden>Falta tu cuenta de NASA: ingrésala</button>` : ""}
+        </div>
+        ${p.avanzado ? `<details class="avanzado"><summary>${esc(p.avanzado.resumen)}</summary><p>${esc(p.avanzado.ayuda)}</p>
+          <input type="text" data-campo="${p.avanzado.campo}" placeholder="Ruta de la carpeta" spellcheck="false"></details>` : ""}
+        ${p.id === "empaquetar" ? `<label class="soltar" id="soltar"><input type="file" id="archivoPaquete" accept=".gz,.tgz">
+          <b>¿Recibiste un paquete de otro integrante?</b><br>Arrástralo aquí o haz clic para instalarlo.<span id="subida"></span></label>` : ""}
+      </div>`;
+    li.querySelectorAll("[data-j]").forEach(b => b.addEventListener("click", () => {
+      const a = p.acciones[+b.dataset.j]; const op = {...(a.op || {})};
+      const campo = li.querySelector("[data-campo]"); if (campo && campo.value.trim()) op[p.avanzado.campo] = campo.value.trim();
+      if (p.id === "satelites") { const sel = [...li.querySelectorAll("[data-sat]:checked")].map(x => x.dataset.sat); if (sel.length < 3) op.solo = sel; }
+      ejecutar(a.orden, op);
+    }));
+    const c = li.querySelector("[data-cuenta]"); if (c) c.addEventListener("click", () => $("#dlgCuenta").showModal());
+    ol.appendChild(li);
+  });
+  const sol = $("#soltar");
+  if (sol) {
+    ["dragenter", "dragover"].forEach(ev => sol.addEventListener(ev, e => { e.preventDefault(); sol.classList.add("sobre"); }));
+    ["dragleave", "drop"].forEach(ev => sol.addEventListener(ev, e => { e.preventDefault(); sol.classList.remove("sobre"); }));
+    sol.addEventListener("drop", e => { if (e.dataTransfer.files[0]) subirPaquete(e.dataTransfer.files[0]); });
+    $("#archivoPaquete").addEventListener("change", e => { if (e.target.files[0]) subirPaquete(e.target.files[0]); e.target.value = ""; });
+  }
+}
+
+function subirPaquete(f) {
+  if (!/\.(tar\.gz|tgz)$/i.test(f.name)) return aviso("El paquete debe ser un archivo .tar.gz");
+  if (E && E.trabajo.corriendo) return aviso("Hay un trabajo en marcha. Espera a que termine.");
+  const x = new XMLHttpRequest(); const sub = $("#subida");
+  x.open("POST", "/api/subir_paquete"); x.setRequestHeader("X-Token", TOKEN); x.setRequestHeader("X-Nombre", f.name);
+  x.upload.onprogress = e => { if (e.lengthComputable) sub.textContent = ` Subiendo… ${Math.round(100 * e.loaded / e.total)} %`; };
+  x.onload = () => { sub.textContent = ""; if (x.status !== 200) { let m = "No se pudo instalar el paquete."; try { m = JSON.parse(x.responseText).error || m; } catch (_) {} aviso(m); } else tick(); };
+  x.onerror = () => { sub.textContent = ""; aviso("No se pudo subir el paquete."); };
+  x.send(f);
+}
+
+async function ejecutar(orden, opciones) {
+  try { await api("/api/ejecutar", {orden, opciones}); muestras = []; logPos = Math.max(0, logPos); clearTimeout(tickT); tick(); }
+  catch (e) { aviso(e.message); }
+}
+
+/* ======================================================= render */
+function textoEstadoPaso(p, e) {
+  const E_ = e.estado;
+  switch (p.id) {
+    case "indices": return E_ === "listo" ? "<b>Listo.</b> ONI, Niño 1+2 y CO₂ guardados." : E_ === "parcial" ? `Van ${e.hecho} de 3. Vuelve a ejecutar para completar.` : "Aún no descargado.";
+    case "power": {
+      const cel = e.hecho - e.demos, tot = e.total - 3;
+      if (e.demos < 3) return e.demos ? `Demos: ${e.demos} de 3.` : "Aún no descargado.";
+      if (cel <= 0) return "<b>Demos listas</b> (Piura, Borneo y norte de Australia). Falta el resto del mapa.";
+      if (cel < tot) return `<b>${fmt(cel)} de ${fmt(tot)}</b> puntos del mapa.`;
+      return `<b>Mapa completo:</b> ${fmt(tot)} puntos.`;
+    }
+    case "satelites": return E_ === "listo" ? "<b>Listo.</b> Las 5 variables en las 3 demos." : e.hecho ? `${e.hecho} de ${e.total} series listas.` : "Aún no descargado.";
+    case "calcular": return e.hecho ? `<b>Calculado</b> el ${fechaCorta(e.actualizado * 1000).replace(/\.$/, "")}.` : "Aún no calculado.";
+    case "demos": return e.hecho >= e.total ? `<b>Listo.</b> ${e.hecho} archivos, uno por lugar.` : e.hecho ? `${e.hecho} de ${e.total} archivos.` : "Aún no creado.";
+    case "empaquetar": return e.hecho ? `<b>Listo:</b> ${esc(e.archivo)} (${(e.peso / 1e6).toFixed(1)} MB).` : "Aún no creado.";
+  }
+  return "";
+}
+const fechaCorta = ms => new Date(ms).toLocaleString("es-PE", {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"});
+
+function render() {
+  const t = E.trabajo, corriendo = t.corriendo, activo = t.paso_activo;
+  if (primeraVez) { ultimoFin = t.fin || null; primeraVez = false; }
+  /* barra superior */
+  const pill = $("#pill"); let cls = "", txt = "En reposo";
+  if (corriendo) { cls = "trabajando"; txt = t.deteniendo ? "Deteniendo…" : `Trabajando: ${t.etiqueta}`; }
+  else if (t.numero > 0 && t.detenido) txt = "Detenido";
+  else if (t.numero > 0 && t.codigo !== 0) { cls = "error"; txt = "Terminó con errores"; }
+  else if (t.numero > 0) { cls = "listo"; txt = "Listo"; }
+  pill.className = "pill " + cls; $("#pillTxt").textContent = txt; document.title = (corriendo ? "● " : "") + "VeraScope · Centro de datos";
+
+  /* botones principales */
+  const sinNada = (E.pasos.find(p => p.id === "power").demos || 0) === 0;
+  const bt = $("#btnTodo"), br = $("#btnRapida"), bd = $("#btnDetener");
+  bt.classList.toggle("primario", !sinNada); br.classList.toggle("primario", sinNada);
+  bt.disabled = br.disabled = corriendo; bd.hidden = !corriendo; bd.disabled = !!t.deteniendo; bd.textContent = t.deteniendo ? "Deteniendo…" : "Detener";
+
+  /* aviso bajo el título */
+  const av = $("#aviso"), pw = E.pasos.find(p => p.id === "power"), todos = E.pasos.every(p => p.estado === "listo");
+  const cel = pw.hecho - pw.demos, totC = pw.total - 3; let k = "", m = "";
+  if (corriendo) { k = "ojo"; m = `<b>Ahora:</b> ${esc(t.etiqueta)}. Puedes dejar esta pestaña abierta y hacer otra cosa.`; }
+  else if (t.numero > 0 && t.fin && t.fin !== ultimoFin && t.resumen) { k = t.codigo === 0 || t.detenido ? "bien" : "mal"; m = esc(t.resumen); }
+  else if (todos) { k = "bien"; m = "<b>Todo listo.</b> Pásale el paquete al equipo."; }
+  else if (sinNada) m = "Empieza con la <b>prueba rápida</b>: tarda menos de un minuto y confirma que tu internet llega a NASA y NOAA.";
+  else if (cel < totC) m = `Faltan ${fmt(totC - cel)} puntos del mapa, unos ${tiempo((totC - cel) * 1.1)}. Se puede cortar y retomar cuando quieras.`;
+  else m = "El mapa está completo. Sigue con los satélites y el cálculo.";
+  if (!corriendo && E.n_fallos > 0 && !(k === "mal")) { m += ` <b>${E.n_fallos}</b> descargas fallaron; vuelve a ejecutar y se reintentan.`; if (!k) k = "ojo"; }
+  av.className = "aviso " + k; $("#avisoTxt").innerHTML = m;
+
+  /* lectura bajo el mapa */
+  const pct = totC ? Math.floor(100 * Math.max(0, cel) / totC) : 0;
+  $("#pct").textContent = pct;
+  $("#barraMapa i").style.width = pct + "%";
+  $("#txtMapa").innerHTML = cel >= totC ? `<b>Mapa completo:</b> ${fmt(totC)} puntos de 34°S a 34°N, de 90°E a 30°O.`
+    : `<b>${fmt(Math.max(0, cel))}</b> de ${fmt(totC)} puntos del mapa descargados.`;
+  $("#eta").textContent = etaTexto(pw, activo === "power" && corriendo);
+
+  /* pasos */
+  PASOS.forEach(p => {
+    const e = E.pasos.find(x => x.id === p.id), li = $("#paso-" + p.id), esAct = corriendo && activo === p.id;
+    li.className = `paso ${e.estado}${esAct ? " activo" : ""}`;
+    li.querySelector(".est").innerHTML = textoEstadoPaso(p, e);
+    const ins = li.querySelector(".insignia"); let porc = 0;
+    if (e.estado === "listo") porc = 100; else if (["power", "satelites", "indices", "demos"].includes(p.id)) porc = e.total ? Math.round(100 * (p.id === "power" ? (e.hecho - e.demos) / (e.total - 3) : e.hecho / e.total)) : 0;
+    ins.style.setProperty("--p", Math.max(0, porc)); ins.querySelector("span").textContent = e.estado === "listo" ? "✓" : (PASOS.indexOf(p) + 1);
+    const br_ = li.querySelector(".barrita"), det = esAct && ["power", "satelites"].includes(p.id) && e.estado !== "listo";
+    br_.hidden = !esAct; br_.classList.toggle("indef", esAct && !det);
+    if (esAct) br_.firstElementChild.style.width = det ? porc + "%" : "";
+    li.classList.toggle("indef", esAct && !det);
+    li.querySelectorAll(".botones .btn").forEach(b => b.disabled = corriendo);
+    if (p.id === "satelites") {
+      const sinCuenta = !E.credenciales.definidas, local = li.querySelector("[data-campo]").value.trim();
+      li.querySelector("[data-cuenta]").hidden = !sinCuenta || !!local;
+      li.querySelector('[data-j="0"]').disabled = corriendo || (sinCuenta && !local);
+    }
+  });
+
+  /* cuenta */
+  const c = E.credenciales, cu = $("#cuenta");
+  cu.className = "cuenta" + (c.definidas ? " lista" : "");
+  cu.innerHTML = `<div class="fila"><i></i><b style="font-weight:500">${c.definidas ? "Cuenta lista" : "Falta tu cuenta"}</b></div>
+    <p>${c.definidas ? ({panel: "La ingresaste en este panel.", entorno: "Se leyó de las variables de tu computadora.", netrc: "Se leyó de tu archivo .netrc."}[c.origen]) : "La piden los satélites (V8 a V12). Sin ella, el resto funciona igual."}</p>
+    <div class="botones"><button class="btn chico" id="btnCuenta">${c.definidas ? "Cambiar" : "Ingresar mi cuenta"}</button>
+    ${c.definidas ? `<button class="btn chico" id="btnProbar"${t.corriendo ? " disabled" : ""}>Probar</button>` : ""}</div>`;
+  $("#btnCuenta").onclick = () => $("#dlgCuenta").showModal();
+  const bp = $("#btnProbar"); if (bp) bp.onclick = () => ejecutar("probar_sesion", {});
+
+  /* variables */
+  const grupos = [["vivo", "NASA POWER, para cada punto del mapa"], ["indice", "Índices de El Niño"], ["precalculada", "Satélites, solo para las demos"], ["contexto", "Solo como contexto"]];
+  $("#vars").innerHTML = grupos.map(([g, tit]) => `<li class="grupo">${tit}</li>` + E.variables.filter(v => v.capa === g).map(v => {
+    const f = v.total ? Math.min(100, 100 * v.hecho / v.total) : 0;
+    const txt = v.capa === "vivo" ? `${fmt(v.hecho)}` : (v.capa === "precalculada" ? `${v.hecho} de ${v.total}` : (v.hecho ? "lista" : "falta"));
+    return `<li class="v" title="${esc(v.fuente)}. ${esc(v.unidad)}${v.nota ? ". " + esc(v.nota) : ""}" style="--c:${COLOR_CAPA[v.capa]}">
+      <span class="id">${v.id}</span><span class="n">${esc(v.nombre)}</span><span class="c">${txt}</span>
+      <span class="tira"><i style="width:${f}%"></i></span></li>`;
+  }).join("")).join("");
+
+  /* fallos */
+  const fa = $("#fallos");
+  fa.innerHTML = E.n_fallos ? `<b style="color:var(--ambar);font-weight:500">${E.n_fallos} descargas fallidas pendientes.</b> Se reintentan solas al volver a ejecutar el paso.
+    <ul>${E.fallos.slice(0, 5).map(f => `<li><b style="font-weight:500">${esc(f.tarea)} ${esc(f.lugar)}:</b> ${esc(f.error)}</li>`).join("")}</ul>` : "";
+
+  $("#ruta").textContent = E.datos;
+  construirLeyenda();
+}
+
+function tiempo(seg) { const m = Math.round(seg / 60); return m < 1 ? "menos de 1 min" : m < 90 ? `${m} min` : `${(m / 60).toFixed(1)} h`; }
+function etaTexto(pw, activo) {
+  const cel = pw.hecho - pw.demos, totC = pw.total - 3;
+  if (cel >= totC) return "";
+  if (!activo) return cel > 0 ? `Faltan unos ${tiempo((totC - cel) * 1.1)}` : "";
+  const ahora = Date.now(); muestras.push([ahora, pw.hecho]); muestras = muestras.filter(m => ahora - m[0] < 90000);
+  if (muestras.length < 3) return "Calculando el tiempo…";
+  const [t0, h0] = muestras[0], v = (pw.hecho - h0) / ((ahora - t0) / 1000);
+  return v > 0 ? `Faltan unos ${tiempo((totC - cel) / v)}` : "";
+}
+
+/* ======================================================= mapa */
+function construirLeyenda() {
+  const l = $("#leyenda"), rev = modo === "resultados" && mapaRes;
+  const demos = `<span><i class="anillo" style="--c:var(--cian)"></i>Piura</span><span><i class="anillo" style="--c:var(--ambar)"></i>Borneo y norte de Australia</span>`;
+  l.innerHTML = rev ? VEREDICTOS.map(v => `<span title="${esc(v[3])}"><i style="--c:${v[2]}"></i>${v[1]}</span>`).join("")
+    : `<span><i style="--c:var(--cian)"></i>Descargado</span><span><i style="--c:#4a4e55"></i>Pendiente</span>${demos}`;
+}
+let rafId = 0; const pedir = () => { if (!rafId) rafId = requestAnimationFrame(t => { rafId = 0; dibujar(t); }); };
+const COL_V = {"1": "#E04A3A", "2": "#F2A93B", "3": "#4FC3F7", "4": "#5C6068"};
+const X = (lon, W) => (lon - 90) / 240 * W, Y = (lat, H) => (40 - lat) / 80 * H;
+const lon360 = l => l < 0 ? l + 360 : l;
+
+function dibujar(ahora) {
+  const c = $("#mapa"); if (!c) return;
+  const W = $("#lienzo").clientWidth, H = Math.round(W / 3), d = window.devicePixelRatio || 1;
+  if (c.width !== Math.round(W * d) || c.height !== Math.round(H * d)) { c.width = Math.round(W * d); c.height = Math.round(H * d); c.style.height = H + "px"; }
+  const g = c.getContext("2d"); g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, W, H);
+  g.save(); g.scale(W / 960, H / 320); g.fillStyle = "#262A30"; g.fill(TIERRA); g.restore();
+  g.strokeStyle = "rgba(242,242,240,.10)"; g.setLineDash([3, 7]); g.beginPath(); g.moveTo(0, Y(0, H)); g.lineTo(W, Y(0, H)); g.stroke(); g.setLineDash([]);
+  if (!E) return;
+  const R = E.rejilla, n = R.nlat * R.nlon, rad = Math.max(1.4, W / 121 * 0.27), res = modo === "resultados" && mapaRes;
+  for (let i = 0; i < n; i++) {
+    const lat = R.lat0 + Math.floor(i / R.nlon) * R.paso, lon = R.lon0 + (i % R.nlon) * R.paso, x = X(lon, W), y = Y(lat, H);
+    let col, r = rad, a = 1;
+    if (res) { const v = mapaRes[i]; if (v !== "0") col = COL_V[v]; else { col = "#F2F2F0"; a = .08; r = rad * .6; } }
+    else if (mapaDesc && mapaDesc[i] === "1") { col = "#4FC3F7"; a = .9; }
+    else { col = "#F2F2F0"; a = .11; r = rad * .62; }
+    g.globalAlpha = a; g.fillStyle = col; g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.fill();
+  }
+  g.globalAlpha = 1;
+  /* destellos de los puntos recién descargados */
+  for (const [i, t0] of nuevas) {
+    const edad = ahora - t0; if (edad > 1700) { nuevas.delete(i); continue; }
+    const lat = R.lat0 + Math.floor(i / R.nlon) * R.paso, lon = R.lon0 + (i % R.nlon) * R.paso, f = edad / 1700;
+    g.strokeStyle = `rgba(255,255,255,${(1 - f) * .85})`; g.lineWidth = 1.5; g.beginPath(); g.arc(X(lon, W), Y(lat, H), rad + f * 11, 0, 6.2832); g.stroke();
+  }
+  /* El Niño: del Pacífico oriental al occidental (lluvia en Piura, sequía en Borneo y Australia) */
+  const piura = E.demos.find(x => x.id === "piura"), otros = E.demos.filter(x => x.id !== "piura");
+  if (!REDUCIR && arcoP < 1) arcoP = Math.min(1, (ahora - arcoInicio) / 2200);
+  const e = 1 - Math.pow(1 - arcoP, 3);
+  if (piura) otros.forEach((o, k) => {
+    const x0 = X(lon360(piura.lon), W), y0 = Y(piura.lat, H), x1 = X(lon360(o.lon), W), y1 = Y(o.lat, H);
+    const cx = (x0 + x1) / 2, cy = Math.min(y0, y1) - H * (k ? .2 : .3), L = Math.hypot(x1 - x0, y1 - y0) * 1.2;
+    g.strokeStyle = "rgba(224,74,58,.75)"; g.lineWidth = 1.6; g.setLineDash(arcoP < 1 ? [L * e, L] : [2, 7]); g.lineCap = "round";
+    g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo(cx, cy, x1, y1); g.stroke(); g.setLineDash([]);
+    if (k === 0 && arcoP >= 1) { g.fillStyle = "#ff8a7c"; g.font = "500 12px Inter,sans-serif"; g.textAlign = "center"; g.fillText("El Niño", (x0 + 2 * cx + x1) / 4, (y0 + 2 * cy + y1) / 4 - 7); g.textAlign = "left"; }
+  });
+  E.demos.forEach(dm => {
+    const x = X(lon360(dm.lon), W), y = Y(dm.lat, H), col = dm.id === "piura" ? "#4FC3F7" : "#F2A93B";
+    g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); g.arc(x, y, rad + 4.5, 0, 6.2832); g.stroke();
+    g.font = "600 12.5px Inter,sans-serif"; const nom = NOMBRE_LUGAR(dm.nombre), tw = g.measureText(nom).width, derecha = x + tw + 22 < W;
+    g.lineWidth = 4; g.strokeStyle = "rgba(14,15,17,.9)"; g.lineJoin = "round";
+    const tx = derecha ? x + rad + 11 : x - rad - 11 - tw; g.strokeText(nom, tx, y + 4); g.fillStyle = "#F2F2F0"; g.fillText(nom, tx, y + 4);
+  });
+  if (hover >= 0) {
+    const lat = R.lat0 + Math.floor(hover / R.nlon) * R.paso, lon = R.lon0 + (hover % R.nlon) * R.paso;
+    g.strokeStyle = "#fff"; g.lineWidth = 1.5; g.beginPath(); g.arc(X(lon, W), Y(lat, H), rad + 3, 0, 6.2832); g.stroke();
+  }
+  if (nuevas.size || arcoP < 1) pedir();
+}
+
+function configurarMapa() {
+  const lienzo = $("#lienzo"), tip = $("#etiquetaMapa");
+  new ResizeObserver(() => pedir()).observe(lienzo);
+  lienzo.addEventListener("mousemove", ev => {
+    if (!E) return; const r = lienzo.getBoundingClientRect(), W = r.width, H = W / 3, x = ev.clientX - r.left, y = ev.clientY - r.top, R = E.rejilla;
+    const lon = 90 + x / W * 240, lat = 40 - y / H * 80, col = Math.round((lon - R.lon0) / R.paso), fil = Math.round((lat - R.lat0) / R.paso);
+    if (col < 0 || col >= R.nlon || fil < 0 || fil >= R.nlat) { hover = -1; tip.classList.remove("ver"); return pedir(); }
+    hover = fil * R.nlon + col;
+    const la = R.lat0 + fil * R.paso, lo = R.lon0 + col * R.paso, pos = `${Math.abs(la)}°${la < 0 ? "S" : "N"}, ${lo > 180 ? 360 - lo : lo}°${lo > 180 ? "O" : "E"}`;
+    let est = mapaDesc && mapaDesc[hover] === "1" ? "descargado" : "pendiente";
+    if (modo === "resultados" && mapaRes) { const v = +mapaRes[hover]; est = v ? VEREDICTOS[v - 1][1] : "sin datos suficientes"; }
+    tip.innerHTML = `<b style="font-weight:600">${pos}</b> ${esc(est)}`; tip.style.left = x + "px"; tip.style.top = y + "px"; tip.classList.add("ver"); pedir();
+  });
+  lienzo.addEventListener("mouseleave", () => { hover = -1; tip.classList.remove("ver"); pedir(); });
+  $("#modoDescarga").onclick = () => cambiarModo("descarga");
+  $("#modoResultados").onclick = () => cambiarModo("resultados");
+  $("#varRes").onchange = e => { varRes = e.target.value; marcaRes = null; actualizarMapa(); };
+}
+function cambiarModo(m) {
+  modo = m; $("#modoDescarga").setAttribute("aria-pressed", m === "descarga"); $("#modoResultados").setAttribute("aria-pressed", m === "resultados");
+  $("#varRes").hidden = m !== "resultados" || !$("#varRes").options.length; marcaRes = null; actualizarMapa(); construirLeyenda();
+}
+async function actualizarMapa() {
+  if (!E) return;
+  const pw = E.pasos.find(p => p.id === "power");
+  if (pw.hecho !== marcaDesc) {
+    const j = await api("/api/mapa?capa=descarga");
+    if (mapaDesc && !REDUCIR) { let k = 0; const ahora = performance.now(); for (let i = 0; i < j.celdas.length && k < 300; i++) if (j.celdas[i] === "1" && mapaDesc[i] === "0") { nuevas.set(i, ahora); k++; } }
+    mapaDesc = j.celdas; marcaDesc = pw.hecho; pedir();
+  }
+  const vac = $("#vacioMapa");
+  if (modo === "resultados") {
+    const calc = E.pasos.find(p => p.id === "calcular");
+    if (!calc.hecho) { mapaRes = null; vac.textContent = "Todavía no hay resultados. Descarga el mapa y calcula las tendencias (paso 4)."; vac.classList.add("ver"); }
+    else {
+      const clave = varRes + ":" + calc.actualizado;
+      if (clave !== marcaRes) { const j = await api("/api/mapa?capa=resultados&variable=" + varRes); mapaRes = j.disponible ? j.celdas : null; marcaRes = clave; }
+      vac.classList.remove("ver");
+    }
+    construirLeyenda();
+  } else { mapaRes = null; vac.classList.remove("ver"); }
+  pedir();
+}
+
+/* ======================================================= la historia correcta + resultados */
+async function actualizarEspejo() {
+  const pw = E.pasos.find(p => p.id === "power"), ind = E.pasos.find(p => p.id === "indices");
+  const clave = `${pw.demos}:${ind.hecho}`; if (clave === claveEspejo) return; claveEspejo = clave;
+  const d = await api("/api/espejo"), g = $("#graficoEspejo"), l = $("#lecturasEspejo");
+  if (!d.disponible) {
+    g.innerHTML = `<div class="vacio"><div><b style="color:var(--texto);font-weight:500">Aquí aparecerá la comparación.</b><br>${esc(d.falta)}<br>Con la <b style="font-weight:500">prueba rápida</b> ya alcanza.</div></div>`; l.innerHTML = ""; return;
+  }
+  g.innerHTML = `<canvas id="espejo" role="img" aria-label="Línea de tiempo de El Niño y la lluvia en Piura, Borneo y el norte de Australia"></canvas>`;
+  const colores = {piura: "#4FC3F7", borneo: "#F2A93B", norte_australia: "#F2A93B"};
+  l.innerHTML = `<ul class="lecturas"><li style="--c:#E04A3A"><i></i><div><b>El Niño</b><br><span>Sube cuando el Pacífico se calienta.</span></div></li>${d.series.map(s => `
+    <li style="--c:${colores[s.id]}"><i></i><div><b>${esc(NOMBRE_LUGAR(s.nombre))}</b>
+    <span class="${s.coherente ? "ok" : "no"}">${s.coherente ? "✔" : "✘"} ${s.esperado === "sube" ? "Debe llover más con El Niño" : "Debe llover menos con El Niño"}</span><br>
+    <span>Relación medida${s.indice === "NINO12" ? " con el Niño costero (Niño 1+2)" : ""}: ${s.r > 0 ? "+" : ""}${s.r}${s.rezago ? `, con ${s.rezago} ${s.rezago === 1 ? "mes" : "meses"} de retraso` : ""}.</span></div></li>`).join("")}</ul>
+    <p class="veredicto">${d.series.every(s => s.coherente) ? "<b>Sí.</b> La dirección es la esperada: la lluvia de Piura sube con El Niño y la de Borneo baja. Puedes seguir." :
+      "<b>Revisa esto antes de seguir.</b> Al menos un lugar sale al revés de lo esperado. Vuelve a descargar ese paso o pide ayuda con el registro."}</p>`;
+  dibujarEspejo(d, colores);
+}
+function dibujarEspejo(d, colores) {
+  const c = $("#espejo"); if (!c) return; const W = c.parentElement.clientWidth, H = 280, dpr = window.devicePixelRatio || 1;
+  c.width = W * dpr; c.height = H * dpr; c.style.height = H + "px"; const g = c.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const L = 46, Rr = 8, T = 10, B = 26, n = d.meses.length, x = i => L + i / (n - 1) * (W - L - Rr), y = v => T + (3 - Math.max(-3, Math.min(3, v))) / 6 * (H - T - B);
+  g.font = "500 11.5px Inter,sans-serif"; g.fillStyle = "#767A82"; g.strokeStyle = "rgba(255,255,255,.07)"; g.lineWidth = 1;
+  [-2, 0, 2].forEach(v => { g.strokeStyle = v === 0 ? "rgba(255,255,255,.22)" : "rgba(255,255,255,.07)"; g.beginPath(); g.moveTo(L, y(v)); g.lineTo(W - Rr, y(v)); g.stroke(); });
+  g.textAlign = "right"; g.fillText("más", L - 6, y(2) + 4); g.fillText("menos", L - 6, y(-2) + 4); g.textAlign = "center";
+  d.meses.forEach((m, i) => { if (m.endsWith("-01") && +m.slice(0, 4) % 5 === 0) g.fillText(m.slice(0, 4), x(i), H - 7); });
+  const trazo = (vals, col, ancho, relleno, guion) => {
+    g.beginPath(); let on = false;
+    vals.forEach((v, i) => { if (v === null) { on = false; return; } on ? g.lineTo(x(i), y(v)) : g.moveTo(x(i), y(v)); on = true; });
+    if (relleno) { g.save(); g.lineTo(x(n - 1), y(0)); g.lineTo(x(0), y(0)); g.closePath(); g.fillStyle = relleno; g.fill(); g.restore(); g.beginPath(); on = false; vals.forEach((v, i) => { if (v === null) { on = false; return; } on ? g.lineTo(x(i), y(v)) : g.moveTo(x(i), y(v)); on = true; }); }
+    g.setLineDash(guion || []); g.strokeStyle = col; g.lineWidth = ancho; g.lineJoin = "round"; g.stroke(); g.setLineDash([]);
+  };
+  trazo(d.oni, "rgba(224,74,58,.9)", 1.4, "rgba(224,74,58,.22)");
+  d.series.forEach(s => trazo(s.valores, colores[s.id], s.id === "norte_australia" ? 1.3 : 2, null, s.id === "norte_australia" ? [5, 4] : null));
+}
+async function actualizarResultados() {
+  const calc = E.pasos.find(p => p.id === "calcular"); if (calc.actualizado === marcaCalc) return; marcaCalc = calc.actualizado;
+  const box = $("#resumenRes"), r = await api("/api/resultados");
+  if (!r.disponible) { box.innerHTML = `<div class="vacio"><div><b style="color:var(--texto);font-weight:500">Aún no hay resultados.</b><br>Aparecen cuando termines el paso 4, Calcular tendencias.</div></div>`; return; }
+  const cods = Object.keys(NOMBRES_POWER).filter(c => r.variables[c]);
+  box.innerHTML = `<div class="resultados">${cods.map(c => { const v = r.variables[c], tot = VEREDICTOS.reduce((s, x) => s + v[x[0]], 0) || 1;
+    return `<div class="res"><span>${NOMBRES_POWER[c]}</span><div class="tira" title="${VEREDICTOS.map(x => `${x[1]}: ${fmt(v[x[0]])}`).join(" · ")}">${VEREDICTOS.map(x => `<i style="width:${100 * v[x[0]] / tot}%;background:${x[2]}"></i>`).join("")}</div>
+      <span class="tot">${fmt(v.cambio_robusto)} reales</span></div>`; }).join("")}</div>
+    <div class="leyenda-res">${VEREDICTOS.map(x => `<span title="${esc(x[3])}"><i style="--c:${x[2]}"></i>${x[1]}</span>`).join("")}</div>
+    <p class="intro" style="margin:16px 0 0">Ventana analizada: ${esc(r.ventana)}.${r.pares ? ` Se encontraron <b style="color:var(--texto);font-weight:500">${r.pares}</b> parejas de puntos con cambios opuestos, la base de las líneas de teleconexión.` : ""}</p>`;
+  const sel = $("#varRes"); if (!sel.options.length) { cods.forEach(c => sel.add(new Option(NOMBRES_POWER[c], c))); sel.value = cods.includes(varRes) ? varRes : cods[0]; varRes = sel.value; }
+  sel.hidden = modo !== "resultados";
+}
+
+/* ======================================================= registro */
+async function traerLog() {
+  const j = await api("/api/log?desde=" + logPos), pre = $("#log"), abajo = pre.scrollTop + pre.clientHeight >= pre.scrollHeight - 30;
+  j.lineas.forEach(l => { const s = document.createElement("div"); s.textContent = l || " ";
+    s.className = /^(✔)/.test(l) || /^■/.test(l) ? "ok" : /^(✘)/.test(l) ? "mal" : /^(▶|──)/.test(l) ? "marca" : ""; pre.appendChild(s); });
+  while (pre.childElementCount > 1500) pre.firstChild.remove();
+  logPos = j.siguiente; if (abajo) pre.scrollTop = pre.scrollHeight;
+}
+
+/* ======================================================= ciclo principal */
+let caido = 0;
+async function tick() {
+  clearTimeout(tickT);
+  try {
+    E = await api("/api/estado"); caido = 0; render();
+    if (E.trabajo.registro > logPos) await traerLog();
+    await actualizarMapa(); await actualizarEspejo(); await actualizarResultados();
+  } catch (e) {
+    caido++; if (caido >= 2) { $("#pill").className = "pill error"; $("#pillTxt").textContent = "Sin conexión con el programa"; }
+    if (caido === 2) aviso("Perdí la conexión con el programa. ¿Cerraste la ventana negra? Ábrelo otra vez y recarga esta página.");
+  }
+  tickT = setTimeout(tick, E && E.trabajo.corriendo ? 1500 : 4000);
+}
+
+function arrancar() {
+  construirPasos(); configurarMapa(); pedir();
+  $("#btnTodo").onclick = () => ejecutar("todo", {});
+  $("#btnRapida").onclick = () => ejecutar("prueba_rapida", {});
+  $("#btnDetener").onclick = async () => { try { await api("/api/detener", {}); } catch (e) { aviso(e.message); } tick(); };
+  $("#btnCarpeta").onclick = () => api("/api/abrir_carpeta", {}).catch(e => aviso(e.message));
+  let confirmar = 0; const ba = $("#btnApagar");
+  ba.onclick = async () => {
+    if (!confirmar) { ba.textContent = "¿Seguro? Pulsa otra vez"; confirmar = setTimeout(() => { confirmar = 0; ba.textContent = "Apagar panel"; }, 4000); return; }
+    try { await api("/api/apagar", {}); $("#apagado").classList.add("ver"); clearTimeout(tickT); } catch (e) { aviso(e.message); }
+  };
+  $("#copiarLog").onclick = async () => { try { await navigator.clipboard.writeText($("#log").innerText); aviso("Registro copiado."); } catch (_) { aviso("No pude copiar. Selecciona el texto y copia con Ctrl+C."); } };
+  $("#limpiarLog").onclick = () => { $("#log").innerHTML = ""; };
+  const dlg = $("#dlgCuenta");
+  $("#formCuenta").addEventListener("submit", async ev => {
+    if (ev.submitter && ev.submitter.value === "guardar") {
+      try { await api("/api/credenciales", {usuario: $("#cuUser").value, clave: $("#cuPass").value}); aviso("Cuenta guardada para esta sesión."); $("#cuPass").value = ""; tick(); } catch (e) { aviso(e.message); }
+    }
+  });
+  $("#cuQuitar").onclick = async () => { await api("/api/credenciales", {usuario: "", clave: ""}); $("#cuUser").value = $("#cuPass").value = ""; dlg.close(); aviso("Cuenta quitada del panel."); tick(); };
+  document.addEventListener("input", e => { if (e.target.matches("[data-campo]") && E) render(); });
+  window.addEventListener("resize", () => { claveEspejo = ""; });
+  tick();
+}
+arrancar();
+</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+# El .bat se guarda tal cual (CRLF, como lo necesita Windows); los lanzadores de shell, con LF.
+*.bat -text
+*.sh text eol=lf
+*.command text eol=lf

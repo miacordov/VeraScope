@@ -1,0 +1,14 @@
+VeraScope · Centro de datos
+===========================
+
+1. Windows: doble clic en  Abrir-panel.bat
+   Mac:     doble clic en  Abrir-panel.command   (si lo bloquea: clic derecho > Abrir)
+   Linux:   ./abrir-panel.sh
+
+2. La primera vez prepara todo solo (necesita Python 3.10 o mas nuevo e internet).
+   Si no tienes Python: https://www.python.org/downloads/  (en Windows marca "Add python.exe to PATH").
+
+3. Se abre el navegador con el panel. Pulsa "Prueba rapida" y, si sale bien, "Hacer todo".
+
+No cierres la ventana negra mientras uses el panel. Para apagarlo: boton "Apagar panel" de la pagina.
+El resto de las instrucciones esta en README.md.
