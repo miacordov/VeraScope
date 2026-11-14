@@ -1,0 +1,19 @@
+# Entorno local y artefactos
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+
+# Fuera de la imagen de la API
+verascope_datos/
+data/
+tests/
+
+# Repositorio y archivos locales
+.git/
+.env
+.env.*

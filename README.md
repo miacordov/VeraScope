@@ -103,6 +103,37 @@ Instalar el paquete del equipo: `pip install -e backend/verascope_datos` y
 Las credenciales de NASA Earthdata van por variables de entorno (`EARTHDATA_USERNAME`, `EARTHDATA_PASSWORD`),
 `~/.netrc` o el panel (solo en memoria). **Nunca en un archivo del repo.**
 
+## API backend simulada
+
+La rama `chore/contratos` incluye una API FastAPI que sirve respuestas locales simuladas con el contrato público. No descarga datos ni ejecuta el motor estadístico.
+
+```bash
+cd backend
+py -3.11 -m venv .venv
+.venv/Scripts/python.exe -m pip install -e ".[dev]"
+VERASCOPE_SIMULADO=1 .venv/Scripts/python.exe -m uvicorn app.main:app --reload --port 8000
+```
+
+En PowerShell, definí primero `$env:VERASCOPE_SIMULADO = "1"`. La salud queda disponible en `http://localhost:8000/api/v1/salud` y OpenAPI en `http://localhost:8000/docs`.
+
+Variables principales:
+
+- `VERASCOPE_SIMULADO=1`: usa únicamente los JSON locales de `backend/app/catalogo/simulado/`.
+- `VERASCOPE_FIN`: último año completo disponible; por defecto, año actual menos uno.
+- `VERASCOPE_CORS`: orígenes web permitidos, separados por coma.
+- `VERASCOPE_DATOS`: carpeta persistente que utilizará la integración real.
+
+Pruebas y estilo:
+
+```bash
+cd backend
+.venv/Scripts/python.exe -m pytest -q
+.venv/Scripts/ruff.exe check app tests pyproject.toml
+.venv/Scripts/ruff.exe format --check app tests
+```
+
+La URL pública con HTTPS se documentará cuando el equipo active el alojamiento temporal. No se publica una URL antes de verificar el despliegue.
+
 **Pendiente de verificar con los servicios reales:** la conversión × 8 de la escorrentía de GLDAS (V10) y el
 nombre de la capa NDVI de AppEEARS (V12). Detalle en [`backend/verascope_datos/README.md`](backend/verascope_datos/README.md).
 
