@@ -1,5 +1,5 @@
 # Backend contracts and simulated API
-Owner: B1 · Branch: `chore/contratos` · Status: needs decision · Delivery: sliced commits in one PR
+Owner: B1 · Branch: `be/contratos-api-simulada` · Status: needs decision · Delivery: sliced commits in one PR
 
 ## Specs
 1. **S1** — "comienza con el punto 1"
@@ -37,3 +37,4 @@ Owner: B1 · Branch: `chore/contratos` · Status: needs decision · Delivery: sl
 - **L16** — Local uvicorn smoke passed at `/api/v1/salud` with `simulado=true`. Docker BuildKit ended with `DeadlineExceeded`; the bounded classic-builder attempt reached `FROM python:3.11-slim` and stopped on a Docker Hub TLS handshake timeout. `docker images` then timed out, so functional image proof is inaccessible in this environment.
 - **L17** — T4 committed as `40ccbd8`. Local evidence: 142 tests passed, Ruff check/format passed, wheel contents included `app/**` and excluded `verascope_datos`, and uvicorn health smoke passed.
 - **L18** — Independent verifier execution was unavailable in its scratch environment, but its four static findings were converted to regression tests and corrected. Native review became due, then stopped on `managed_assets_outdated`; the exact sync continuation timed out after 30 seconds and was not retried.
+- **L19** — The user requested a backend-role branch instead of working on the main/shared branch. Existing B1 commits were preserved on `be/contratos-api-simulada`; `main` remains untouched.
