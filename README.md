@@ -41,24 +41,24 @@ Seis personas: **B1, B2, B3** (backend) y **F1, F2, F3** (frontend). Cada rama t
 de la tarea** (objetivo, archivos, pasos, pruebas y criterio de terminado). Ramas cortas sobre `main`: viven
 horas, no días.
 
-| Rama | Dueño | Horas | Qué se hace |
-|---|---|---|---|
-| `chore/contratos` | B1 + F1 | 0–6 | Contratos Pydantic, tipos TS, esqueletos de API y app, despliegue simulado con HTTPS |
-| `be/datos-power` | B2 | 2–12 | Cliente de POWER, cuantización, validación, índices de NOAA |
-| `be/api-cache-despliegue` | B1 | 4–20 | Ruta `analyze`, caché de dos niveles, despliegue, precalentamiento |
-| `be/motor-enso` | B3 | 6–18 | Motor estadístico: anomalías, tendencia, quitar El Niño, veredicto |
-| `be/scanmap-job` | B2 | 8–20 | Integrar el preparador; escaneo de 4235 celdas, FDR, ranking y pares |
-| `be/teleconexion-periodos` | B3 | 18–30 | Rutas `teleconnect` y `compare-periods`, meses inusuales |
-| `be/scan-feed-api` | B1 | 20–30 | Rutas del feed y del mosaico de ScanMap |
-| `be/instantaneas-demo` | B1 | 36–42 | Respuestas de las demos para la app sin red |
-| `fe/mapa-celda` | F1 | 3–14 | Mapa del Pacífico en SVG, celda, selector de variable y ventana |
-| `fe/graficos-enso` | F2 | 6–20 | Panel Causa · Consecuencia · Realidad e interruptor de El Niño |
-| `fe/veredicto-feed` | F3 | 6–28 | Tarjeta de veredicto y feed de ScanMap |
-| `fe/distribucion` | F2 | 6–14 y 36–44 | Primer APK (EAS) y exportación web; luego las finales |
-| `fe/lineas-mosaico` | F1 | 20–32 | Líneas causa → consecuencia y mosaico |
-| `fe/tiempo-comparador` | F2 | 20–32 | Reproducción, periodos y meses inusuales |
-| `fe/demos-glosario` | F3 | 24–36 | Las dos demos guiadas y el glosario |
-| `release/demo` | Todos | 36–48 | Se abre en el congelamiento (`v1.0-freeze`); solo ramas `fix/…` |
+| Rama | Issue | Dueño | Horas | Qué se hace |
+|---|---|---|---|---|
+| `chore/contratos` | [#1](https://github.com/miacordov/VeraScope/issues/1) | B1 + F1 | 0–6 | Contratos Pydantic, tipos TS, esqueletos de API y app, despliegue simulado con HTTPS |
+| `be/datos-power` | [#2](https://github.com/miacordov/VeraScope/issues/2) | B2 | 2–12 | Cliente de POWER, cuantización, validación, índices de NOAA |
+| `be/api-cache-despliegue` | [#3](https://github.com/miacordov/VeraScope/issues/3) | B1 | 4–20 | Ruta `analyze`, caché de dos niveles, despliegue, precalentamiento |
+| `be/motor-enso` | [#4](https://github.com/miacordov/VeraScope/issues/4) | B3 | 6–18 | Motor estadístico: anomalías, tendencia, quitar El Niño, veredicto |
+| `be/scanmap-job` | [#5](https://github.com/miacordov/VeraScope/issues/5) | B2 | 8–20 | Integrar el preparador; escaneo de 4235 celdas, FDR, ranking y pares |
+| `be/teleconexion-periodos` | [#6](https://github.com/miacordov/VeraScope/issues/6) | B3 | 18–30 | Rutas `teleconnect` y `compare-periods`, meses inusuales |
+| `be/scan-feed-api` | [#7](https://github.com/miacordov/VeraScope/issues/7) | B1 | 20–30 | Rutas del feed y del mosaico de ScanMap |
+| `be/instantaneas-demo` | [#8](https://github.com/miacordov/VeraScope/issues/8) | B1 | 36–42 | Respuestas de las demos para la app sin red |
+| `fe/mapa-celda` | [#9](https://github.com/miacordov/VeraScope/issues/9) | F1 | 3–14 | Mapa del Pacífico en SVG, celda, selector de variable y ventana |
+| `fe/graficos-enso` | [#10](https://github.com/miacordov/VeraScope/issues/10) | F2 | 6–20 | Panel Causa · Consecuencia · Realidad e interruptor de El Niño |
+| `fe/veredicto-feed` | [#11](https://github.com/miacordov/VeraScope/issues/11) | F3 | 6–28 | Tarjeta de veredicto y feed de ScanMap |
+| `fe/distribucion` | [#12](https://github.com/miacordov/VeraScope/issues/12) | F2 | 6–14 y 36–44 | Primer APK (EAS) y exportación web; luego las finales |
+| `fe/lineas-mosaico` | [#13](https://github.com/miacordov/VeraScope/issues/13) | F1 | 20–32 | Líneas causa → consecuencia y mosaico |
+| `fe/tiempo-comparador` | [#14](https://github.com/miacordov/VeraScope/issues/14) | F2 | 20–32 | Reproducción, periodos y meses inusuales |
+| `fe/demos-glosario` | [#15](https://github.com/miacordov/VeraScope/issues/15) | F3 | 24–36 | Las dos demos guiadas y el glosario |
+| `release/demo` | — | Todos | 36–48 | Se abre en el congelamiento (`v1.0-freeze`); solo ramas `fix/…` |
 
 **Hitos:** hora 6, URL pública con HTTPS y la app recibe un `analyze` simulado · hora 20, un toque en el mapa
 devuelve un veredicto con datos reales · hora 36, las dos demos corren completas (congelamiento).
