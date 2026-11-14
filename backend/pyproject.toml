@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "verascope-api"
+version = "0.1.0"
+description = "API mensual de tendencias y El Niño de VeraScope"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi",
+  "pydantic>=2,<3",
+  "uvicorn",
+  "numpy",
+  "pandas",
+  "scipy>=1.11",
+  "pymannkendall",
+  "pyarrow",
+  "requests",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff", "httpx"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app", "app.*"]
+exclude = ["verascope_datos", "verascope_datos.*", "tests", "tests.*"]
+
+[tool.setuptools.package-data]
+app = ["catalogo/*.json", "catalogo/demos/*.json", "catalogo/simulado/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "--strict-markers --import-mode=importlib -p no:cacheprovider"
+markers = ["lento: pruebas de rendimiento del motor"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+exclude = ["verascope_datos"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
