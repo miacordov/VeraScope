@@ -1,0 +1,38 @@
+# ── Datos: fuera de Git salvo backend/data/demo/ (incluidas demo/respuestas/) ──
+# El paquete .tar.gz (~50 MB) se reparte por un release de GitHub o una carpeta compartida.
+backend/data/*
+!backend/data/demo/
+*.tar.gz
+datos/
+
+# ── Python ──
+.venv/
+venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# ── Frontend (Expo / React Native) ──
+node_modules/
+.expo/
+dist/
+web-build/
+*.apk
+*.aab
+*.ipa
+npm-debug.*
+yarn-error.*
+.env
+.env.local
+!.env.example
+
+# ── Sistema y editores ──
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# ── Herramientas locales ──
+.gga
