@@ -106,8 +106,3 @@ Las credenciales de NASA Earthdata van por variables de entorno (`EARTHDATA_USER
 **Pendiente de verificar con los servicios reales:** la conversión × 8 de la escorrentía de GLDAS (V10) y el
 nombre de la capa NDVI de AppEEARS (V12). Detalle en [`backend/verascope_datos/README.md`](backend/verascope_datos/README.md).
 
-## Honestidad científica
-
-La plataforma **detecta tendencias y coincidencias; no atribuye causas**. Las líneas dicen *"ocurren a la vez y
-ambos responden a El Niño"*, nunca que uno causa el otro. Cada dato muestra su fuente, unidad, celda y periodo.
-"Sin tendencia detectable" es un hallazgo válido.
