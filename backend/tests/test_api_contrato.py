@@ -6,7 +6,8 @@ from pathlib import Path
 import pytest
 
 BASE = {"variable": "PRECTOTCORR", "lat": -5.0, "lon": -80.5}
-ANALISIS = {**BASE, "inicio": 1981, "fin": 2025}
+# La consulta debe seleccionar la ventana real del JSON local, no sustituirla.
+ANALISIS = {**BASE, "inicio": 1981, "fin": 1990}
 RUTAS = [
     ("/salud", {}),
     ("/variables", {}),
@@ -18,7 +19,7 @@ RUTAS = [
         {**BASE, "p1_inicio": 1981, "p1_fin": 2001, "p2_inicio": 2003, "p2_fin": 2025},
     ),
     ("/scan/feed", {"tipo": "fuertes", "pagina": 0}),
-    ("/scan/layer", {"variable": "T2M"}),
+    ("/scan/layer", {"variable": "PRECTOTCORR"}),
     ("/demos/efecto-espejo", {}),
 ]
 

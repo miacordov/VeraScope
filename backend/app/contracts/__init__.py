@@ -3,7 +3,7 @@
 from enum import StrEnum
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class Modelo(BaseModel):
@@ -214,6 +214,25 @@ class AnalyzeRespuesta(Modelo):
     prueba_t: None
     cambio_brusco: None
 
+    @model_validator(mode="after")
+    def validar_longitudes(self):
+        """Todas las series y rectas se alinean con el mismo calendario."""
+        n = len(self.fechas)
+        series = (
+            self.serie_original,
+            self.serie_sin_el_nino,
+            self.serie_z,
+            self.indice_valores,
+            self.fase,
+            self.tendencia_original.recta,
+            self.tendencia_sin_el_nino.recta,
+        )
+        if self.ventana.meses != n or any(len(serie) != n for serie in series):
+            raise ValueError(
+                "Las series y rectas deben tener la misma longitud que fechas y meses."
+            )
+        return self
+
 
 class OrigenTeleconexion(Coordenadas):
     distancia_a_clic_km: float
@@ -294,6 +313,14 @@ class LayerRespuesta(Modelo):
     veredicto: list[EstadoVeredicto | None]
     pendiente_decada: Serie
     efecto: Serie
+
+    @model_validator(mode="after")
+    def validar_columnas(self):
+        """Cada posición representa la misma celda en todas las columnas."""
+        columnas = (self.lon, self.veredicto, self.pendiente_decada, self.efecto)
+        if any(len(columna) != len(self.lat) for columna in columnas):
+            raise ValueError("Las columnas del mosaico deben tener la misma longitud.")
+        return self
 
 
 class Accion(Modelo):

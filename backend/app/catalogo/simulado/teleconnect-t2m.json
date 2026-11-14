@@ -1,0 +1,6 @@
+{
+  "variable": "T2M",
+  "origen": {"lat": -6.0, "lon": -80.0, "distancia_a_clic_km": 120.0, "r_el_nino": 0.62},
+  "lineas": [],
+  "mensaje_vacio": "No se buscan líneas para la temperatura."
+}
