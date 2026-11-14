@@ -4,6 +4,8 @@ backend/data/*
 !backend/data/demo/
 *.tar.gz
 datos/
+# app/datos/ es código (cliente de POWER, celdas), no datos
+!backend/app/datos/
 
 # ── Python ──
 .venv/

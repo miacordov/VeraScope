@@ -665,9 +665,10 @@ Los archivos de contratos y el estado global son **compartidos**: los edita su d
 | Cuenta de Apple Developer (TestFlight) o iOS solo con Expo Go y simulador | Decidirlo | Todos, antes del evento |
 | Cuándo corre la descarga de las 4235 celdas | Desde la hora 8, como en el plan, o antes si las reglas de la sede lo permiten | B2 y todos, antes del evento |
 | Colores de La Niña y de la línea de mismo efecto | Proponer y aprobar con captura de pantalla | F1 propone, otro del frontend aprueba, hora 14 |
-| Último año completo de MERRA-2 en POWER | Confirmarlo con una consulta real; fija el fin de la ventana | B2, horas 0–6 |
+| Último año completo de MERRA-2 en POWER | **Verificado (14-nov-2026):** 2025 completo (con mes `13`); 2026 llega hasta septiembre y octubre–noviembre vienen en `-999`. `VERASCOPE_FIN=2025` (= el valor por defecto) | B2, horas 0–6 |
 | Latencia real de POWER | Medirla desde la sede con 20 celdas distintas **antes de prometer ninguna cifra** | B1, horas 0–6 |
-| Alineación de la malla de 0.5° | Verificar con dos consultas vecinas que la cuantización `0.5·round(x/0.5)` cae en la misma celda que POWER | B2 |
+| Alineación de la malla de 0.5° | **Verificado (14-nov-2026), no coincide del todo:** en latitud, POWER usa celdas de 0.5° centradas en múltiplos de 0.5 (coincide). En longitud usa la malla nativa de MERRA-2, de **0.625°** (centros en −180 + k·0.625): −77.0 y −76.6 devuelven la misma serie, y −76.5 devuelve la de la celda vecina. Por eso dos llaves de 0.5° pueden traer la misma serie, y el rectángulo de 0.5° no es la huella real del dato. Decidir si se cuantiza la longitud a 0.625° (cambio de regla y de contrato) | B2 propone, todos deciden |
+| Humedad del suelo sobre el mar | **Verificado:** en el océano `GWETROOT` llega en `-999`, pero `GWETTOP` llega en `1.0` constante (no `-999`). La regla 5 de C2 (desviación nula) es la que la descarta, no la regla 3 | B2 |
 | Humedad del suelo sobre el mar | Comprobar que POWER devuelve relleno (−999) y que la regla de descarte lo atrapa | B2 |
 | Niño 1+2 para Piura | Decidir si entra como alternativa al ONI | B3, hora 20 |
 | CO₂ de Mauna Loa | Solo si sobra tiempo, como franja de contexto | F2, hora 30 |
