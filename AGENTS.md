@@ -25,7 +25,7 @@ VeraScope (NASA Space Apps 2026, *Earth System Trend Detective*) calcula la tend
 ### Backend
 - NASA POWER es la única fuente en vivo. Las pruebas no llaman a servicios externos.
 - Solo cinco variables: `PRECTOTCORR`, `T2M`, `GWETROOT`, `GWETTOP`, `RH2M`. Análisis mensual sobre celdas de 0.5°.
-- Prohibido el Mann-Kendall original: se usa Hamed-Rao con 12 rezagos.
+- Prohibido el Mann-Kendall original: se usa Mann-Kendall con la varianza corregida por autocorrelación AR(1) (`VERSION_METODO = 3`).
 - El intervalo de Theil-Sen se calcula a mano con la varianza corregida. No se usa `scipy.stats.theilslopes` para el intervalo, ni `scipy.stats.pearsonr` para p-valores con El Niño (se usa el tamaño efectivo de muestra), ni `pymannkendall.seasonal_test`.
 - Benjamini-Hochberg en ScanMap, con dos familias.
 - Los umbrales viven solo en `constantes.py`. Si cambia un cálculo, se sube `VERSION_METODO`.

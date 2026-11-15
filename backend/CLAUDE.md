@@ -40,7 +40,7 @@ El plan original tenía errores que un jurado técnico habría detectado. Estas 
 | C4 | Caché | **Dos niveles en disco, sin caducidad** (series y resultados), con llave sobre la **celda cuantizada**. Nada de Redis. |
 | C5 | Ventana | Por defecto **1981 → último año completo de MERRA-2**. Mínimo **10 años** (120 meses). Aviso de poca potencia bajo **20 años** (240 meses). |
 | C6 | Resolución | **Solo análisis mensual.** Lo diario y lo anual, como mucho, son vistas del gráfico sin veredicto (y son lo primero que se recorta). |
-| C7 | ENSO | Tendencia **con y sin El Niño**: el índice se quita por **regresión conjunta con la tendencia**, rezago de 0 a 6 meses. Hamed-Rao solo corrige la varianza, no la pendiente. |
+| C7 | ENSO | Tendencia **con y sin El Niño**: el índice se quita por **regresión conjunta con la tendencia**, rezago de 0 a 6 meses. La corrección por autocorrelación solo corrige la varianza, no la pendiente. |
 | C8 | Intervalo | El intervalo de confianza usa **la misma varianza corregida** que el p-valor. Así el intervalo excluye el cero **si y solo si** p < 0.05. |
 | C9 | Veredicto | **Cuatro estados:** cambio robusto, sensible a El Niño, cambio oculto, sin tendencia detectable. La dirección (sube o baja) sale del signo de la pendiente. |
 | C10 | Correlación con ENSO | Rezago de 0 a 6 meses y significancia con **tamaño efectivo de muestra** (Bretherton 1999). Nunca el p-valor ingenuo. |
@@ -69,7 +69,7 @@ El plan original tenía errores que un jurado técnico habría detectado. Estas 
 
 **Reglas estadísticas que se desprenden de lo anterior (ambos lados las respetan):**
 
-- Mann-Kendall *original* (sin corrección) está **prohibido**: 60.5 % de falsos positivos en las simulaciones. Se usa Hamed-Rao con 12 rezagos.
+- Mann-Kendall *original* (sin corrección) está **prohibido**: 60.5 % de falsos positivos en las simulaciones. Se usa Mann-Kendall con la varianza corregida por autocorrelación AR(1) (`VERSION_METODO = 3`; reemplazó a Hamed-Rao, que corregía de menos).
 - `scipy.stats.theilslopes` **no se usa para el intervalo** (usa la varianza sin corregir y contradice el p-valor). El intervalo se calcula a mano, de las pendientes ordenadas (C8).
 - `scipy.stats.pearsonr` **no se usa para el p-valor** de una correlación con El Niño ni entre celdas: se usa el tamaño efectivo.
 - `pymannkendall.seasonal_test` no se usa: las anomalías mensuales ya quitan el ciclo estacional.
@@ -145,7 +145,7 @@ backend/
 │   ├── estadistica/                                                             [B3]
 │   │   ├── constantes.py        # TODOS los umbrales, en un solo lugar
 │   │   ├── anomalias.py
-│   │   ├── tendencia.py         # Theil-Sen, Hamed-Rao, intervalo coherente
+│   │   ├── tendencia.py         # Theil-Sen, Mann-Kendall corregido (AR(1)), intervalo coherente
 │   │   ├── enso.py              # regresión conjunta, rezago, n efectivo
 │   │   ├── veredicto.py         # cuatro estados y avisos
 │   │   ├── fdr.py               # Benjamini-Hochberg
@@ -199,7 +199,7 @@ backend/
 |---|---|---|---|---|---|
 | `PRECTOTCORR` | Lluvia | mm/día (promedio mensual) | Precipitación total (líquida y sólida) que llega a la superficie | Costa norte del Perú: aumento fuerte en eventos intensos (1982–83, 1997–98), de enero a abril, **no proporcional** al índice. Indonesia y norte de Australia: disminución, más marcada en la estación seca | Distribución asimétrica y con muchos ceros en la costa árida (Theil-Sen es preferible a la media); cambio porcentual sobre la climatología de la celda |
 | `T2M` | Temperatura del aire a 2 m | °C | Temperatura del aire sobre la superficie | Calentamiento en la costa peruana durante los eventos. Es donde más se espera que la tendencia de fondo sobreviva al quitar El Niño | **No se reporta cambio porcentual** (el cero de Celsius es arbitrario) |
-| `GWETROOT` | Humedad del suelo, zona de raíces | 0 a 1 (saturación relativa, capa 0–100 cm) | Agua disponible para las raíces; integra varios meses de lluvia | Sigue a la lluvia con meses de rezago; baja en Indonesia y norte de Australia. Suele elegir rezagos mayores | Sin sentido sobre el océano (se descarta); autocorrelación muy alta (pesa más la corrección de Hamed-Rao); acotada entre 0 y 1 |
+| `GWETROOT` | Humedad del suelo, zona de raíces | 0 a 1 (saturación relativa, capa 0–100 cm) | Agua disponible para las raíces; integra varios meses de lluvia | Sigue a la lluvia con meses de rezago; baja en Indonesia y norte de Australia. Suele elegir rezagos mayores | Sin sentido sobre el océano (se descarta); autocorrelación muy alta (pesa más la corrección por autocorrelación); acotada entre 0 y 1 |
 | `GWETTOP` | Humedad del suelo, superficie | 0 a 1 | Humedad de los primeros centímetros; responde rápido | Igual que la anterior, con menos rezago | Mismas restricciones |
 | `RH2M` | Humedad relativa a 2 m | % | Vapor de agua del aire frente al máximo posible a esa temperatura | Aumenta en la costa norte del Perú con la lluvia; si el aire se calienta sin más vapor, baja | Acotada entre 0 y 100 %; interpretar junto a `T2M` |
 
@@ -292,7 +292,7 @@ Es la herramienta **local** (con panel visual) que descarga y arma `data/`: índ
 | C9 | Rezago | `ℓ* = argmax_ℓ∈0..6 \|corr(a_t, E_{t−ℓ})\|`. Su significancia se informa como **indicativa** (elegir el máximo de 7 la infla) | `numpy.corrcoef` en bucle de 7 |
 | C10 | Quitar El Niño | Regresión **conjunta** `a_t = α + β·t + γ·E_{t−ℓ} + ε`; serie limpia `r_t = a_t − γ̂·(E_{t−ℓ} − Ē)`. γ se estima **en el mismo ajuste que β** (si se estimara solo contra el índice, la tendencia se le atribuiría a El Niño) | `numpy.column_stack` + `numpy.linalg.lstsq` |
 | C4 | Pendiente | **Theil-Sen**: mediana de las pendientes entre todos los pares de meses; se expresa **por década** (`× 120`) | `numpy.triu_indices` + `median` (no `scipy.theilslopes`) |
-| C5–C6 | Significancia | **Mann-Kendall con Hamed-Rao, 12 rezagos**; `p = 2·(1 − Φ(\|Z\|))` con `Z = (S − sgn S)/√Var′(S)`. Si `var_s` no es positiva, usa la varianza sin corregir | `pymannkendall.hamed_rao_modification_test(y, lag=12)` |
+| C5–C6 | Significancia | **Mann-Kendall con la varianza corregida por autocorrelación AR(1)**: `Var′(S) = var0·(1+ρ)/(1−ρ)`, con `var0 = n(n−1)(2n+5)/18` y `ρ` = autocorrelación de rezago 1 de los residuos de Theil-Sen, con la corrección de sesgo `ρ + (1+4ρ)/n`, acotada a `[0, RHO_MAX_AR1]`. `p = 2·(1 − Φ(\|Z\|))` con `Z = (S − sgn S)/√Var′(S)`. Reemplaza a Hamed-Rao (`VERSION_METODO = 3`): con ruido AR(1) el IC de 95 % solo cubría el 92–93 % | `numpy`, `scipy.stats.norm` (a mano; no `pymannkendall`) |
 | C7 | Intervalo coherente | `C = z₁₋α/₂·√Var′(S)`; IC 95 % = pendiente de orden `(N−C)/2` a la de orden `(N+C)/2 + 1`, sobre las N pendientes **ordenadas**, acotado a `[1, N]`. **Excluye el 0 si y solo si p < 0.05** | `numpy.sort`, `scipy.stats.norm` |
 | C11 | Vínculo con El Niño | `n_e = n·(1 − ρ₁ρ₂)/(1 + ρ₁ρ₂)`; `t = r·√((n_e−2)/(1−r²)) ~ t(n_e−2)` | `numpy.corrcoef`, `scipy.stats.t.sf` |
 | C12 | Diagnósticos | Colinealidad `\|corr(E_{t−ℓ}, t)\| > 0.3`; potencia (< 240 meses); respuesta no lineal en la costa norte del Perú | `numpy` |
@@ -306,7 +306,7 @@ Es la herramienta **local** (con panel visual) que descarga y arma `data/`: índ
 | Constante | Valor | Constante | Valor |
 |---|---|---|---|
 | `ALFA` | 0.05 | `FDR_Q` | 0.05 |
-| `REZAGO_MAX` | 6 | `LAG_HAMED_RAO` | 12 |
+| `REZAGO_MAX` | 6 | `RHO_MAX_AR1` | 0.98 |
 | `MIN_MESES` | 120 | `AVISO_POTENCIA_MESES` | 240 |
 | `MAX_HUECO` / `MAX_FALTANTE` | 2 meses / 0.10 | `ESCALA_DECADA` | 120 |
 | `UMBRAL_FASE` | 0.5 | `COLINEALIDAD_MAX` | 0.3 |
@@ -384,10 +384,10 @@ Dada una celda de origen *i*, encuentra **sola** las regiones lejanas que sufren
 
 | Prueba | Qué comprueba | Criterio |
 |---|---|---|
-| Recuperación | Series sintéticas con β, γ y ℓ conocidos | El motor los recupera **dentro de su intervalo en ≥ 95 %** de las repeticiones con ruido sin autocorrelación y **≥ 90 %** con ruido AR(1) (Hamed-Rao corrige de menos con autocorrelación: medido 92–93 %; decisión de equipo, `VERSION_METODO = 2`, que además usa max(varianza corregida, sin corregir)); el rezago correcto en ≥ 99 % (con rezago verdadero de 3 meses) |
+| Recuperación | Series sintéticas con β, γ y ℓ conocidos | El motor los recupera **dentro de su intervalo en ≥ 95 %** de las repeticiones, con ruido blanco y con ruido AR(1) (ρ = 0.3 y 0.6); el rezago correcto en ≥ 99 % (con rezago verdadero de 3 meses) |
 | Sin tendencia | Series sin tendencia real, ruido autocorrelacionado | Tasa de "significativo" **cerca de 5 %** (B3 fija la tolerancia al escribir la prueba y la deja anotada); falsos descubrimientos tras BH **< 5 %** |
 | Coherencia | En **toda** serie probada | El IC excluye el cero **si y solo si** `p < 0.05` (contradicciones: **0 %**) |
-| Falsos positivos de referencia | Índice AR(1) ρ = 0.93, 240 meses, sin tendencia | Hamed-Rao tras quitar el índice **≤ 10 %** (≈ 7.6 % en las simulaciones del equipo; el nominal es 5 %) y claramente por debajo de Hamed-Rao con la serie original (≈ 18.5 %) |
+| Falsos positivos de referencia | Índice AR(1) ρ = 0.93, 240 meses, sin tendencia | Mann-Kendall corregido tras quitar el índice **≤ 10 %** (≈ 7.6 % en las simulaciones del equipo; el nominal es 5 %) y claramente por debajo de Mann-Kendall corregido con la serie original (≈ 18.5 %) |
 | Potencia | Tendencia de 0.5 desviaciones por década | Mucho mayor sin El Niño que con la serie original (simulaciones: 99.4 % frente a 37.2 %) |
 | Correlación | Series independientes | Falsas alarmas **≈ 5 %** con tamaño efectivo (≈ 4.4 % en las simulaciones; ≈ 22 % con el p-valor ingenuo) |
 | Mismos meses | Rezago > 0 | Las dos tendencias usan los mismos meses; la serie limpia tiene `null` en los primeros ℓ |

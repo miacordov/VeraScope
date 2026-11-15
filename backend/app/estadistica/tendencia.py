@@ -2,17 +2,17 @@
 
 Implementación única: la usan la ruta `analyze`, el job de ScanMap y el preparador.
 Funciones puras: sin red, sin disco y sin FastAPI. Los umbrales salen solo de
-`constantes.py`. Prohibidos aquí (sección 2 de la guía): Mann-Kendall original,
-`scipy.stats.theilslopes` para el intervalo y `pymannkendall.seasonal_test`.
+`constantes.py`. Prohibidos aquí (sección 2 de la guía): Mann-Kendall original
+(sin corregir la autocorrelación), `scipy.stats.theilslopes` para el intervalo y
+`pymannkendall.seasonal_test`.
 """
 
 from dataclasses import dataclass
 
 import numpy as np
-import pymannkendall as mk
 from scipy.stats import norm
 
-from app.estadistica.constantes import ALFA, ESCALA_DECADA, LAG_HAMED_RAO
+from app.estadistica.constantes import ALFA, ESCALA_DECADA, RHO_MAX_AR1
 
 # El cero de Celsius es arbitrario: la temperatura nunca lleva cambio porcentual.
 _SIN_CAMBIO_PORCENTUAL = frozenset({"T2M"})
@@ -55,45 +55,69 @@ def theil_sen(y) -> tuple[np.ndarray, float]:
     return pendientes, float(np.median(pendientes))
 
 
-def mann_kendall_hr(y, lag: int = LAG_HAMED_RAO) -> tuple[float, float, float, float]:
-    """Cálculos C5–C6: Mann-Kendall con la varianza corregida de Hamed-Rao (12 rezagos).
+def rho_ar1(y, pendiente_mes: float | None = None) -> float:
+    """Autocorrelación de rezago 1 de los residuos de Theil-Sen, insumo del cálculo C5.
 
-    Devuelve `(S, Var′(S), Z, p)` con `Z = (S − sgn S)/√Var′(S)` y `p = 2·(1 − Φ(|Z|))`.
-    La varianza usada es `max(var_s de Hamed-Rao, var0)`, con la varianza sin
-    corregir `var0 = n(n−1)(2n+5)/18` (decisión L14): pymannkendall solo suma las
-    autocorrelaciones significativas y a veces achicaba la varianza, con lo que la
-    cobertura del IC caía a ~92–93 %. Así Hamed-Rao solo puede ensanchar el
-    intervalo. Si `var_s` no es finita o es ≤ 0, se usa `var0`. Este cambio de
-    método corresponde a `VERSION_METODO = 2`. Hamed-Rao solo corrige la varianza,
-    no la pendiente. Aplica a las cinco variables (anomalías, sin ciclo estacional).
+    `ρ̂` es la autocorrelación de `y − b·t` (b = pendiente de Theil-Sen por mes), con la
+    corrección de sesgo de Marriott-Pope `ρ̂ + (1 + 4ρ̂)/n`: con 120–240 meses, `ρ̂` sin
+    corregir sale bajo y el intervalo queda estrecho. Se acota a `[0, RHO_MAX_AR1]`:
+    nunca achica la varianza y no explota cerca de la raíz unitaria. Si ya se calculó
+    la pendiente, pasarla en `pendiente_mes` evita repetir Theil-Sen.
+    """
+    y = _serie(y)
+    if pendiente_mes is None:
+        _, pendiente_mes = theil_sen(y)
+    e = y - pendiente_mes * np.arange(y.size)
+    e = e - e.mean()
+    denominador = float((e * e).sum())
+    if denominador <= 0:
+        return 0.0
+    rho = float((e[:-1] * e[1:]).sum()) / denominador
+    rho = rho + (1 + 4 * rho) / y.size
+    return float(min(max(rho, 0.0), RHO_MAX_AR1))
+
+
+def mann_kendall_corregido(
+    y, pendiente_mes: float | None = None
+) -> tuple[float, float, float, float]:
+    """Cálculos C5–C6: Mann-Kendall con la varianza corregida por autocorrelación AR(1).
+
+    `S = Σ sgn(y_j − y_i)` sobre todos los pares `i < j`. La varianza sin corregir es
+    `var0 = n(n−1)(2n+5)/18` y la corregida `Var′(S) = var0·(1 + ρ)/(1 − ρ)`, con
+    `ρ = rho_ar1(y)`. Devuelve `(S, Var′(S), Z, p)` con `Z = (S − sgn S)/√Var′(S)` y
+    `p = 2·(1 − Φ(|Z|))`.
+
+    Reemplaza a Hamed-Rao de pymannkendall (`VERSION_METODO = 3`): ese solo suma las
+    autocorrelaciones "significativas" y corregía de menos con ruido AR(1) (≈ 1,63×
+    frente a ≈ 1,86× real con ρ = 0,3), así que el IC de 95 % cubría solo el 92–93 %.
+    Con esta varianza cubre el 95 % (guía §13). Corrige solo la varianza, no la
+    pendiente. Aplica a las cinco variables (anomalías, sin ciclo estacional).
     """
     y = _serie(y)
     n = y.size
-    var0 = n * (n - 1) * (2 * n + 5) / 18
-    hr = mk.hamed_rao_modification_test(y, lag=lag)
-    s = float(hr.s)
-    var_s = float(hr.var_s)
-    var_s = max(var_s, var0) if np.isfinite(var_s) and var_s > 0 else var0
+    i, j = np.triu_indices(n, 1)
+    s = float(np.sign(y[j] - y[i]).sum())
+    rho = rho_ar1(y, pendiente_mes)
+    var_s = n * (n - 1) * (2 * n + 5) / 18 * (1 + rho) / (1 - rho)
     z = (s - np.sign(s)) / np.sqrt(var_s)
     p = 2 * norm.sf(abs(z))
     return s, float(var_s), float(z), float(p)
 
 
 def tendencia(y, alfa: float = ALFA) -> ResultadoTendencia:
-    """Cálculos C4–C7: Theil-Sen, Hamed-Rao e intervalo coherente con el p-valor.
+    """Cálculos C4–C7: Theil-Sen, Mann-Kendall corregido e intervalo coherente con el p.
 
     Intervalo (cálculo C7, corrección C8): `C = z₁₋α/₂·√Var′(S)` con **la misma**
-    varianza que el p-valor, `max(Hamed-Rao, sin corregir)`: Hamed-Rao solo puede
-    ensanchar el intervalo, nunca achicarlo (decisión L14, `VERSION_METODO = 2`).
-    Va de la pendiente de orden `(N−C)/2` a la de orden
-    `(N+C)/2 + 1` (rangos redondeados y acotados a `[1, N]`) sobre las N pendientes
-    ordenadas. Así excluye el 0 si y solo si `p < alfa`. Pendiente e intervalo se
-    expresan por década (`× ESCALA_DECADA`); el intercepto es `mediana(y − b·t)` con
-    `t = 0` en el primer mes analizado. Aplica a las cinco variables.
+    varianza corregida que el p-valor (`mann_kendall_corregido`). Va de la pendiente
+    de orden `(N−C)/2` a la de orden `(N+C)/2 + 1` (rangos redondeados y acotados a
+    `[1, N]`) sobre las N pendientes ordenadas. Así excluye el 0 si y solo si
+    `p < alfa`. Pendiente e intervalo se expresan por década (`× ESCALA_DECADA`); el
+    intercepto es `mediana(y − b·t)` con `t = 0` en el primer mes analizado. Aplica a
+    las cinco variables.
     """
     y = _serie(y)
     pendientes, mediana = theil_sen(y)
-    _, var_s, _, p = mann_kendall_hr(y)
+    _, var_s, _, p = mann_kendall_corregido(y, mediana)
     total = pendientes.size
     c = norm.ppf(1 - alfa / 2) * np.sqrt(var_s)
     bajo = pendientes[int(max(round((total - c) / 2) - 1, 0))]

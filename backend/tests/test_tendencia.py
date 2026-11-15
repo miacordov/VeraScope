@@ -6,12 +6,12 @@ son resultados de la plataforma. Tolerancias fijadas por B3 al escribir la prueb
 - Sin tendencia (ruido AR(1) ρ = 0.3, 480 meses, 300 repeticiones): tasa de
   "significativo" entre 1 % y 10 % (nominal 5 %; ±~4 desviaciones binomiales).
 - Falsos positivos de referencia (índice AR(1) ρ = 0.93, 240 meses, sin tendencia,
-  300 repeticiones): Hamed-Rao tras quitar el índice ≤ 10 % y por debajo de la
+  300 repeticiones): Mann-Kendall corregido tras quitar el índice ≤ 10 % y por debajo de la
   serie original. El índice se quita aquí con el índice verdadero (rezago 0) por
   regresión conjunta, solo como andamio de la prueba: la prueba con enso.py es de
   quien escribe enso.py.
-- Recuperación (β = 0.5 por década, ruido AR(1) ρ = 0.3, 300 repeticiones):
-  el IC contiene β en ≥ 90 % de las repeticiones (decisión L15).
+- Recuperación (β = 0.5 por década, ruido blanco y AR(1) ρ = 0.3 y 0.6, 300
+  repeticiones): el IC contiene β en ≥ 95 % de las repeticiones.
 - Potencia (β = 0.5 desviaciones por década, 480 meses, 200 repeticiones): ≥ 80 %.
 """
 
@@ -20,14 +20,14 @@ import time
 import numpy as np
 import pytest
 
-from app.estadistica import tendencia as modulo
-from app.estadistica.constantes import ALFA, ESCALA_DECADA, LAG_HAMED_RAO
+from app.estadistica.constantes import ALFA, ESCALA_DECADA, RHO_MAX_AR1
 from app.estadistica.tendencia import (
     ResultadoTendencia,
     cambio_pct_decada,
     cambio_total,
-    mann_kendall_hr,
+    mann_kendall_corregido,
     recta,
+    rho_ar1,
     tendencia,
     theil_sen,
 )
@@ -64,79 +64,58 @@ def test_theil_sen_recta_exacta():
     assert mediana == pytest.approx(0.1)
 
 
-# ------------------------------------------------------- C5–C6 Hamed-Rao
+# ------------------------------------------- C5–C6 Mann-Kendall con AR(1)
 
 
 def _var0(n):
     return n * (n - 1) * (2 * n + 5) / 18
 
 
-def test_mann_kendall_hr_usa_doce_rezagos_y_formula_de_z():
-    y = _ruido_ar1(7, n=240) + 0.02 * np.arange(240)
-    s, var_s, z, p = mann_kendall_hr(y)
-    import pymannkendall as mk
+def _rho_esperado(y):
+    """ρ₁ de los residuos de Theil-Sen con la corrección de sesgo de Marriott-Pope."""
+    _, b = theil_sen(y)
+    e = y - b * np.arange(y.size)
+    e = e - e.mean()
+    rho = (e[:-1] * e[1:]).sum() / (e * e).sum()
+    rho = rho + (1 + 4 * rho) / y.size
+    return min(max(rho, 0.0), RHO_MAX_AR1)
 
-    ref = mk.hamed_rao_modification_test(y, lag=LAG_HAMED_RAO)
-    assert s == pytest.approx(ref.s)
-    assert var_s == pytest.approx(max(ref.var_s, _var0(240)))
+
+def test_mann_kendall_s_y_varianza_ar1_a_mano():
+    y = _ruido_ar1(7, n=240) + 0.02 * np.arange(240)
+    s, var_s, z, p = mann_kendall_corregido(y)
+    i, j = np.triu_indices(240, 1)
+    assert s == pytest.approx(np.sign(y[j] - y[i]).sum())
+    rho = _rho_esperado(y)
+    assert var_s == pytest.approx(_var0(240) * (1 + rho) / (1 - rho))
     assert z == pytest.approx((s - np.sign(s)) / np.sqrt(var_s))
     from scipy.stats import norm
 
     assert p == pytest.approx(2 * norm.sf(abs(z)))
 
 
-def test_varianza_usada_nunca_menor_que_la_sin_corregir():
-    """Decisión L14: Hamed-Rao solo puede ensanchar el intervalo, nunca achicarlo."""
-    import pymannkendall as mk
+def test_rho_ar1_corrige_el_sesgo_y_se_acota():
+    y = _ruido_ar1(8, n=240, rho=0.5)
+    assert rho_ar1(y) == pytest.approx(_rho_esperado(y))
+    onda_lenta = np.sin(2 * np.pi * np.arange(240) / 400)  # ρ̂ ≈ 1 tras quitar la recta
+    assert rho_ar1(onda_lenta) == pytest.approx(RHO_MAX_AR1)
 
-    achicaba = 0
+
+def test_varianza_usada_nunca_menor_que_la_sin_corregir():
+    """Con autocorrelación negativa o nula, ρ se acota en 0: la corrección nunca achica."""
+    alterna = np.array([(-1.0) ** k for k in range(200)]) + 0.001 * np.arange(200)
+    assert rho_ar1(alterna) == 0.0
     for i in range(60):
         y = _ruido_ar1(_BASE_SIN_TENDENCIA + i, n=240, rho=0.0)
-        var0 = _var0(y.size)
-        achicaba += mk.hamed_rao_modification_test(y, lag=LAG_HAMED_RAO).var_s < var0
-        _, var_s, _, _ = mann_kendall_hr(y)
-        assert var_s >= var0
-        assert tendencia(y).var_s >= var0
-    assert achicaba > 0  # el lote incluye casos donde Hamed-Rao achicaba la varianza
+        _, var_s, _, _ = mann_kendall_corregido(y)
+        assert var_s >= _var0(y.size)
+        assert tendencia(y).var_s >= _var0(y.size)
 
 
-def test_varianza_corregida_mayor_se_conserva(monkeypatch):
-    y = _ruido_ar1(12, n=200)
-    import pymannkendall as mk
-
-    real = mk.hamed_rao_modification_test(y, lag=LAG_HAMED_RAO)
-    grande = 3.0 * _var0(200)
-
-    class Falso:
-        s = real.s
-        var_s = grande
-
-    monkeypatch.setattr(modulo.mk, "hamed_rao_modification_test", lambda *a, **k: Falso())
-    _, var_s, z, _ = mann_kendall_hr(y)
-    assert var_s == pytest.approx(grande)
-    assert z == pytest.approx((real.s - np.sign(real.s)) / np.sqrt(grande))
-
-
-@pytest.mark.parametrize("var_mala", [0.0, -5.0, float("nan"), float("inf")])
-def test_var_s_no_positiva_usa_varianza_sin_corregir(monkeypatch, var_mala):
+def test_pendiente_dada_evita_recalcular_theil_sen():
     y = _ruido_ar1(11, n=200) + 0.01 * np.arange(200)
-    import pymannkendall as mk
-
-    real = mk.hamed_rao_modification_test(y, lag=LAG_HAMED_RAO)
-
-    class Falso:
-        s = real.s
-        var_s = var_mala
-
-    monkeypatch.setattr(modulo.mk, "hamed_rao_modification_test", lambda *a, **k: Falso())
-    n = y.size
-    var0 = n * (n - 1) * (2 * n + 5) / 18
-    s, var_s, z, p = mann_kendall_hr(y)
-    assert var_s == pytest.approx(var0)
-    assert z == pytest.approx((s - np.sign(s)) / np.sqrt(var0))
-    res = tendencia(y)
-    assert res.var_s == pytest.approx(var0)
-    assert np.isfinite(res.p) and np.isfinite(res.ic_bajo) and np.isfinite(res.ic_alto)
+    _, b = theil_sen(y)
+    assert mann_kendall_corregido(y, pendiente_mes=b) == pytest.approx(mann_kendall_corregido(y))
 
 
 # ------------------------------------------------------------ C7 y resultado
@@ -161,7 +140,7 @@ def test_ic_por_rangos_con_la_misma_varianza_que_el_p():
     from scipy.stats import norm
 
     pendientes, _ = theil_sen(y)
-    _, var_s, _, _ = mann_kendall_hr(y)
+    _, var_s, _, _ = mann_kendall_corregido(y)
     N = pendientes.size
     C = norm.ppf(1 - ALFA / 2) * np.sqrt(var_s)
     bajo = pendientes[int(max(round((N - C) / 2) - 1, 0))]
@@ -187,22 +166,28 @@ def test_coherencia_ic_y_p_sin_contradicciones():
     assert contradicciones == []
 
 
-def test_recuperacion_ic_contiene_pendiente_verdadera():
-    """El IC contiene la pendiente verdadera en ≥ 90 % de las repeticiones (decisión L15).
+@pytest.mark.parametrize("rho", [0.0, 0.3, 0.6])
+def test_recuperacion_ic_contiene_pendiente_verdadera(rho):
+    """El IC contiene la pendiente verdadera en ≥ 95 % de las repeticiones (guía §13).
 
-    Con ruido AR(1) ρ = 0,3–0,6, Hamed-Rao corrige de menos: su varianza es ≈ 1,63× la
-    sin corregir, frente a ≈ 1,86× de la varianza real de S. La cobertura medida es
-    92–93 % con 1000 repeticiones; con ruido blanco, 95,1 %. Por eso el umbral con
-    ruido AR(1) es 90 % y no el 95 % nominal. El método sigue siendo max(var_s, var0).
+    Con ruido blanco y con ruido AR(1) ρ = 0,3 y 0,6, 480 meses, 300 repeticiones.
+    Con Hamed-Rao de pymannkendall la cobertura con AR(1) se quedaba en 92–93 %;
+    la varianza AR(1) con corrección de sesgo (VERSION_METODO = 3) la lleva al 95 %.
     """
     beta = 0.5
     aciertos = 0
     total = 300
     for i in range(total):
-        s = serie(generador(_BASE_RECUPERACION + i), n=480, beta_dec=beta, amplitud_estacional=0.0)
+        s = serie(
+            generador(_BASE_RECUPERACION + i),
+            n=480,
+            beta_dec=beta,
+            rho_ruido=rho,
+            amplitud_estacional=0.0,
+        )
         res = tendencia(s.valores)
         aciertos += res.ic_bajo <= beta <= res.ic_alto
-    assert aciertos / total >= 0.90
+    assert aciertos / total >= 0.95
 
 
 def test_sin_tendencia_tasa_cercana_a_cinco_por_ciento():
