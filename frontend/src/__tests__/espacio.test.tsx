@@ -24,7 +24,7 @@ const fetchSimulado = jest.fn((url: string) => {
 
 let cliente = crearQueryClient();
 
-function montar() {
+async function montar() {
   cliente = crearQueryClient();
   return render(
     <QueryClientProvider client={cliente}>
@@ -47,15 +47,15 @@ afterEach(() => cliente.clear());
 
 describe('espacio de trabajo con la API simulada', () => {
   it('muestra la banda "Datos simulados" y no pide analyze sin celda', async () => {
-    montar();
+    await montar();
     expect(await screen.findByText('Datos simulados')).toBeOnTheScreen();
     expect(screen.getByText(/Toca el mapa para elegir un lugar/)).toBeOnTheScreen();
     expect(llamadasA('/analyze')).toBe(0);
   });
 
   it('el ejemplo simulado pide analyze una vez y muestra veredicto y fuente', async () => {
-    montar();
-    fireEvent.press(await screen.findByRole('button', { name: /Ver el ejemplo simulado/ }));
+    await montar();
+    await fireEvent.press(await screen.findByRole('button', { name: /Ver el ejemplo simulado/ }));
 
     expect(await screen.findByText(TEXTOS_VEREDICTO[analyze.veredicto.estado].titulo)).toBeOnTheScreen();
     expect(screen.getByText(lineaFuente(analyze))).toBeOnTheScreen();
@@ -67,8 +67,8 @@ describe('espacio de trabajo con la API simulada', () => {
   });
 
   it('el interruptor de El Niño no hace peticiones', async () => {
-    montar();
-    fireEvent.press(await screen.findByRole('button', { name: /Ver el ejemplo simulado/ }));
+    await montar();
+    await fireEvent.press(await screen.findByRole('button', { name: /Ver el ejemplo simulado/ }));
     await screen.findByText(TEXTOS_VEREDICTO[analyze.veredicto.estado].titulo);
     const antes = fetchSimulado.mock.calls.length;
     for (let i = 0; i < 10; i++) useEstado.getState().alternarElNino();

@@ -41,5 +41,5 @@ jobs:
         run: npm run test -- --ci
       - name: Lint
         run: npm run lint
-      - name: Versiones del SDK 57
+      - name: Versiones del SDK 58
         run: npx expo install --check
