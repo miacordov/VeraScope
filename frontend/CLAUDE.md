@@ -102,6 +102,7 @@ El plan original tenía errores que un jurado técnico habría detectado. Estas 
 ```bash
 cd frontend
 npm ci                          # instala exactamente lo del lockfile
+npm run dev                     # TODO EN UNO: API simulada (crea backend/.venv la 1.ª vez) + IP local para Expo Go + expo start
 npx expo start                  # menú: i (simulador iOS), a (Android), w (web); QR para Expo Go en el teléfono
 npx expo start --web            # solo web, normalmente en http://localhost:8081
 npx expo export -p web          # sitio estático en dist/  (esto corre el CI)
@@ -126,6 +127,7 @@ eas build -p android --profile preview    # APK instalable (hace falta cuenta de
 - **En el teléfono, `localhost` no es tu laptop.** Con Expo Go usa la **IP de la laptop** en la red local (`http://192.168.x.x:8000`) o la URL desplegada. En el emulador de Android la laptop es `http://10.0.2.2:8000`. En el simulador de iOS, `localhost` sí funciona.
 - **HTTPS:** las apps nativas **bloquean por defecto las conexiones sin cifrar**. En desarrollo con Expo Go una URL `http://` suele funcionar; en el **APK y en iOS de producción se exige `https://`**. La API se publica con HTTPS desde la hora 6 (backend). Nunca dejes una URL `http://` en un build de entrega.
 - Para desarrollar sin esperar al motor real, levanta el backend con `VERASCOPE_SIMULADO=1` (o usa la URL simulada desplegada en la hora 6).
+- **`npm run dev` (desde `frontend/`) hace todo eso solo:** prepara `backend/.venv` con Python ≥ 3.11 (uv si está; solo la primera vez o si cambia `pyproject.toml`), arranca la API simulada en `0.0.0.0:8000` con CORS para la web, detecta la IP de la laptop, se la pasa a la app como `EXPO_PUBLIC_API_URL` y abre `expo start` (si el 8081 está ocupado usa el siguiente libre). Ctrl+C apaga los dos. Si ya defines `EXPO_PUBLIC_API_URL` (p. ej. la URL https desplegada), no levanta la API local. Solo ejecuta el backend: no modifica archivos versionados de `backend/`.
 
 **Entrega (tres salidas):**
 
