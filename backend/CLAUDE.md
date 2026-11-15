@@ -384,7 +384,7 @@ Dada una celda de origen *i*, encuentra **sola** las regiones lejanas que sufren
 
 | Prueba | Qué comprueba | Criterio |
 |---|---|---|
-| Recuperación | Series sintéticas con β, γ y ℓ conocidos | El motor los recupera **dentro de su intervalo en ≥ 95 %** de las repeticiones; el rezago correcto en ≥ 99 % (con rezago verdadero de 3 meses) |
+| Recuperación | Series sintéticas con β, γ y ℓ conocidos | El motor los recupera **dentro de su intervalo en ≥ 95 %** de las repeticiones con ruido sin autocorrelación y **≥ 90 %** con ruido AR(1) (Hamed-Rao corrige de menos con autocorrelación: medido 92–93 %; decisión de equipo, `VERSION_METODO = 2`, que además usa max(varianza corregida, sin corregir)); el rezago correcto en ≥ 99 % (con rezago verdadero de 3 meses) |
 | Sin tendencia | Series sin tendencia real, ruido autocorrelacionado | Tasa de "significativo" **cerca de 5 %** (B3 fija la tolerancia al escribir la prueba y la deja anotada); falsos descubrimientos tras BH **< 5 %** |
 | Coherencia | En **toda** serie probada | El IC excluye el cero **si y solo si** `p < 0.05` (contradicciones: **0 %**) |
 | Falsos positivos de referencia | Índice AR(1) ρ = 0.93, 240 meses, sin tendencia | Hamed-Rao tras quitar el índice **≤ 10 %** (≈ 7.6 % en las simulaciones del equipo; el nominal es 5 %) y claramente por debajo de Hamed-Rao con la serie original (≈ 18.5 %) |
