@@ -32,6 +32,12 @@ export function conUnidad(valor: number | null | undefined, unidad: string, deci
   return texto === SIN_DATO ? texto : `${texto} ${unidad}`;
 }
 
+/** p-valor tal como llega: "p = 0.004" o, si es muy pequeño, "p < 0.001". Solo formato. */
+export function pValor(p: number | null | undefined): string {
+  if (p === null || p === undefined || !Number.isFinite(p)) return `p: ${SIN_DATO}`;
+  return p < 0.001 ? `p < ${numero(0.001, 3)}` : `p = ${numero(p, 3)}`;
+}
+
 /** Coordenadas de una celda: "−5.0°, −80.5°" (lon en −180..180, como llega del servidor). */
 export function celda({ lat, lon }: { lat: number; lon: number }): string {
   return `${numero(lat, 1)}°, ${numero(lon, 1)}°`;

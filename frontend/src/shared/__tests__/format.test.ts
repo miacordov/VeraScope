@@ -1,5 +1,5 @@
 import { analyze } from '../api/__fixtures__';
-import { celda, conUnidad, lineaFuente, numero, periodo } from '../format';
+import { celda, conUnidad, lineaFuente, numero, periodo, pValor } from '../format';
 
 describe('format (es-PE)', () => {
   it('usa punto decimal, separador de miles y signo menos tipográfico', () => {
@@ -16,6 +16,13 @@ describe('format (es-PE)', () => {
   it('formatea celda y periodo', () => {
     expect(celda({ lat: -5, lon: -80.5 })).toBe('−5.0°, −80.5°');
     expect(periodo('1981-01', '1990-12')).toBe('1981–1990');
+  });
+
+  it('formatea el p-valor sin inventarlo', () => {
+    expect(pValor(0.004)).toBe('p = 0.004');
+    expect(pValor(1)).toBe('p = 1.000');
+    expect(pValor(1e-9)).toBe('p < 0.001');
+    expect(pValor(null)).toBe('p: sin dato');
   });
 
   it('arma la línea de fuente solo con datos de la respuesta', () => {
