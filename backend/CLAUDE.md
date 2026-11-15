@@ -230,6 +230,7 @@ El **cambio porcentual por década** solo se informa en variables con cero natur
 backend/data/
 ├── casillero.sqlite       # nivel 1: todas las series (V1–V13)
 ├── resultados.parquet     # ScanMap: una fila por celda y variable
+├── escaneo.json           # estado del escaneo (en_curso | completo); lo escribe jobs/scanmap.py, lo lee app/datos/escaneo.py
 ├── tabla/                 # matrices celdas × meses (float32, valores crudos con NaN)
 │   ├── PRECTOTCORR.npy  T2M.npy  GWETROOT.npy  GWETTOP.npy  RH2M.npy
 │   ├── ONI.npy  NINO12.npy  CO2.npy
