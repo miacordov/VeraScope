@@ -473,6 +473,7 @@ Las simulaciones del informe sirven para **elegir** el método; no dicen nada so
 - `veredicto.origen`: `"escaneo"` (celda de la rejilla, ventana por defecto, índice ONI: se lee del escaneo, con p corregido) · `"individual"` (todo lo demás: se rotula "análisis individual")
 - `linea.tipo`: `"opuesto"` (roja, continua) · `"mismo"` (punteada)
 - `aviso.codigo`: `"colinealidad"` · `"potencia_baja"` · `"respuesta_no_lineal"` · `"nino_costero"` · `"fuera_de_rejilla"` · `"muestra_efectiva_baja"`
+  - `nino_costero`: solo con índice ONI, en la costa norte del Perú, si Niño 1+2 tiene `p < ALFA` y |r| mayor que el ONI sobre los mismos meses (`estadistica/costero.py`). No cambia el veredicto.
 - `error.codigo`: `"ventana_corta"` (422) · `"fuera_de_rango"` (422) · `"sin_datos_tierra"` (422; humedad del suelo sobre el mar) · `"power_lento"` (504, trae `celda_cercana`) · `"power_error"` (502) · `"escaneo_en_curso"` (503: `teleconnect` y `scan/layer` mientras no haya resultados del escaneo; `scan/feed` responde 200 con `escaneo.estado = "en_curso"`)
 
 ### `analyze` (forma de la respuesta)
@@ -672,7 +673,7 @@ Los archivos de contratos y el estado global son **compartidos**: los edita su d
 | Humedad del suelo sobre el mar | **Verificado:** en el océano `GWETROOT` llega en `-999`, pero `GWETTOP` llega en `1.0` constante (no `-999`). La regla 5 de C2 (desviación nula) es la que la descarta, no la regla 3 | B2 |
 | `PRECTOTCORR` y mes `13` | **Verificado (14-nov-2026):** `PRECTOTCORR` llega en `mm/day` y las llaves incluyen el mes `13` (promedio anual), que el cliente ignora | B2 |
 | Prueba rápida del panel del preparador | Correrla y anotar el resultado en `backend/docs/comprobaciones-b2.md` | B2 |
-| Niño 1+2 para Piura | Decidir si entra como alternativa al ONI | B3, hora 20 |
+| Niño 1+2 para Piura | **Decidido (15-nov-2026):** el ONI sigue siendo el índice principal (escaneo, veredicto, líneas). Niño 1+2 entra como **complementario**: en la costa norte del Perú (`COSTA_NINO12_LAT` × `COSTA_NINO12_LON`), si su vínculo es significativo y más fuerte que el del ONI, `analyze` emite el aviso `nino_costero` (`estadistica/costero.py`) y ofrece repetir con `indice=NINO12`. Con datos reales, Piura: lluvia r = 0.25 con Niño 1+2 frente a 0.15 con ONI. Falta conectarlo en `analyze` (B1) | B3 |
 | CO₂ de Mauna Loa | Solo si sobra tiempo, como franja de contexto | F2, hora 30 |
 | Escorrentía de GLDAS (×8) y capa NDVI de AppEEARS | Confirmar convenciones con los servicios reales (solo afectan al preparador de datos y a fichas informativas de la demo 1) | Quien corra el preparador |
 | Referencias bibliográficas | Verificarlas (se citaron de memoria) | Todos, antes de la entrega |
