@@ -3,6 +3,8 @@ import { useShallow } from 'zustand/react/shallow';
 
 import { parametrosAnalyze } from '@/estado/seleccion';
 import { useEstado } from '@/estado/store';
+import { InterruptorElNino } from '@/features/enso-toggle/InterruptorElNino';
+import { PanelSeries } from '@/features/series-charts/PanelSeries';
 import { esErrorApi } from '@/shared/api/cliente';
 import { useAnalyze, useSalud } from '@/shared/api/consultas';
 import { EtiquetaFuente } from '@/shared/components/EtiquetaFuente';
@@ -63,13 +65,20 @@ export default function Espacio() {
       ) : analisis.isError ? (
         <ErrorConReintento error={analisis.error} reintentar={() => analisis.refetch()} />
       ) : (
-        <Tarjeta accessibilityLiveRegion="polite">
-          <Texto variante="etiqueta" suave>
-            {analisis.data.nombre} · {analisis.data.unidad}
-          </Texto>
-          <InsigniaVeredicto veredicto={analisis.data.veredicto} />
-          <EtiquetaFuente analisis={analisis.data} />
-        </Tarjeta>
+        <>
+          <Tarjeta accessibilityLiveRegion="polite">
+            <Texto variante="etiqueta" suave>
+              {analisis.data.nombre} · {analisis.data.unidad}
+            </Texto>
+            <InsigniaVeredicto veredicto={analisis.data.veredicto} />
+            <EtiquetaFuente analisis={analisis.data} />
+          </Tarjeta>
+          {/* Hueco de F2 (#10): interruptor y panel Causa · Consecuencia · Realidad. */}
+          <Tarjeta>
+            <InterruptorElNino rezagoMeses={analisis.data.vinculo_el_nino.rezago_meses} />
+          </Tarjeta>
+          <PanelSeries analisis={analisis.data} />
+        </>
       )}
     </ScrollView>
   );
