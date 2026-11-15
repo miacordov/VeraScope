@@ -13,11 +13,17 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const simulado = path.join(raiz, 'backend', 'app', 'catalogo', 'simulado');
+const catalogo = path.join(raiz, 'backend', 'app', 'catalogo');
+const simulado = path.join(catalogo, 'simulado');
 const base = `${(process.argv[2] ?? 'http://localhost:8000').replace(/\/+$/, '')}/api/v1`;
 const ORIGEN_WEB = 'http://localhost:8081';
 
-const json = (archivo) => JSON.parse(fs.readFileSync(path.join(simulado, archivo), 'utf8'));
+// variables.json y glosario.json viven en catalogo/ (los sirve la API en los dos modos); el resto, en simulado/.
+const json = (archivo) => {
+  const canonico = path.join(catalogo, archivo);
+  const origen = fs.existsSync(canonico) ? canonico : path.join(simulado, archivo);
+  return JSON.parse(fs.readFileSync(origen, 'utf8'));
+};
 const analyze = json('analyze.json');
 const periodos = json('compare-periods.json');
 const celda = { lat: analyze.celda.lat, lon: analyze.celda.lon };

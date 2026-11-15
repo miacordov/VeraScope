@@ -96,6 +96,31 @@ verascope-datos demos         # solo el paso 5
 verascope-datos empaquetar    # solo el paso 6
 ```
 
+### Exportar el catálogo
+
+`variables.py` es la única fuente de los metadatos. Sin opciones, `variables` mantiene
+la tabla de las 13 variables. `verascope-datos variables --ayuda` describe ambos formatos:
+
+- `--json ARCHIVO`: objeto público con `variables` (las 5 en vivo) e `indices`
+  (ONI y Niño 1+2), con id, nombre, definición, unidad y fuente; no incluye V8–V13.
+- `--json-completo ARCHIVO`: lista técnica completa V1–V13, con código, capa,
+  año inicial, nota y definición. Esta opción conserva la exportación que antes hacía `--json`.
+
+Para regenerar el catálogo de la API, desde `backend/`:
+
+```bash
+verascope-datos variables --json app/catalogo/variables.json
+verascope-datos variables --json-completo catalogo-completo.json
+```
+
+No edites a mano el JSON público: cambia los metadatos en `variables.py` y regénéralo.
+Ambas opciones aceptan `-` para escribir solo JSON en la salida estándar y son excluyentes:
+
+```bash
+verascope-datos variables --json -
+verascope-datos variables --json-completo -
+```
+
 Opciones generales: `--datos CARPETA` (por defecto `$VERASCOPE_DATOS`; si no, `backend/data` del repo VeraScope; fuera del repo, `./datos`) y `--fin AÑO` (por defecto, el año
 pasado: el último año completo de MERRA-2).
 

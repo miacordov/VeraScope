@@ -2,7 +2,10 @@
 import datetime as dt
 import hashlib
 import json
+import os
+import shutil
 import tarfile
+import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -62,14 +65,50 @@ def empaquetar(rutas):
     return nombre, len(piezas)
 
 
+def _restos_del_casillero(rutas):
+    """`-wal` y `-shm` de SQLite: existen mientras una API tiene abierto el casillero o si se cortó de golpe."""
+    return [rutas.casillero.with_name(rutas.casillero.name + s) for s in ("-wal", "-shm")]
+
+
+def casillero_en_uso(rutas) -> bool:
+    """Hay señales de una API corriendo (o cortada) sobre el casillero."""
+    return any(p.exists() for p in _restos_del_casillero(rutas))
+
+
 def instalar(paquete: Path, rutas):
-    with tarfile.open(paquete, "r:gz") as tar:
-        for m in tar.getmembers():
-            if m.name.startswith("/") or ".." in Path(m.name).parts:
-                raise RuntimeError(f"Ruta no permitida en el paquete: {m.name}")
-        tar.extractall(rutas.base, filter="data")
-    mf = json.loads((rutas.base / "manifiesto.json").read_text())
-    malos = [n for n, h in mf["archivos"].items() if _sha(rutas.base / n) != h]
-    if malos:
-        raise RuntimeError(f"Archivos dañados en el paquete: {malos}")
+    """Instala el paquete en `rutas.base` sin dejar datos a medias.
+
+    1. Descomprime en una carpeta temporal dentro de `rutas.base` y verifica el SHA-256 de cada archivo ahí:
+       si el paquete está dañado, lo instalado no se toca.
+    2. Reemplaza cada archivo con `os.replace` (un archivo nuevo, no una escritura encima del viejo). Una API que
+       tenga abierto el casillero sigue con su copia vieja y, al apagarse, ya no puede volcar su `-wal` sobre el
+       casillero nuevo (eso lo dañaba).
+    3. Borra el `-wal` y el `-shm` del casillero viejo, para que SQLite no los aplique al nuevo.
+    """
+    rutas.base.mkdir(parents=True, exist_ok=True)
+    temporal = Path(tempfile.mkdtemp(prefix=".instalando-", dir=rutas.base))
+    try:
+        with tarfile.open(paquete, "r:gz") as tar:
+            for m in tar.getmembers():
+                if m.name.startswith("/") or ".." in Path(m.name).parts:
+                    raise RuntimeError(f"Ruta no permitida en el paquete: {m.name}")
+            tar.extractall(temporal, filter="data")
+        mf = json.loads((temporal / "manifiesto.json").read_text())
+        malos = [n for n, h in mf["archivos"].items() if _sha(temporal / n) != h]
+        if malos:
+            raise RuntimeError(f"Archivos dañados en el paquete: {malos}")
+        try:
+            for nombre in [*mf["archivos"], "manifiesto.json"]:
+                destino = rutas.base / nombre
+                destino.parent.mkdir(parents=True, exist_ok=True)
+                os.replace(temporal / nombre, destino)
+        except PermissionError as error:  # Windows no reemplaza un archivo que otro programa tiene abierto
+            raise RuntimeError(
+                "No se pudo reemplazar un archivo de datos porque está en uso. "
+                "Apaga la API (o `npm run dev`) y vuelve a instalar."
+            ) from error
+        for resto in _restos_del_casillero(rutas):
+            resto.unlink(missing_ok=True)
+    finally:
+        shutil.rmtree(temporal, ignore_errors=True)
     return mf

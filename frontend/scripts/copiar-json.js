@@ -57,10 +57,16 @@ function identificador(nombre) {
 }
 
 function copiarFixtures() {
-  const origen = path.join(backend, 'app', 'catalogo', 'simulado');
+  const origenSimulado = path.join(backend, 'app', 'catalogo', 'simulado');
+  const origenCanonico = path.join(backend, 'app', 'catalogo');
   const destino = path.join(raiz, 'src', 'shared', 'api', '__fixtures__');
-  const archivos = jsonDe(origen);
-  if (archivos.length === 0) throw new Error(`No se encontraron JSON simulados en ${origen}.`);
+  // Fixtures simulados + canónicos (variables.json y glosario.json viven en catalogo/)
+  const archivosSimulados = jsonDe(origenSimulado);
+  const archivosCanonicosExtra = ['variables.json', 'glosario.json'].filter((f) =>
+    fs.existsSync(path.join(origenCanonico, f)),
+  );
+  const archivos = [...archivosSimulados, ...archivosCanonicosExtra];
+  if (archivos.length === 0) throw new Error(`No se encontraron JSON simulados en ${origenSimulado}.`);
   fs.rmSync(destino, { recursive: true, force: true });
   fs.mkdirSync(destino, { recursive: true });
 
@@ -69,9 +75,12 @@ function copiarFixtures() {
     const nombre = f.replace(/\.json$/, '');
     const tipo = TIPO_POR_ARCHIVO[nombre];
     if (!tipo) throw new Error(`No sé qué tipo del contrato corresponde a ${f}. Agrégalo a TIPO_POR_ARCHIVO.`);
-    const datos = JSON.parse(fs.readFileSync(path.join(origen, f), 'utf8'));
+    const rutaArchivo = archivosCanonicosExtra.includes(f)
+      ? path.join(origenCanonico, f)
+      : path.join(origenSimulado, f);
+    const datos = JSON.parse(fs.readFileSync(rutaArchivo, 'utf8'));
     const contenido = [
-      `// Generado por \`npm run fixtures:copiar\` desde backend/app/catalogo/simulado/${f}. No editar a mano.`,
+      `// Generado por \`npm run fixtures:copiar\` desde backend/app/catalogo/${archivosCanonicosExtra.includes(f) ? '' : 'simulado/'}${f}. No editar a mano.`,
       `import type { ${tipo} } from '../tipos';`,
       '',
       `const fixture: ${tipo} = ${JSON.stringify(datos, null, 2)};`,
