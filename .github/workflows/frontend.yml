@@ -1,0 +1,45 @@
+name: Frontend
+
+on:
+  push:
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend.yml"
+  pull_request:
+    paths:
+      - "frontend/**"
+      # La prueba de fixtures compara con los JSON simulados del backend.
+      - "backend/app/catalogo/simulado/**"
+      - ".github/workflows/frontend.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  comprobar:
+    name: Tipos, pruebas, lint y exportación web
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Instalar (exactamente lo del lockfile)
+        run: npm ci
+      - name: Exportar web (también genera expo-env.d.ts y los tipos de Expo Router)
+        run: npx expo export -p web
+      - name: Tipos
+        run: npx tsc --noEmit
+      - name: Pruebas sin red
+        run: npm run test -- --ci
+      - name: Lint
+        run: npm run lint
+      - name: Versiones del SDK 58
+        run: npx expo install --check
