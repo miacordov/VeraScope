@@ -1,0 +1,62 @@
+// Generado por `npm run fixtures:copiar` desde backend/app/catalogo/simulado/efecto-espejo.json. No editar a mano.
+import type { DemoRespuesta } from '../tipos';
+
+const fixture: DemoRespuesta = {
+  "id": "efecto-espejo",
+  "titulo": "El efecto espejo de El Niño (simulado)",
+  "variable": "PRECTOTCORR",
+  "celda": {
+    "lat": -5,
+    "lon": -80.5
+  },
+  "pasos": [
+    {
+      "n": 1,
+      "texto": "Este es un ejemplo simulado de Piura; no son mediciones reales.",
+      "acciones": [
+        {
+          "tipo": "seleccionar_variable",
+          "variable": "PRECTOTCORR"
+        },
+        {
+          "tipo": "seleccionar_celda",
+          "lat": -5,
+          "lon": -80.5
+        },
+        {
+          "tipo": "quitar_el_nino",
+          "valor": false
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "texto": "En este ejemplo, la lluvia en Piura y la sequía en el norte de Australia ocurren a la vez; no significa que un lugar cause lo que sucede en el otro.",
+      "acciones": [
+        {
+          "tipo": "ir_al_mes",
+          "fecha": "1990-01"
+        },
+        {
+          "tipo": "reproducir"
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "texto": "Observa el destino simulado y vuelve a comparar con Piura.",
+      "acciones": [
+        {
+          "tipo": "detener"
+        },
+        {
+          "tipo": "ir_a_destino",
+          "lat": -18,
+          "lon": 142
+        }
+      ]
+    }
+  ]
+};
+
+export default fixture;
