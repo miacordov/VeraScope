@@ -118,6 +118,8 @@ Para la app con datos reales, con esa API corriendo: `cd frontend && EXPO_PUBLIC
 (sin esa variable, `npm run dev` levanta la API **simulada**).
 
 - Lo instalado en `backend/data/` no se sube (está en `.gitignore`): la API escribe ahí su caché.
+- Si la API (o `npm run dev`) estaba corriendo al instalar, `instalar` lo avisa: reiníciala para que lea los datos nuevos.
+  Instalar ya no daña el casillero aunque la API lo tenga abierto, y un paquete dañado no toca lo instalado.
 - Una celda que no está en el paquete se pide a NASA POWER en vivo (hace falta internet) y queda en tu caché.
 - Cuando haya datos nuevos, llega otro `.tar.gz` con el `pull`: vuelve a correr `instalar` con ese archivo.
 

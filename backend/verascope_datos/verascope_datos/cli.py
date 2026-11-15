@@ -256,10 +256,14 @@ def cmd_empaquetar(a, r):
 
 
 def cmd_instalar(a, r):
-    from .paquete import instalar
+    from .paquete import casillero_en_uso, instalar
+    en_uso = casillero_en_uso(r)
     mf = instalar(Path(a.paquete), r)
     con.print(f"[green]✔[/] Datos instalados en {r.base} · creados {mf['creado']} · ventana {mf['ventana'][0]} a {mf['ventana'][1]} · "
               f"{len(mf['archivos'])} archivos verificados")
+    if en_uso:
+        con.print("[yellow]![/] Parece que la API (o `npm run dev`) estaba corriendo: "
+                  "reiníciala para que lea los datos nuevos.")
 
 
 def cmd_panel(a, r):
