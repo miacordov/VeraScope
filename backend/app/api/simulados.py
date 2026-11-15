@@ -30,12 +30,28 @@ MODELOS = {
 }
 
 
-def cargar_escenarios():
-    """Valida los archivos empaquetados antes de aceptar peticiones."""
+def cargar_catalogos():
+    """Valida la única fuente editorial de variables y glosario."""
+    carpeta = Path(__file__).resolve().parents[1] / "catalogo"
+    return {
+        nombre: MODELOS[nombre].model_validate_json(
+            (carpeta / f"{nombre}.json").read_text("utf-8")
+        )
+        for nombre in ("variables", "glosario")
+    }
+
+
+def cargar_escenarios(catalogos=None):
+    """Valida los escenarios y reutiliza los catálogos canónicos del arranque."""
+    catalogos = cargar_catalogos() if catalogos is None else catalogos
     carpeta = Path(__file__).resolve().parents[1] / "catalogo" / "simulado"
     return {
-        nombre: modelo.model_validate_json((carpeta / f"{nombre}.json").read_text("utf-8"))
-        for nombre, modelo in MODELOS.items()
+        **catalogos,
+        **{
+            nombre: modelo.model_validate_json((carpeta / f"{nombre}.json").read_text("utf-8"))
+            for nombre, modelo in MODELOS.items()
+            if nombre not in ("variables", "glosario")
+        },
     }
 
 
