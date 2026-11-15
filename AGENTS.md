@@ -7,7 +7,7 @@ Reglas para agentes de IA y para la revisión automática de código (GGA). Las 
 VeraScope (NASA Space Apps 2026, *Earth System Trend Detective*) calcula la tendencia de una variable de la Tierra dos veces, con y sin El Niño, y da un veredicto de cuatro estados: `cambio_robusto`, `sensible_a_el_nino`, `cambio_oculto`, `sin_tendencia`.
 
 - `backend/`: un servicio FastAPI (Python 3.11) con los paquetes datos, estadística y catálogo, más el preparador `backend/verascope_datos/`.
-- `frontend/`: app React Native con Expo SDK 57 (iOS, Android y web desde el mismo código).
+- `frontend/`: app React Native con Expo SDK 58 (iOS, Android y web desde el mismo código).
 
 ## Reglas de revisión (rechaza el cambio si no se cumplen)
 
