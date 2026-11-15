@@ -10,12 +10,19 @@ import time
 from pathlib import Path
 
 from rich.console import Console
-from rich.progress import BarColumn, MofNCompleteColumn, Progress, SpinnerColumn, TextColumn, TimeRemainingColumn
+from rich.progress import (
+    BarColumn,
+    MofNCompleteColumn,
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    TimeRemainingColumn,
+)
 from rich.table import Table
 
 from . import __version__, config
 from .almacen import Casillero, compactar, lugar_celda
-from .variables import INDICES, POWER, VARIABLES
+from .variables import POWER, VARIABLES, catalogo_api
 
 con = Console()
 
@@ -26,15 +33,25 @@ def barra():
 
 
 # ---------------------------------------------------------------- variables / estado
+def _escribir_json(destino, contenido):
+    import json
+
+    texto = json.dumps(contenido, ensure_ascii=False, indent=2) + "\n"
+    if destino == "-":
+        sys.stdout.write(texto)
+    else:
+        Path(destino).write_text(texto, encoding="utf-8")
+        con.print(f"[green]✔ Catálogo escrito en {destino}[/]")
+
+
 def cmd_variables(a, r):
     if a.json:
-        import dataclasses, json
-        texto = json.dumps([dataclasses.asdict(v) for v in VARIABLES], ensure_ascii=False, indent=2) + "\n"
-        if a.json == "-":
-            sys.stdout.write(texto)
-        else:
-            Path(a.json).write_text(texto, encoding="utf-8")
-            con.print(f"[green]✔ Catálogo escrito en {a.json}[/]")
+        _escribir_json(a.json, catalogo_api())
+        return
+    if a.json_completo:
+        from dataclasses import asdict
+
+        _escribir_json(a.json_completo, [asdict(v) for v in VARIABLES])
         return
     t = Table(title="Las 13 variables de VeraScope", header_style="bold")
     for c in ("ID", "Código", "Nombre", "Unidad", "Capa", "Fuente", "Desde"):
@@ -305,7 +322,15 @@ def main(argv=None):
     s.add_argument("--puerto", type=int, default=8765, help="puerto local (8765 por defecto)")
     s.add_argument("--no-abrir", action="store_true", help="no abrir el navegador automáticamente")
     s = com("variables", cmd_variables, "lista las 13 variables")
-    s.add_argument("--json", metavar="ARCHIVO", help="exporta el catálogo en JSON (- para la pantalla); fuente única: variables.py")
+    exportacion = s.add_mutually_exclusive_group()
+    exportacion.add_argument(
+        "--json", metavar="ARCHIVO",
+        help="exporta 5 variables y 2 índices para la API (- para la pantalla)",
+    )
+    exportacion.add_argument(
+        "--json-completo", metavar="ARCHIVO",
+        help="exporta las 13 variables con metadatos técnicos (- para la pantalla)",
+    )
     com("estado", cmd_estado, "muestra qué está descargado y qué falta")
     s = com("indices", cmd_indices, "baja ONI, Niño 1+2 y CO₂ de NOAA")
     s.add_argument("--carpeta", help="leer los archivos de NOAA desde esta carpeta en vez de internet")
