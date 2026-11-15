@@ -7,8 +7,12 @@ import numpy as np
 import pandas as pd
 
 from app.datos.indices import ventana_valida  # misma regla de ventana que el backend
+from app.estadistica.celda import analizar_celda  # el mismo motor que la API en vivo
+from app.estadistica.constantes import ALFA, MIN_MESES
+from app.estadistica.fdr import benjamini_hochberg
+from app.estadistica.veredicto import estado, significativa
 
-from . import config, motor
+from . import config
 from .almacen import Casillero, lugar_celda
 from .variables import INDICES, POWER, POR_CODIGO
 
@@ -36,10 +40,9 @@ def _trabajo(args):
     cod, filas, oni, cal, desde = args
     out = []
     for k, fila in filas:
-        r = motor.analizar(fila, oni, cal)
-        if r:
-            r.update(variable=cod, celda=k)
-            out.append(r)
+        r = analizar_celda(fila, cal, oni, cod)
+        if r is not None:
+            out.append({**r.fila_escaneo(), "variable": cod, "celda": k})
     return out
 
 
@@ -48,7 +51,7 @@ def calcular_resultados(rutas, procesos=None, avance=None, minimo_celdas=0):
     celdas = np.load(rutas.tabla / "celdas.npy")
     oni = np.load(rutas.tabla / "ONI.npy").astype(float)
     a, b = ventana_valida(oni)
-    if b - a < motor.MIN_MESES:
+    if b - a < MIN_MESES:
         raise RuntimeError("El índice ONI no cubre al menos 10 años de la ventana: corre primero el comando 'indices'.")
     cal = np.array([int(m[5:7]) for m in meses])[a:b]
     filas = []
@@ -70,9 +73,13 @@ def calcular_resultados(rutas, procesos=None, avance=None, minimo_celdas=0):
         raise RuntimeError("No hay series completas para calcular: corre primero el comando 'power'.")
     df = pd.DataFrame(res)
     df["lat"] = celdas[df.celda, 0]; df["lon"] = celdas[df.celda, 1]
-    df["p_original_ajustado"] = motor.fdr(df.p_original)
-    df["p_ajustado"] = motor.fdr(df.p)
-    df["veredicto"] = [motor.veredicto(x < motor.ALFA, y < motor.ALFA) for x, y in zip(df.p_original_ajustado, df.p_ajustado)]
+    # BH (cálculo C14) en dos familias: tendencia original y sin El Niño.
+    df["p_original_ajustado"] = benjamini_hochberg(df.p_original.to_numpy())
+    df["p_ajustado"] = benjamini_hochberg(df.p.to_numpy())
+    # Decisión de B3 (L13, diferencia 3): p_enso también se corrige, una familia por variable.
+    df["p_enso_ajustado"] = df.groupby("variable").p_enso.transform(lambda p: benjamini_hochberg(p.to_numpy()))
+    df["veredicto"] = estado(significativa(df.p_original_ajustado.to_numpy(), ALFA),
+                             significativa(df.p_ajustado.to_numpy(), ALFA)).tolist()
     df["unidad"] = [POR_CODIGO[c].unidad for c in df.variable]
     df["pareja"] = None
     _pares(df)

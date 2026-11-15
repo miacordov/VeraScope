@@ -398,7 +398,7 @@ class Panel:
     def espejo(self):
         import numpy as np
         import pandas as pd
-        from .. import motor
+        from app.estadistica.anomalias import anomalias  # misma climatología que la API
         if not self.rutas.casillero.exists():
             return {"disponible": False, "falta": "Todavía no hay nada descargado."}
         meses = config.meses(); cal = np.array([int(m[5:7]) for m in meses])
@@ -413,7 +413,7 @@ class Panel:
                 s = cas.leer_alineada("PRECTOTCORR", f"demo:{l.id}", meses)
                 if np.isfinite(s).sum() < 120:
                     continue
-                a = motor.anomalias(s, cal)
+                a = anomalias(s, cal)
                 indice = INDICE_ESPEJO.get(l.id, "ONI")
                 if np.isfinite(indices[indice]).sum() < 120:
                     indice = "ONI"

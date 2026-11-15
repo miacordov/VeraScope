@@ -21,6 +21,7 @@ from app.estadistica.constantes import ALFA, MIN_MESES
 from app.estadistica.enso import quitar_enso
 from app.estadistica.fdr import benjamini_hochberg
 from app.estadistica.tendencia import cambio_pct_decada, cambio_total, recta, tendencia
+from app.estadistica.veredicto import estado
 from tests.sinteticas import ar1, con_huecos, generador, serie
 
 N = 540
@@ -336,14 +337,10 @@ def test_calcular_agrega_p_enso_ajustado_por_variable(tmp_path):
     df = calcular.calcular_resultados(rutas, procesos=1)
     assert len(df) == 8
     assert {"p_enso_ajustado", "p_ajustado", "p_original_ajustado", "n_efectivo"} <= set(df)
-    for cod, g in df.groupby("variable"):
+    for _, g in df.groupby("variable"):
         np.testing.assert_allclose(g.p_enso_ajustado, benjamini_hochberg(g.p_enso.to_numpy()))
     np.testing.assert_allclose(df.p_ajustado, benjamini_hochberg(df.p.to_numpy()))
-    np.testing.assert_allclose(
-        df.p_original_ajustado, benjamini_hochberg(df.p_original.to_numpy())
-    )
-    from app.estadistica.veredicto import estado
-
+    np.testing.assert_allclose(df.p_original_ajustado, benjamini_hochberg(df.p_original.to_numpy()))
     esperado = estado(df.p_original_ajustado < ALFA, df.p_ajustado < ALFA)
     assert df.veredicto.tolist() == list(esperado)
     assert pd.read_parquet(rutas.resultados).shape == df.shape
