@@ -25,6 +25,9 @@ NEFF_PISO = 3
 VERSION_METODO = 2
 GRILLA_PASO = 2.0
 CELDA = 0.5
+# Costa norte del Perú donde se ofrece Niño 1+2 como índice complementario (B3, hora 20).
+COSTA_NINO12_LAT = (-10.0, 0.0)
+COSTA_NINO12_LON = (-82.0, -78.0)
 
 
 def ventana_fin() -> int:
