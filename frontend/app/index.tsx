@@ -1,17 +1,23 @@
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
+import { iniciarDemo } from '@/features/guided-tours';
 import { LogoVeraScope } from '@/shared/components/LogoVeraScope';
 import { colores, espacios } from '@/shared/tema';
 import { Boton, Texto } from '@/shared/ui';
 
 /**
- * Inicio (F3, #11): logo, qué es VeraScope en una frase, Investigar y el glosario.
+ * Inicio (F3, #11 y #15): logo, qué es VeraScope en una frase, Investigar, la demo guiada y el glosario.
  * Sin "Escanear" (el feed está recortado) ni "Usar demo sin conexión" (espera las respuestas empaquetadas del
  * backend, #8, y el cliente con fuente `empaquetada`).
  */
 export default function Inicio() {
   const router = useRouter();
+
+  const verDemo = () => {
+    iniciarDemo('efecto-espejo');
+    router.navigate('/espacio');
+  };
 
   return (
     <ScrollView style={estilos.fondo} contentContainerStyle={estilos.contenido}>
@@ -29,6 +35,12 @@ export default function Inicio() {
           texto="Investigar"
           etiqueta="Investigar: elige una variable y un lugar"
           onPress={() => router.navigate('/espacio')}
+        />
+        <Boton
+          texto="Ver la demo: El efecto espejo de El Niño"
+          variante="secundario"
+          etiqueta="Ver la demo guiada: El efecto espejo de El Niño"
+          onPress={verDemo}
         />
         <Boton texto="Glosario" variante="secundario" onPress={() => router.navigate('/glosario')} />
       </View>

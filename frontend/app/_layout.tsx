@@ -14,6 +14,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { ProveedorConsultas } from '@/estado/ProveedorConsultas';
+import { BandaDemo } from '@/features/guided-tours';
 import { BandaSimulado } from '@/shared/components/BandaSimulado';
 import { colores, fuentes } from '@/shared/tema';
 
@@ -42,6 +43,8 @@ export default function Raiz() {
           <StatusBar style="light" />
           <SafeAreaView style={estilos.raiz} edges={['top', 'left', 'right']}>
             <BandaSimulado />
+            {/* Demo guiada (F3, #15): solo aparece mientras hay una demo en curso. */}
+            <BandaDemo />
             <Stack
               screenOptions={{
                 headerStyle: { backgroundColor: colores.fondo },
