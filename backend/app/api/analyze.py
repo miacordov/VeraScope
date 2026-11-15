@@ -66,11 +66,7 @@ def _cercana_en_cache(cache, variable, lat, lon):
 
 def _tendencia(res: TendenciaCelda, p_ajustado=None) -> Tendencia:
     """Mapea el motor al contrato; ScanMap decide significancia con BH (C14)."""
-    sig = (
-        res.significativa
-        if p_ajustado is None
-        else bool(veredicto.significativa(p_ajustado))
-    )
+    sig = res.significativa if p_ajustado is None else bool(veredicto.significativa(p_ajustado))
     return Tendencia(
         pendiente_decada=_numero(res.pendiente_decada),
         ic_bajo=_numero(res.ic_bajo),
@@ -128,30 +124,40 @@ def analyze(
                 # aquí la distancia de la alternativa sin cambiar aquel contrato.
                 return JSONResponse(
                     status_code=504,
-                    content={"error": {
-                        "codigo": "power_lento",
-                        "mensaje": "NASA POWER tardó demasiado en responder. "
-                        "Inténtalo más tarde o elige una celda con datos guardados.",
-                        "celda_cercana": cercana.model_dump() if cercana else None,
-                    }},
+                    content={
+                        "error": {
+                            "codigo": "power_lento",
+                            "mensaje": "NASA POWER tardó demasiado en responder. "
+                            "Inténtalo más tarde o elige una celda con datos guardados.",
+                            "celda_cercana": cercana.model_dump() if cercana else None,
+                        }
+                    },
                 )
             except PowerError:
                 return JSONResponse(
                     status_code=502,
-                    content={"error": {
-                        "codigo": "power_error",
-                        "mensaje": "No se pudieron obtener los datos de NASA POWER. "
-                        "Inténtalo más tarde.",
-                        "celda_cercana": None,
-                    }},
+                    content={
+                        "error": {
+                            "codigo": "power_error",
+                            "mensaje": "No se pudieron obtener los datos de NASA POWER. "
+                            "Inténtalo más tarde.",
+                            "celda_cercana": None,
+                        }
+                    },
                 )
             meses_completos = _meses_ventana(1981, ventana_fin())
             descargadas = power_client.parsear(respuesta, meses_completos)
             for codigo in power_client.VARIABLES_POWER:
                 ficha = estado.variables[codigo]
                 cache.series.guardar(
-                    codigo, llave, meses_completos[0], descargadas[codigo],
-                    lat=lat_q, lon=lon_q, unidad=ficha["unidad"], fuente=ficha["fuente"],
+                    codigo,
+                    llave,
+                    meses_completos[0],
+                    descargadas[codigo],
+                    lat=lat_q,
+                    lon=lon_q,
+                    unidad=ficha["unidad"],
+                    fuente=ficha["fuente"],
                 )
 
         meses = _meses_ventana(inicio, fin)
@@ -196,14 +202,22 @@ def analyze(
         ficha = estado.variables[variable]
         vinculo = rc.vinculo_el_nino
         resultado = AnalyzeRespuesta(
-            variable=variable, nombre=ficha["nombre"], unidad=ficha["unidad"],
-            fuente=ficha["fuente"], descarga=date.today().isoformat(),
+            variable=variable,
+            nombre=ficha["nombre"],
+            unidad=ficha["unidad"],
+            fuente=ficha["fuente"],
+            descarga=date.today().isoformat(),
             celda=Celda(
-                lat=lat_q, lon=lon_q, lado_grados=celdas.PASO_CELDA,
-                en_rejilla=en_rejilla, celda_escaneo=_cercana(lat_q, lon_q, rejilla),
+                lat=lat_q,
+                lon=lon_q,
+                lado_grados=celdas.PASO_CELDA,
+                en_rejilla=en_rejilla,
+                celda_escaneo=_cercana(lat_q, lon_q, rejilla),
             ),
             ventana=Ventana(
-                inicio=meses[0], fin=meses[-1], meses=len(meses),
+                inicio=meses[0],
+                fin=meses[-1],
+                meses=len(meses),
                 meses_analizados=rc.meses_analizados,
             ),
             indice=Indice(
@@ -214,15 +228,19 @@ def analyze(
             fechas=meses,
             serie_original=_nan_a_none(rc.serie_original),
             serie_sin_el_nino=_nan_a_none(rc.serie_sin_el_nino),
-            serie_z=_nan_a_none(rc.serie_z), indice_valores=_nan_a_none(indice_arr),
+            serie_z=_nan_a_none(rc.serie_z),
+            indice_valores=_nan_a_none(indice_arr),
             fase=fases,
             tendencia_original=_tendencia(rc.tendencia_original, p_original),
             tendencia_sin_el_nino=_tendencia(rc.tendencia_sin_el_nino, p_sin),
             veredicto=Veredicto(estado=estado_veredicto, origen=origen),
             vinculo_el_nino=Vinculo(
-                rezago_meses=vinculo.rezago_meses, r=_numero(vinculo.r),
-                p=_numero(vinculo.p), n_efectivo=_numero(vinculo.n_efectivo),
-                significativo=vinculo.significativo, indicativo=vinculo.indicativo,
+                rezago_meses=vinculo.rezago_meses,
+                r=_numero(vinculo.r),
+                p=_numero(vinculo.p),
+                n_efectivo=_numero(vinculo.n_efectivo),
+                significativo=vinculo.significativo,
+                indicativo=vinculo.indicativo,
             ),
             colinealidad=_numero(rc.colinealidad),
             avisos=[Aviso(codigo=c, texto=t) for c, t in rc.avisos],
@@ -231,7 +249,8 @@ def analyze(
                 for mes, z, fase in zip(meses, rc.serie_z, fases)
                 if abs(float(z)) > UMBRAL_INUSUAL
             ],
-            prueba_t=None, cambio_brusco=None,
+            prueba_t=None,
+            cambio_brusco=None,
         )
         cache.resultados.guardar(
             variable, lat_q, lon_q, inicio, fin, indice, resultado.model_dump(mode="json")

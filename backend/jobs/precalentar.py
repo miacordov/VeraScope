@@ -138,8 +138,12 @@ def precalentar(
             series = parsear(respuesta, meses)
             for codigo in VARIABLES_POWER:
                 cache.series.guardar(
-                    codigo, llave, meses[0], series[codigo],
-                    lat=lat_q, lon=lon_q,
+                    codigo,
+                    llave,
+                    meses[0],
+                    series[codigo],
+                    lat=lat_q,
+                    lon=lon_q,
                 )
             descargadas += 1
             logger.info("guardada %s (%+.2f, %+.2f)", nombre, lat_q, lon_q)
@@ -151,7 +155,9 @@ def precalentar(
     cache.cerrar()
     logger.info(
         "precalentamiento terminado: %d descargadas, %d omitidas, %d fallos",
-        descargadas, omitidas, fallos,
+        descargadas,
+        omitidas,
+        fallos,
     )
     return descargadas, omitidas, fallos
 
@@ -163,7 +169,10 @@ def main(argv=None) -> int:
     )
     parser.add_argument("--datos", default=None, help="Carpeta de datos (default: VERASCOPE_DATOS)")
     parser.add_argument(
-        "--pausa", type=float, default=1.0, help="Segundos entre peticiones (default: 1)",
+        "--pausa",
+        type=float,
+        default=1.0,
+        help="Segundos entre peticiones (default: 1)",
     )
     args = parser.parse_args(argv)
 

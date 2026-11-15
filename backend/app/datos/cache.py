@@ -55,8 +55,7 @@ CREATE TABLE IF NOT EXISTS resultados (
 """
 
 
-def _llave_n2(variable: str, lat: float, lon: float,
-              inicio: int, fin: int, indice: str) -> str:
+def _llave_n2(variable: str, lat: float, lon: float, inicio: int, fin: int, indice: str) -> str:
     """Llave determinista para el nivel 2."""
     return f"{variable}:{lat:+.2f}:{lon:+.2f}:{inicio}:{fin}:{indice}"
 
@@ -79,8 +78,9 @@ class CacheResultados:
     def cerrar(self) -> None:
         self.db.close()
 
-    def leer(self, variable: str, lat: float, lon: float,
-             inicio: int, fin: int, indice: str) -> dict[str, Any] | None:
+    def leer(
+        self, variable: str, lat: float, lon: float, inicio: int, fin: int, indice: str
+    ) -> dict[str, Any] | None:
         """Devuelve el resultado guardado o ``None`` si no existe o la versión cambió."""
         llave = _llave_n2(variable, lat, lon, inicio, fin, indice)
         fila = self.db.execute(
@@ -91,15 +91,26 @@ class CacheResultados:
             logger.debug("cache_n2 fallo llave=%s motivo=no_existe", llave)
             return None
         if fila[0] != constantes.VERSION_METODO:
-            logger.debug("cache_n2 fallo llave=%s motivo=version v_guardada=%d v_actual=%d",
-                         llave, fila[0], constantes.VERSION_METODO)
+            logger.debug(
+                "cache_n2 fallo llave=%s motivo=version v_guardada=%d v_actual=%d",
+                llave,
+                fila[0],
+                constantes.VERSION_METODO,
+            )
             return None
         logger.debug("cache_n2 acierto llave=%s", llave)
         return json.loads(gzip.decompress(fila[1]))
 
-    def guardar(self, variable: str, lat: float, lon: float,
-                inicio: int, fin: int, indice: str,
-                resultado: dict[str, Any]) -> None:
+    def guardar(
+        self,
+        variable: str,
+        lat: float,
+        lon: float,
+        inicio: int,
+        fin: int,
+        indice: str,
+        resultado: dict[str, Any],
+    ) -> None:
         """Guarda un resultado serializado con la ``VERSION_METODO`` actual."""
         llave = _llave_n2(variable, lat, lon, inicio, fin, indice)
         blob = gzip.compress(json.dumps(resultado, ensure_ascii=False).encode())
@@ -145,7 +156,9 @@ class Cache:
         casillero = Casillero(str(ruta_sqlite))
         casillero.db.close()
         casillero.db = sqlite3.connect(
-            str(ruta_sqlite), timeout=30, check_same_thread=False,
+            str(ruta_sqlite),
+            timeout=30,
+            check_same_thread=False,
         )
         casillero.db.execute("PRAGMA journal_mode=WAL")
         self.series = casillero

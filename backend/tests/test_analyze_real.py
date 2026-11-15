@@ -12,8 +12,12 @@ from app.contracts import AnalyzeRespuesta, ErrorRespuesta
 from app.datos import indices, power_client
 
 PARAMETROS = {
-    "variable": "PRECTOTCORR", "lat": -5, "lon": -80.5,
-    "inicio": 1981, "fin": 2025, "indice": "ONI",
+    "variable": "PRECTOTCORR",
+    "lat": -5,
+    "lon": -80.5,
+    "inicio": 1981,
+    "fin": 2025,
+    "indice": "ONI",
 }
 
 
@@ -47,6 +51,8 @@ def cliente_real(monkeypatch, tmp_path, sin_red):
     monkeypatch.setenv("VERASCOPE_SIMULADO", "0")
     monkeypatch.setenv("VERASCOPE_FIN", "2025")
     monkeypatch.setenv("VERASCOPE_DATOS", str(tmp_path))
+    # Igual que `cliente` en conftest.py: main.py lee VERASCOPE_CORS al importarse.
+    monkeypatch.setenv("VERASCOPE_CORS", "https://web.example,https://otra.example")
     meses = [f"{anio}-{mes:02d}" for anio in range(1981, 2026) for mes in range(1, 13)]
     _crear_indices_sinteticos(tmp_path / "tabla", meses)
     datos = importlib.import_module("app.datos")
@@ -99,7 +105,9 @@ def test_analyze_ventana_corta(cliente_real):
     cliente, llamada = cliente_real
     respuesta = cliente.get("/api/v1/analyze", params={**PARAMETROS, "inicio": 2020, "fin": 2022})
     _comprobar_error(
-        respuesta, 422, "ventana_corta",
+        respuesta,
+        422,
+        "ventana_corta",
         "La ventana tiene menos de 10 años. Con tan pocos años, el ruido entre "
         "años impide ver tendencias; elige al menos 10.",
     )
@@ -110,7 +118,9 @@ def test_analyze_fuera_de_rango(cliente_real):
     cliente, llamada = cliente_real
     respuesta = cliente.get("/api/v1/analyze", params={**PARAMETROS, "inicio": 1970, "fin": 1980})
     _comprobar_error(
-        respuesta, 422, "fuera_de_rango",
+        respuesta,
+        422,
+        "fuera_de_rango",
         "Elige años desde 1981 hasta el último año completo, en orden.",
     )
     llamada.assert_not_called()
@@ -121,7 +131,9 @@ def test_analyze_power_lento(cliente_real):
     llamada.side_effect = power_client.PowerLento("Espera simulada agotada")
     respuesta = cliente.get("/api/v1/analyze", params=PARAMETROS)
     _comprobar_error(
-        respuesta, 504, "power_lento",
+        respuesta,
+        504,
+        "power_lento",
         "NASA POWER tardó demasiado en responder. "
         "Inténtalo más tarde o elige una celda con datos guardados.",
     )
@@ -135,7 +147,9 @@ def test_analyze_sin_datos_tierra(cliente_real):
             serie[mes] = -999
     respuesta = cliente.get("/api/v1/analyze", params=PARAMETROS)
     _comprobar_error(
-        respuesta, 422, "sin_datos_tierra",
+        respuesta,
+        422,
+        "sin_datos_tierra",
         "Esta celda no tiene suficientes datos válidos para analizar. "
         "Para humedad del suelo, elige una celda sobre tierra.",
     )
