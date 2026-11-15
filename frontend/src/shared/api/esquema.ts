@@ -13,9 +13,10 @@ export interface paths {
         };
         /**
          * Analyze
-         * @description Ejemplo: PRECTOTCORR, Piura (-5, -80.5), 1981–1990, ONI.
+         * @description Analiza una celda mensual con y sin El Niño; reutiliza datos ya descargados.
          *
-         *     Solo se sirven las combinaciones con un JSON local; las demás reciben 422.
+         *     Ejemplo: PRECTOTCORR, Piura (-5, -80.5), 1981–1990, ONI.
+         *     En modo simulado solo se sirven las combinaciones con un JSON local.
          */
         get: operations["analyze_api_v1_analyze_get"];
         put?: never;
@@ -103,9 +104,10 @@ export interface paths {
         };
         /**
          * Compare Periods
-         * @description Ejemplo: PRECTOTCORR en Piura, 1981–2001 frente a 2003–2025.
+         * @description Promedio de cada periodo con y sin El Niño, sus diferencias y meses inusuales.
          *
-         *     Cada periodo requiere diez años. Otras combinaciones sin JSON reciben 422.
+         *     Es descriptiva: la significancia la da la tendencia. Cada periodo requiere diez
+         *     años. Ejemplo: PRECTOTCORR en Piura, 1981–2001 frente a 2003–2025.
          */
         get: operations["compare_periods_api_v1_compare_periods_get"];
         put?: never;
@@ -162,9 +164,11 @@ export interface paths {
         };
         /**
          * Teleconnect
-         * @description Ejemplo en Piura (-5, -80.5): PRECTOTCORR o T2M (sin líneas).
+         * @description Hasta 3 líneas de efecto opuesto y 2 de mismo efecto desde la celda pedida.
          *
-         *     Cualquier otra selección sin JSON recibe 422. Se aceptan longitudes 0–360.
+         *     El origen es la celda de ScanMap más cercana al clic, con su distancia. Para `T2M`
+         *     responde sin líneas y lo explica. Mientras no haya escaneo, 503 `escaneo_en_curso`.
+         *     Se aceptan longitudes 0–360. Ejemplo: PRECTOTCORR en Piura (-5, -80.5).
          */
         get: operations["teleconnect_api_v1_teleconnect_get"];
         put?: never;
