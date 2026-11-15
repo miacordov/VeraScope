@@ -38,3 +38,7 @@ Thumbs.db
 
 # ── Herramientas locales ──
 .gga
+
+# ── Bloqueos de LibreOffice/Office ──
+.~lock.*#
+~$*
