@@ -27,7 +27,8 @@ from app.datos import celdas, indices, power_client
 from app.datos.power_client import PowerError, PowerLento
 from app.estadistica import veredicto
 from app.estadistica.celda import TendenciaCelda, analizar_celda
-from app.estadistica.constantes import UMBRAL_INUSUAL, ventana_fin
+from app.estadistica.constantes import ventana_fin
+from app.estadistica.periodos import meses_inusuales
 from app.estadistica.teleconexion import celda_mas_cercana
 
 
@@ -244,10 +245,10 @@ def analyze(
             ),
             colinealidad=_numero(rc.colinealidad),
             avisos=[Aviso(codigo=c, texto=t) for c, t in rc.avisos],
+            # Cálculo C17: fase del índice en t − ℓ* (periodos.meses_inusuales).
             meses_inusuales=[
-                MesInusual(fecha=mes, z=_numero(z), fase=fase)
-                for mes, z, fase in zip(meses, rc.serie_z, fases)
-                if abs(float(z)) > UMBRAL_INUSUAL
+                MesInusual(fecha=m.fecha, z=_numero(m.z), fase=m.fase)
+                for m in meses_inusuales(rc.serie_z, meses, fases, vinculo.rezago_meses)
             ],
             prueba_t=None,
             cambio_brusco=None,

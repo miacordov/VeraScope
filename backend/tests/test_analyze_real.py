@@ -154,3 +154,19 @@ def test_analyze_sin_datos_tierra(cliente_real):
         "Para humedad del suelo, elige una celda sobre tierra.",
     )
     llamada.assert_called_once_with(-5.0, -80.5, 1981, 2025)
+
+
+def test_meses_inusuales_usan_la_fase_del_indice_rezagado(cliente_real):
+    """Cálculo C17: |z| > 2 con la fase del índice en t − ℓ*; los primeros ℓ* no cuentan."""
+    cliente, _ = cliente_real
+    datos = cliente.get("/api/v1/analyze", params=PARAMETROS).json()
+    rezago = datos["vinculo_el_nino"]["rezago_meses"]
+    posicion = {mes: i for i, mes in enumerate(datos["fechas"])}
+    esperados = [
+        (mes, datos["fase"][i - rezago])
+        for i, (mes, z) in enumerate(zip(datos["fechas"], datos["serie_z"]))
+        if i >= rezago and z is not None and abs(z) > 2
+    ]
+    obtenidos = [(m["fecha"], m["fase"]) for m in datos["meses_inusuales"]]
+    assert obtenidos == esperados
+    assert all(posicion[m] >= rezago for m, _ in obtenidos)
