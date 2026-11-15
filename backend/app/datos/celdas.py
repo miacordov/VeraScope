@@ -6,8 +6,10 @@ Reglas (backend/CLAUDE.md, sección 6):
   de JavaScript, para que la app y la API coincidan. El ``round`` de Python
   redondea al par y daría otra celda.
 - Longitudes en (−180, 180]: 180 se escribe +180 y −180 también, igual que
-  ``config.rejilla()`` del preparador, para compartir llaves del casillero. La celda que devuelve la API
-  es la autoridad.
+  ``config.rejilla()`` del preparador, para compartir llaves del casillero.
+  La celda que devuelve la API es la autoridad.
+- POWER entrega la longitud en la malla nativa de MERRA-2 (0.625°); se mantiene la
+  celda de 0.5° y se declara (``backend/docs/comprobaciones-b2.md``).
 - La llave de lugar es la misma del casillero del preparador
   (``verascope_datos.almacen.lugar_celda``).
 """
