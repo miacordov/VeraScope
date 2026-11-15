@@ -16,6 +16,7 @@ import { Boton, Texto } from '@/shared/ui';
 import { BORDE_CELDA, rectanguloCelda } from './celda';
 import { trazadoCostas } from './costas';
 import { LUGARES } from './lugares';
+import { useZoomConRueda, type RefLienzo } from './rueda';
 import {
   acercar,
   aMapa,
@@ -79,6 +80,7 @@ export function MapaPacifico({ celda, onElegirCelda, alto }: Props) {
   const tocar = useTapGesture({
     runOnJS: true,
     maxDistance: DISTANCIA_TOQUE,
+    testID: 'mapa-toque',
     onActivate: (e) => {
       const { vista: v, tamano: t } = actual.current;
       onElegirCelda(cuantizarCelda(aMapa(v, t, { x: e.x, y: e.y })));
@@ -113,6 +115,15 @@ export function MapaPacifico({ celda, onElegirCelda, alto }: Props) {
     },
   });
 
+  // Rueda del ratón (solo web): acerca o aleja dejando quieto el punto bajo el cursor. Se encadena sobre la vista
+  // anterior, así varios giros seguidos no se pisan aunque aún no se haya vuelto a dibujar.
+  const lienzo: RefLienzo = useRef(null);
+  useZoomConRueda(lienzo, (factor, focoRueda) => {
+    const { tamano: t } = actual.current;
+    if (t.ancho === 0) return;
+    setVista((previa) => acercar(previa ?? vistaInicial(t), t, factor, focoRueda));
+  });
+
   // Los tres escuchan a la vez; las distancias no se cruzan: si el dedo se mueve, el toque falla antes de que
   // empiece el arrastre (con "Competing" o "Exclusive" el arrastre o el toque se bloqueaban en web).
   const gestos = useSimultaneousGestures(tocar, pellizcar, arrastrar);
@@ -139,6 +150,7 @@ export function MapaPacifico({ celda, onElegirCelda, alto }: Props) {
     <View style={estilos.contenedor}>
       <GestureDetector gesture={gestos}>
         <View
+          ref={lienzo}
           testID="mapa-lienzo"
           style={[estilos.lienzo, { height: alto }]}
           onLayout={(e: LayoutChangeEvent) => setAncho(Math.round(e.nativeEvent.layout.width))}

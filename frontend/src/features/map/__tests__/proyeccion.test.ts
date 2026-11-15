@@ -1,3 +1,5 @@
+import { cuantizarCelda } from '@/shared/geo';
+
 import { LUGARES } from '../lugares';
 import {
   acercar,
@@ -7,6 +9,7 @@ import {
   desplazar,
   ESCALA_MAXIMA,
   escalaMinima,
+  factorRueda,
   lonParaDibujo,
   vistaInicial,
   type Tamano,
@@ -95,5 +98,28 @@ describe('gestos y botones', () => {
       expect(p.y).toBeCloseTo(t.alto / 2);
       expect(c.escala).toBeCloseTo(acercar(v, t, 4).escala);
     }
+  });
+
+  it('tocar un punto de la pantalla da la celda de 0.5° de ese lugar', () => {
+    const p = aPantalla(v, t, lonParaDibujo(-80.37, v.lonCentro), -5.12);
+    expect(cuantizarCelda(aMapa(v, t, p))).toEqual({ lat: -5.0, lon: -80.5 });
+  });
+});
+
+describe('rueda del ratón (web)', () => {
+  it('hacia arriba acerca, hacia abajo aleja y sin giro no cambia', () => {
+    expect(factorRueda(-100)).toBeGreaterThan(1);
+    expect(factorRueda(100)).toBeLessThan(1);
+    expect(factorRueda(0)).toBe(1);
+  });
+
+  it('dos giros pequeños suman lo mismo que uno grande', () => {
+    expect(factorRueda(-50) * factorRueda(-50)).toBeCloseTo(factorRueda(-100));
+  });
+
+  it('las líneas de Firefox cuentan como píxeles y un giro brusco tiene tope', () => {
+    expect(factorRueda(-3, 1)).toBeCloseTo(factorRueda(-48, 0));
+    expect(factorRueda(-100_000)).toBe(2);
+    expect(factorRueda(100_000)).toBe(0.5);
   });
 });

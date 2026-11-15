@@ -31,7 +31,7 @@ backend.
 | | Estado |
 |---|---|
 | **Sprint en el que deberíamos estar** | **S4 → S5** (congelamiento en la hora 36) |
-| **Sprint en el que está el frontend** | **S1–S3**: la base está en `main`. F2 terminó el gráfico, el interruptor y la reproducción, y F3 la tarjeta y los textos de estados, pero **nada de eso está fusionado todavía**. F1 no ha empezado el mapa ni las líneas |
+| **Sprint en el que está el frontend** | **S1–S3**: la base está en `main`. F2 terminó el gráfico, el interruptor y la reproducción, y F3 la tarjeta y los textos de estados, pero **nada de eso está fusionado todavía**. F1 tiene el mapa y el selector (#9) listos en su rama y no ha empezado las líneas |
 | **Backend** | ✅ `analyze` real con caché de dos niveles y precalentamiento (#30), avisos de Niño costero (#29, #31), demo de Piura en la celda de ScanMap (−6, −80) (#32), precalentamiento de Borneo y norte de Australia (#39). **Por avanzar:** URL pública con HTTPS, rutas reales de feed y mosaico (#7) y respuestas de demo para la app sin red (#8) |
 | **Correcciones de la dueña del repo** | Pasó `main` a las ramas del frontend, subió el tiempo límite de `espacio.test.tsx` (#36) y dejó escrito en `CLAUDE.md` qué ramas se borraron y no se vuelven a crear (#37, #38) |
 
@@ -45,7 +45,7 @@ backend.
 | `feat/f3-logo-textos-estados` | F3 | 🟡 PR #33 abierto · **por avanzar:** revisión y fusión |
 | `fe/veredicto-feed` | F3 | 🟡 PR #34 abierto · **por avanzar:** revisión y fusión |
 | `fix/f3-atribucion-fuente` | F3 | 🟡 PR #35 abierto (incluye el #34) · **por avanzar:** revisión y fusión |
-| `fe/mapa-celda` | F1 | **por avanzar:** sin commits |
+| `fe/mapa-celda` | F1 | 🟡 código del #9 listo y actualizado con `main` · **por avanzar:** medir el rendimiento en un teléfono, abrir PR y fusionar |
 | `fe/lineas-mosaico` | F1 | **por avanzar:** sin commits |
 | `fe/demos-glosario` | F3 | **por avanzar:** sin commits |
 
@@ -94,13 +94,13 @@ backend.
 ### S1 · Piezas base (horas 6–13)
 
 **F1 · `fe/mapa-celda` (#9)**
-- [ ] Costas Natural Earth 110m en `assets/geo/tierra.json`; mapa centrado en el Pacífico (vista 90–330) — **por avanzar**
-- [ ] Polígonos con desplazamiento 0 y +360 (sin rayas); puntos con `lon360` — **por avanzar**
-- [ ] Toque → celda cuantizada → rectángulo visible (≥ ~12 px), con la celda que devuelve la API — **por avanzar**
-- [ ] Gestos, botones ＋/− y Restablecer vista — **por avanzar**
-- [ ] Accesos directos a Piura, Borneo y norte de Australia — **por avanzar**
-- [ ] Selector de variable (desde `/variables`) y ventana (< 10 años no se envía) — **por avanzar**
-- [ ] Selector de índice con Niño 1+2 — **por avanzar** (B3 ya lo decidió: entra como complementario, #29)
+- [x] Costas Natural Earth 110m en `assets/geo/tierra.json`; mapa centrado en el Pacífico (vista 90–330) 🟡 (`fe/mapa-celda`) — **por avanzar:** fusionar
+- [x] Polígonos con desplazamiento 0 y +360 (sin rayas); puntos con `lon360` 🟡 — **por avanzar:** fusionar
+- [x] Toque → celda cuantizada → rectángulo visible (≥ ~12 px), con la celda que devuelve la API 🟡 — **por avanzar:** fusionar
+- [x] Gestos, botones ＋/− y Restablecer vista; rueda del ratón en web 🟡 — **por avanzar:** fusionar
+- [x] Accesos directos a Piura, Borneo y norte de Australia 🟡 — **por avanzar:** fusionar
+- [x] Selector de variable (desde `/variables`) y ventana (< 10 años no se envía) 🟡 — **por avanzar:** fusionar
+- [x] Selector de índice con Niño 1+2 (aparece solo si `/variables` lo ofrece) 🟡 — **por avanzar:** fusionar
 
 **F2 · `fe/distribucion` (#12) y `fe/graficos-enso` (#10)**
 - [x] `eas.json` con perfil `preview` (APK) y `expo.android.package` ✅ (#25)
@@ -127,7 +127,7 @@ backend.
 ### S2 · Flujo real (horas 13–20) → Hito 20
 
 **F1 · cierre de `fe/mapa-celda` (#9)**
-- [ ] `espacio.tsx` adaptable (teléfono con hoja inferior, tableta, web) — **por avanzar**
+- [ ] `espacio.tsx` adaptable (teléfono con hoja inferior, tableta, web) — **por avanzar** (ya hay dos columnas en web ≥ 1024; falta la hoja inferior del teléfono)
 - [ ] Rendimiento en un Android de gama baja — **por avanzar**
 - [ ] Colores de La Niña y de la línea de mismo efecto, con captura — **por avanzar**
 - [ ] Probar contra el `analyze` real (el backend ya lo tiene, #30) — **por avanzar**

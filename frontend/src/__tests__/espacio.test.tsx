@@ -2,12 +2,15 @@
 import 'react-native-gesture-handler/jestSetup';
 
 import { QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { Dimensions } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { fireGestureHandler, getByGestureTestId } from 'react-native-gesture-handler/jest-utils';
 
 import Espacio from '../../app/espacio';
 import { crearQueryClient } from '../estado/queryClient';
 import { useEstado } from '../estado/store';
+import { altoDelMapa } from '../features/map/tamano';
 import { analyze, variables } from '../shared/api/__fixtures__';
 import type { SaludRespuesta } from '../shared/api/tipos';
 import { BandaSimulado } from '../shared/components/BandaSimulado';
@@ -136,4 +139,17 @@ describe('mapa y selector (fe/mapa-celda, #9)', () => {
     useEstado.getState().seleccionarCelda({ lat: -5, lon: -80.5 });
     expect(await screen.findByTestId('mapa-celda')).toBeOnTheScreen();
   });
+
+  it('tocar el centro del mapa elige la celda del centro del Pacífico (lon 210° = −150°)', async () => {
+    await montar();
+    await fireEvent(await screen.findByTestId('mapa-lienzo'), 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width: 360, height: 360 } },
+    });
+    // La vista inicial se centra en lon 210° (0..360) y lat 0°: el centro del lienzo cae ahí.
+    // Mismo alto que le da la pantalla en la ventana de Jest (la regla vive en features/map/tamano.ts).
+    const centro = { x: 180, y: altoDelMapa(Dimensions.get('window').width) / 2 };
+    await act(() => fireGestureHandler(getByGestureTestId('mapa-toque'), [centro, centro]));
+    expect(useEstado.getState().celda).toEqual({ lat: 0, lon: -150 });
+  });
 });
+

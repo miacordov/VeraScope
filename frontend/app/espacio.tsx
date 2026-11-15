@@ -5,6 +5,7 @@ import { parametrosAnalyze } from '@/estado/seleccion';
 import { useEstado } from '@/estado/store';
 import { InterruptorElNino } from '@/features/enso-toggle/InterruptorElNino';
 import { MapaPacifico } from '@/features/map/MapaPacifico';
+import { altoDelMapa } from '@/features/map/tamano';
 import { PanelSeries } from '@/features/series-charts/PanelSeries';
 import { SelectorVariable } from '@/features/variable-picker/SelectorVariable';
 import { esErrorApi } from '@/shared/api/cliente';
@@ -30,7 +31,7 @@ export default function Espacio() {
   const analisis = useAnalyze(parametros);
   const { width } = useWindowDimensions();
   const ancha = width >= cortes.laptop;
-  const altoMapa = ancha ? 480 : Math.min(Math.round(width * 0.75), 360);
+  const altoMapa = altoDelMapa(width);
   // El servidor es la autoridad: si la celda de la respuesta difiere de la calculada, se dibuja la de la respuesta.
   const celdaDibujada = analisis.data ? analisis.data.celda : seleccion.celda;
 

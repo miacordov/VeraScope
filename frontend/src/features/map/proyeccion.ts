@@ -93,6 +93,20 @@ export function desplazar(v: Vista, t: Tamano, dx: number, dy: number): Vista {
   return limitarVista({ ...v, lonCentro: v.lonCentro - dx / v.escala, latCentro: v.latCentro + dy / v.escala }, t);
 }
 
+/** Píxeles de rueda que duplican (o reducen a la mitad) el zoom. */
+const PIXELES_POR_DUPLICAR = 350;
+/** Una "línea" de rueda (Firefox, `deltaMode = 1`) equivale a unos 16 px; una "página" (2), a ~800. */
+const PIXELES_POR_MODO = [1, 16, 800] as const;
+
+/**
+ * Factor de zoom de un giro de la rueda del ratón (solo web): hacia arriba (`deltaY < 0`) acerca, hacia abajo
+ * aleja. Exponencial, para que varios giros pequeños sumen lo mismo que uno grande; acotado por giro.
+ */
+export function factorRueda(deltaY: number, deltaMode = 0): number {
+  const pixeles = deltaY * (PIXELES_POR_MODO[deltaMode] ?? 1);
+  return acotar(2 ** (-pixeles / PIXELES_POR_DUPLICAR), 0.5, 2);
+}
+
 /** Centra la vista en un lugar sin cambiar el zoom (accesos directos "Lugares"). */
 export function centrarEn(v: Vista, t: Tamano, lugar: Coordenadas): Vista {
   return limitarVista({ ...v, lonCentro: lonParaDibujo(lugar.lon, v.lonCentro), latCentro: lugar.lat }, t);
