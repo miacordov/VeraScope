@@ -21,6 +21,7 @@ VeraScope (NASA Space Apps 2026, *Earth System Trend Detective*) calcula la tend
 - Un PR de backend no toca `frontend/` y un PR de frontend no toca `backend/`. Si hace falta, es un cambio de contrato y necesita aprobación de ambos lados.
 - Textos para el usuario y mensajes de error en español sencillo.
 - Commits en español con prefijo `feat:`, `fix:`, `docs:`, `chore:` o `test:`.
+- Ramas borradas, no se recrean: `chore/base-frontend`, `fe/graficos-enso-v2` y `fe/tiempo-comparador-v2`. Se usan `main`, `fe/graficos-enso` y `fe/tiempo-comparador`. Rechaza un PR que salga de una de las borradas.
 
 ### Backend
 - NASA POWER es la única fuente en vivo. Las pruebas no llaman a servicios externos.
