@@ -75,6 +75,9 @@ git push -u origin <tu-rama>       # y abre el PR hacia main, enlazando tu issue
 
 - Todo PR lo aprueba **otra persona de tu área**; un cambio de contrato, **una de backend y una de frontend**.
 - CI en verde para fusionar. Nada de `push --force` a `main` ni pruebas desactivadas.
+- **Antes de abrir el PR, prueba todo el repositorio** con `scripts/testea-repo.sh` (Linux o macOS; ~5 min, `--rapido` ~3 min). Corre lo mismo que el CI en backend, preparador y frontend, y además levanta la
+  API simulada para comprobar la conexión: cada ruta que usa la app responde lo que esperan sus fixtures, CORS
+  de la web, el error estándar y que los tipos de `esquema.ts` coinciden con `/openapi.json`.
 - Si tu tarea te obliga a tocar la carpeta del otro lado (`backend/` ↔ `frontend/`), **detente y avisa**:
   casi seguro es un cambio de contrato.
 

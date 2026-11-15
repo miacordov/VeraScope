@@ -17,3 +17,7 @@ El 15-nov-2026 se borraron estas ramas, porque su contenido ya está en `main` o
 - No hagas `push` de una copia local de esas ramas: el push vuelve a crearlas en GitHub.
 - Si todavía están en la máquina: `git fetch --prune`, cámbiate a la rama vigente y bórrala con `git branch -D <rama>`.
 - La versión estable del equipo es `main`. Antes de empezar, actualízate: `git pull --rebase origin main`.
+
+## Probar todo el repositorio
+
+`scripts/testea-repo.sh` (`--rapido` omite `expo export -p web` y el esquema OpenAPI) corre backend, preparador, frontend y la conexión entre la API simulada y la app. Sale con 1 si algo falla. Córrelo antes de abrir un PR que toque las dos carpetas o el contrato.
