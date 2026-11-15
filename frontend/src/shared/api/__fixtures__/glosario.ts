@@ -1,12 +1,8 @@
-// Generado por `npm run fixtures:copiar` desde backend/app/catalogo/simulado/glosario.json. No editar a mano.
+// Generado por `npm run fixtures:copiar` desde backend/app/catalogo/glosario.json. No editar a mano.
 import type { GlosarioRespuesta } from '../tipos';
 
 const fixture: GlosarioRespuesta = {
   "terminos": [
-    {
-      "termino": "Datos simulados",
-      "definicion": "Los escenarios de este servicio son ejemplos ficticios para desarrollar la aplicación. No son hallazgos ni observaciones reales."
-    },
     {
       "termino": "Tendencia",
       "definicion": "Cambio sostenido de una serie a lo largo del tiempo, distinto del ruido entre meses."

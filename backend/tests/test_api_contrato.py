@@ -116,9 +116,15 @@ def test_cors_respeta_lista_del_entorno(cliente, origen):
 
 
 def test_cada_respuesta_simulada_procede_de_json_local_validado(cliente, modelo_respuesta):
-    carpeta = Path(__file__).resolve().parents[1] / "app" / "catalogo" / "simulado"
-    archivos = sorted(carpeta.glob("*.json"))
-    assert archivos, "Faltan los JSON simulados de issue #1 (se crean después de RED)"
+    catalogo = Path(__file__).resolve().parents[1] / "app" / "catalogo"
+    carpeta = catalogo / "simulado"
+    # Variables y glosario son editoriales, compartidos por ambos modos.
+    archivos = sorted(
+        archivo
+        for archivo in carpeta.glob("*.json")
+        if archivo.stem not in {"variables", "glosario"}
+    ) + [catalogo / "variables.json", catalogo / "glosario.json"]
+    assert archivos, "Faltan los JSON locales del catálogo"
     documentos = {archivo: json.loads(archivo.read_text(encoding="utf-8")) for archivo in archivos}
     utilizados = set()
     for ruta, parametros in RUTAS:
@@ -128,7 +134,9 @@ def test_cada_respuesta_simulada_procede_de_json_local_validado(cliente, modelo_
         assert respuesta.status_code == 200
         datos = respuesta.json()
         coinciden = [archivo for archivo, documento in documentos.items() if documento == datos]
-        assert coinciden, f"{ruta} no coincide con ningún JSON simulado local"
+        assert coinciden, f"{ruta} no coincide con ningún JSON local autorizado"
+        for archivo in coinciden:
+            assert archivo.parent == (catalogo if ruta in {"/variables", "/glosario"} else carpeta)
         modelo = modelo_respuesta(ruta_esquema(ruta))
         for archivo in coinciden:
             modelo.model_validate(documentos[archivo])
