@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException
 
 from app.api import analyze, catalogo, compare_periods, router, scan, teleconnect  # noqa: F401
+from app.api.rejilla import cargar_rejilla
 from app.api.simulados import cargar_escenarios
 from app.contracts import ErrorRespuesta
 from app.datos import carpeta_datos
@@ -65,6 +66,9 @@ async def lifespan(app: FastAPI):
 
     # Resultados del escaneo (ScanMap)
     app.state.escaneo_resultados, app.state._resultados_mtime = _cargar_resultados(datos)
+
+    # Matrices de la rejilla para teleconnect (≈ 16 s y ≈ 32 MB con la rejilla completa)
+    app.state.rejilla = None if simulado else cargar_rejilla(datos)
 
     logger.info(
         "arranque simulado=%s datos=%s escaneo=%s",
