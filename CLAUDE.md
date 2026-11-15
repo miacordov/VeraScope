@@ -10,6 +10,7 @@ El 15-nov-2026 se borraron estas ramas, porque su contenido ya está en `main` o
 |---|---|
 | `fe/graficos-enso-v2` | `fe/graficos-enso` |
 | `fe/tiempo-comparador-v2` | `fe/tiempo-comparador` |
+| `fe/distribucion-v2` | `fe/distribucion` |
 | `chore/base-frontend` | `main` |
 
 - Antes de crear una rama, cambiarte a ella o hacer `push`, comprueba que no sea una de las borradas. Si te piden una, avisa y usa la vigente.
