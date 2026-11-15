@@ -28,6 +28,7 @@ from app.datos.power_client import PowerError, PowerLento
 from app.estadistica import veredicto
 from app.estadistica.celda import TendenciaCelda, analizar_celda
 from app.estadistica.constantes import ventana_fin
+from app.estadistica.costero import aviso_nino_costero, aviso_respuesta_no_lineal
 from app.estadistica.periodos import meses_inusuales
 from app.estadistica.teleconexion import celda_mas_cercana
 
@@ -63,6 +64,26 @@ def _cercana_en_cache(cache, variable, lat, lon):
         _, lat_c, lon_c = llave.split(":")
         candidatas.append((float(lat_c), float(lon_c)))
     return _cercana(lat, lon, candidatas)
+
+
+def _avisos(rc, variable, lat, lon, meses, indice_arr, indice, datos) -> list[tuple[str, str]]:
+    """Avisos del motor (C12) más los de la costa norte del Perú (`estadistica/costero.py`).
+
+    `nino_costero` solo se evalúa con el ONI: con Niño 1+2 ya se está usando ese índice.
+    """
+    lista = list(rc.avisos)
+    no_lineal = aviso_respuesta_no_lineal(lat, lon, variable)
+    if no_lineal is not None:
+        lista.append(no_lineal)
+    if indice == IndiceId.ONI:
+        try:
+            _, nino12 = indices.cargar_indice(IndiceId.NINO12.value, datos, meses)
+        except FileNotFoundError:  # aviso complementario: sin Niño 1+2 local, se omite
+            return lista
+        costero = aviso_nino_costero(lat, lon, rc.serie_original, indice_arr, nino12)
+        if costero is not None:
+            lista.append(costero)
+    return lista
 
 
 def _tendencia(res: TendenciaCelda, p_ajustado=None) -> Tendencia:
@@ -244,7 +265,12 @@ def analyze(
                 indicativo=vinculo.indicativo,
             ),
             colinealidad=_numero(rc.colinealidad),
-            avisos=[Aviso(codigo=c, texto=t) for c, t in rc.avisos],
+            avisos=[
+                Aviso(codigo=c, texto=t)
+                for c, t in _avisos(
+                    rc, variable, lat_q, lon_q, meses, indice_arr, indice, estado.datos
+                )
+            ],
             # Cálculo C17: fase del índice en t − ℓ* (periodos.meses_inusuales).
             meses_inusuales=[
                 MesInusual(fecha=m.fecha, z=_numero(m.z), fase=m.fase)
