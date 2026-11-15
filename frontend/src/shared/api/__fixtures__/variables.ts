@@ -1,4 +1,4 @@
-// Generado por `npm run fixtures:copiar` desde backend/app/catalogo/simulado/variables.json. No editar a mano.
+// Generado por `npm run fixtures:copiar` desde backend/app/catalogo/variables.json. No editar a mano.
 import type { VariablesRespuesta } from '../tipos';
 
 const fixture: VariablesRespuesta = {
@@ -43,16 +43,16 @@ const fixture: VariablesRespuesta = {
     {
       "id": "ONI",
       "nombre": "Índice Oceánico de El Niño",
-      "fuente": "ONI, NOAA CPC",
       "definicion": "Anomalía de temperatura en Niño 3.4, promediada en tres meses y asignada al mes central.",
-      "unidad": "°C"
+      "unidad": "°C",
+      "fuente": "ONI, NOAA CPC"
     },
     {
       "id": "NINO12",
       "nombre": "Niño 1+2",
-      "fuente": "Niño 1+2, NOAA CPC",
       "definicion": "Anomalía mensual frente a la costa de Perú y Ecuador, disponible desde 1982.",
-      "unidad": "°C"
+      "unidad": "°C",
+      "fuente": "Niño 1+2, NOAA CPC"
     }
   ]
 };
