@@ -37,6 +37,9 @@ DEMOS = [
     # Celda de ScanMap (no el punto −5.0, −80.5): tarjeta, escaneo y líneas coinciden.
     ("efecto-espejo (Piura)", -6.0, -80.0),
     ("senal-o-ruido", -6.0, -80.0),
+    # Los otros dos lugares de las demos (data/demo/*.json); ya son celdas de ScanMap.
+    ("Borneo", -2.0, 116.0),
+    ("norte de Australia", -14.0, 132.0),
 ]
 
 # ── ~50 ciudades conocidas (lat, lon) ────────────────────────────────────────
