@@ -578,9 +578,9 @@ Si la celda clicada no está en la rejilla, el origen es la **celda de ScanMap m
 
 // demos/{id}
 { "id": "efecto-espejo", "titulo": "El efecto espejo de El Niño", "variable": "PRECTOTCORR",
-  "celda": { "lat": -5.0, "lon": -80.5 },
+  "celda": { "lat": -6.0, "lon": -80.0 },
   "pasos": [ { "n": 1, "texto": "Esta es Piura. Mira la lluvia: hay meses que parecen catastróficos.",
-               "acciones": [ { "tipo": "seleccionar_celda", "lat": -5.0, "lon": -80.5 },
+               "acciones": [ { "tipo": "seleccionar_celda", "lat": -6.0, "lon": -80.0 },
                              { "tipo": "quitar_el_nino", "valor": false } ] } ] }
 ```
 
