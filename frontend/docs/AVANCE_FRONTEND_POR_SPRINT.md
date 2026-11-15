@@ -31,17 +31,20 @@ backend.
 | | Estado |
 |---|---|
 | **Sprint en el que deberíamos estar** | **S4 → S5** (congelamiento en la hora 36; `release/demo` todavía no existe) |
-| **Sprint en el que está el frontend** | **S2–S3**: en `main` están la base, el panel de gráficos con el interruptor (F2, #40) y la tarjeta de veredicto, el logo y los textos de estados (F3, #33, #34, #35). **Por avanzar:** montar la tarjeta en `espacio.tsx` (F1), fusionar la reproducción (F2, `fe/tiempo-comparador`), el mapa y las líneas (F1) y las demos (F3) |
+| **Sprint en el que está el frontend** | **S2–S3**: en `main` están la base, el panel de gráficos con el interruptor (F2, #40) y la tarjeta de veredicto, el logo y los textos de estados (F3, #33, #34, #35). En `fe/mapa-celda` (F1, sin fusionar): mapa, selector y la tarjeta montada en `espacio.tsx` (#9). **Por avanzar:** fusionar el #9 (F1), la reproducción (F2, `fe/tiempo-comparador`), las líneas (F1) y las demos (F3) |
 | **Backend** | ✅ `analyze` real con caché y precalentamiento (#30), avisos de Niño costero (#29, #31), demo de Piura en la celda (−6, −80) (#32), `teleconnect` y `compare-periods` con datos reales (#41, #42) y **paquete de datos reales en el repo** (#43, `backend/paquete-datos/verascope-datos-20261115.tar.gz`). **Por avanzar:** URL pública con HTTPS, rutas del feed y del mosaico (#7) y respuestas de demo para la app sin red (#8). `/salud` dice escaneo `en_curso` aunque el escaneo esté listo (error conocido) |
 | **Verificación de `main`** | `npx tsc --noEmit`, `npm run lint` y `npm run test` en verde (14 archivos, 92 pruebas). Con los datos reales, `analyze` de Piura (−6, −80) devuelve 540 meses y veredicto `sin_tendencia` (origen `escaneo`) |
 
 ### ⚠️ Lo que hay que resolver ya
 
-- **La tarjeta de veredicto está en `main` pero no se ve:** `app/espacio.tsx` todavía muestra solo `InsigniaVeredicto`.
-  Hasta que F1 ponga `TarjetaVeredicto` en su lugar, el interruptor cambia el gráfico pero no el veredicto (criterio
-  del hito 20).
-- **Los textos de estados (`textosEstados.ts`) y el logo (`LogoVeraScope`) no los usa ninguna pantalla todavía.**
-  `espacio.tsx` usa su propio `ErrorConReintento`, sin el botón "Usar la celda cercana" de `power_lento`.
+- ~~**La tarjeta de veredicto está en `main` pero no se ve.**~~ 🟡 Resuelto en `fe/mapa-celda` (F1): `espacio.tsx`
+  monta `TarjetaVeredicto` y el interruptor cambia el veredicto sin red (probado con datos reales de Piura) —
+  **por avanzar:** fusionar el #9.
+- ~~**Los textos de estados no los usa ninguna pantalla.**~~ 🟡 En `fe/mapa-celda`, los errores de `espacio.tsx` y del
+  selector de variable usan `estadoDeError()` (con "Usar la celda cercana" y "Ver la lluvia en este lugar") —
+  **por avanzar:** fusionar el #9. El logo (`LogoVeraScope`) sigue sin usarse en ninguna pantalla (F3).
+- **`/variables` con datos reales responde 503 (`escaneo_en_curso`):** el selector de variable no puede cargar el
+  catálogo; la app muestra el aviso y se puede analizar la lluvia (variable por defecto). Es del backend (B1).
 - **Guion de la demo 1:** con los datos reales (comentario en el issue #6), la lluvia de Piura **no tiene líneas** hacia
   Indonesia ni hacia el norte de Australia; solo `RH2M` da líneas de efecto opuesto, hacia el Pacífico norte tropical.
   El guion se ajusta a los datos: hay que decidirlo con B3 antes de construir la demo 1 (cambios ya pedidos en el
@@ -56,7 +59,7 @@ backend.
 | `fe/tiempo-comparador` | F2 | 🟡 reproducción lista (7 commits fuera de `main`) · **por avanzar:** abrir PR y fusionar |
 | `fe/distribucion` | F2 | ✅ `eas.json` ya en `main` · **por avanzar:** primer APK, web y versiones finales |
 | `fe/veredicto-feed` | F3 | ✅ tarjeta en `main` (#34, #35) · **por avanzar:** que se vea en `espacio.tsx`; el feed está recortado |
-| `fe/mapa-celda` | F1 | **por avanzar:** sin commits propios |
+| `fe/mapa-celda` | F1 | 🟡 #9 listo y actualizado con `main`: mapa, selector, tarjeta de veredicto montada y errores con `estadoDeError()` · **por avanzar:** rendimiento y capturas en un teléfono, abrir PR y fusionar |
 | `fe/lineas-mosaico` | F1 | **por avanzar:** sin commits propios |
 | `fe/demos-glosario` | F3 | **por avanzar:** sin commits propios |
 
@@ -107,13 +110,13 @@ backend.
 ### S1 · Piezas base (horas 6–13)
 
 **F1 · `fe/mapa-celda` (#9)**
-- [ ] Costas Natural Earth 110m en `assets/geo/tierra.json`; mapa centrado en el Pacífico (vista 90–330) — **por avanzar**
-- [ ] Polígonos con desplazamiento 0 y +360 (sin rayas); puntos con `lon360` — **por avanzar**
-- [ ] Toque → celda cuantizada → rectángulo visible (≥ ~12 px), con la celda que devuelve la API — **por avanzar**
-- [ ] Gestos, botones ＋/− y Restablecer vista — **por avanzar**
-- [ ] Accesos directos a Piura, Borneo y norte de Australia — **por avanzar**
-- [ ] Selector de variable (desde `/variables`) y ventana (< 10 años no se envía) — **por avanzar**
-- [ ] Selector de índice con Niño 1+2 — **por avanzar** (B3 ya lo decidió: entra como complementario, #29)
+- [x] Costas Natural Earth 110m en `assets/geo/tierra.json`; mapa centrado en el Pacífico (vista 90–330) 🟡 (`fe/mapa-celda`) — **por avanzar:** fusionar
+- [x] Polígonos con desplazamiento 0 y +360 (sin rayas); puntos con `lon360` 🟡 — **por avanzar:** fusionar
+- [x] Toque → celda cuantizada → rectángulo visible (≥ ~12 px), con la celda que devuelve la API 🟡 — **por avanzar:** fusionar
+- [x] Gestos, botones ＋/− y Restablecer vista; rueda del ratón en web 🟡 — **por avanzar:** fusionar
+- [x] Accesos directos a Piura, Borneo y norte de Australia 🟡 — **por avanzar:** fusionar
+- [x] Selector de variable (desde `/variables`) y ventana (< 10 años no se envía) 🟡 — **por avanzar:** fusionar
+- [x] Selector de índice con Niño 1+2 (aparece solo si `/variables` lo ofrece) 🟡 — **por avanzar:** fusionar
 
 **F2 · `fe/distribucion` (#12) y `fe/graficos-enso` (#10)**
 - [x] `eas.json` con perfil `preview` (APK) y `expo.android.package` ✅ (#25)
@@ -132,7 +135,7 @@ backend.
 - [x] `format.ts` es-PE con unidad ✅ (#25; ajuste en #35)
 
 **Criterio de cierre (hora 13):**
-- [ ] Mapa con toque → celda, en el teléfono y en la web — **por avanzar** (F1)
+- [x] Mapa con toque → celda, en la web 🟡 (`fe/mapa-celda`) — **por avanzar:** probarlo en el teléfono y fusionar
 - [ ] Primer APK instalado o en cola — **por avanzar** (F2)
 
 ---
@@ -140,14 +143,15 @@ backend.
 ### S2 · Flujo real (horas 13–20) → Hito 20
 
 **F1 · cierre de `fe/mapa-celda` (#9)**
-- [ ] `espacio.tsx` adaptable (teléfono con hoja inferior, tableta, web) — **por avanzar**
-- [ ] Montar `TarjetaVeredicto` en `espacio.tsx` en lugar de `InsigniaVeredicto` — **por avanzar** (la tarjeta ya está
-      en `main`, #34)
-- [ ] Usar `estadoDeError()` de `textosEstados.ts` en los errores de `espacio.tsx` (botón "Usar la celda cercana") —
-      **por avanzar**
+- [ ] `espacio.tsx` adaptable (teléfono con hoja inferior, tableta, web) — **por avanzar** (ya hay dos columnas en web
+      ≥ 1024 y una columna en el teléfono; falta la hoja inferior)
+- [x] Montar `TarjetaVeredicto` en `espacio.tsx` en lugar de `InsigniaVeredicto` 🟡 (`fe/mapa-celda`) — **por avanzar:**
+      fusionar
+- [x] Usar `estadoDeError()` de `textosEstados.ts` en los errores de `espacio.tsx` y del selector (botón "Usar la celda
+      cercana") 🟡 — **por avanzar:** fusionar
 - [ ] Rendimiento en un Android de gama baja — **por avanzar**
 - [ ] Colores de La Niña y de la línea de mismo efecto, con captura — **por avanzar**
-- [ ] Probar contra el `analyze` real (el backend ya lo tiene, #30; datos en #43) — **por avanzar**
+- [x] Probar contra el `analyze` real (el backend ya lo tiene, #30; datos en #43) 🟡 (en la web con Piura) — **por avanzar:** fusionar
 
 **F2 · `fe/graficos-enso` (#10)** ✅ fusionado en `main` (#40)
 - [x] Panel **Causa** (índice con franjas de El Niño y trama de La Niña, referencias ±0.5) ✅ (#40)
@@ -169,9 +173,10 @@ backend.
 - [ ] ~~Feed de ScanMap con pestañas~~ ✂️ como mucho, lista simple si sobra tiempo (el backend #7 sigue abierto)
 
 **Criterio del hito 20:**
-- [ ] Tocar el mapa (teléfono y web) lleva al veredicto — **por avanzar** (falta el mapa de F1)
-- [ ] El interruptor cambia gráfico y veredicto sin red — **por avanzar:** el gráfico ya cambia (#40); falta montar la
-      tarjeta (#34) en `espacio.tsx`
+- [x] Tocar el mapa lleva al veredicto 🟡 (`fe/mapa-celda`, probado en la web con datos reales) — **por avanzar:**
+      fusionar el #9 y probarlo en un teléfono real
+- [x] El interruptor cambia gráfico y veredicto sin red 🟡 (gráfico #40; tarjeta montada en `fe/mapa-celda`) —
+      **por avanzar:** fusionar el #9
 
 ---
 
