@@ -55,6 +55,10 @@ beforeEach(() => {
   useEstado.getState().reiniciar();
 });
 
+// El primer montaje de la pantalla carga todo el árbol de módulos y, con la caché
+// de Jest vacía (primera corrida o CI), supera los 5 s por defecto.
+jest.setTimeout(30_000);
+
 // Sin esto quedan vivos los temporizadores de limpieza de la caché.
 afterEach(() => cliente.clear());
 

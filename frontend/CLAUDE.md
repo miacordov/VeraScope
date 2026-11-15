@@ -642,6 +642,16 @@ Los archivos de contratos y el estado global son **compartidos**: los edita su d
 6. **Commits con prefijo:** `feat:`, `fix:`, `docs:`, `chore:` (y `test:` si solo cambian pruebas). Mensaje en español, en presente, corto. Si el cambio toca una regla estadística, cita su número (por ejemplo `fix: intervalo con varianza corregida (C8)`).
 7. **No se hace `push --force` a `main`, ni se salta la revisión, ni se desactivan pruebas para que pase el CI.**
 8. Si una tarea te obliga a salir de tu carpeta (`backend/` ↔ `frontend/`), **detente y avisa**: probablemente es un cambio de contrato.
+9. **Ramas borradas: no se vuelven a crear.** El 15-nov-2026 se borraron `chore/base-frontend`, `fe/graficos-enso-v2`, `fe/tiempo-comparador-v2` y `fe/distribucion-v2`, porque su contenido ya está en `main` o en las ramas vigentes. Usa estas:
+
+   | Si ibas a usar… | Usa |
+   |---|---|
+   | `fe/graficos-enso-v2` | `fe/graficos-enso` |
+   | `fe/tiempo-comparador-v2` | `fe/tiempo-comparador` |
+   | `fe/distribucion-v2` | `fe/distribucion` |
+   | `chore/base-frontend` | `main` |
+
+   No las crees ni hagas `push` de una copia local: el push vuelve a crear la rama en GitHub. Si todavía las tienes en tu máquina, ejecuta `git fetch --prune`, cámbiate a la rama vigente y borra la copia con `git branch -D <rama>`. **Agentes de IA:** antes de crear una rama, cambiarte a ella o hacer `push`, comprueba que no sea una de estas; si te la piden, avisa y usa la vigente.
 
 ### Calendario, hitos y recorte
 
