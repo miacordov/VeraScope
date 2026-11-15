@@ -5,6 +5,7 @@ import { parametrosAnalyze } from '@/estado/seleccion';
 import { useEstado } from '@/estado/store';
 import { InterruptorElNino } from '@/features/enso-toggle/InterruptorElNino';
 import { PanelSeries } from '@/features/series-charts/PanelSeries';
+import { ControlTiempo } from '@/features/time-comparator/ControlTiempo';
 import { esErrorApi } from '@/shared/api/cliente';
 import { useAnalyze, useSalud } from '@/shared/api/consultas';
 import { EtiquetaFuente } from '@/shared/components/EtiquetaFuente';
@@ -76,6 +77,7 @@ export default function Espacio() {
           {/* Hueco de F2 (#10): interruptor y panel Causa · Consecuencia · Realidad. */}
           <Tarjeta>
             <InterruptorElNino rezagoMeses={analisis.data.vinculo_el_nino.rezago_meses} />
+            <ControlTiempo fechas={analisis.data.fechas} />
           </Tarjeta>
           <PanelSeries analisis={analisis.data} />
         </>
