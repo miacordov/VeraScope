@@ -83,6 +83,7 @@ El plan original tenía errores que un jurado técnico habría detectado. Estas 
 - **Cada dato muestra su fuente, unidad, celda y periodo:** "MERRA-2 vía NASA POWER", "ONI, NOAA CPC", fecha de descarga. Si es análisis fuera de la rejilla de ScanMap, se rotula **"análisis individual"**.
 - **No se inventan números.** Ni en la interfaz, ni en las demos, ni en los titulares. Todo número viene de la API o de un archivo de datos real; los datos simulados siempre se rotulan como simulados.
 - Si la respuesta de Piura no es lineal (lluvia que responde sobre todo a eventos extremos), **la tarjeta lo dice**. Para Piura se ofrece también el índice **Niño 1+2** (Niños costeros como el de 2017, que el ONI casi no registra).
+- **La demo de Piura usa la celda de ScanMap (−6, −80)**, no el punto (−5.0, −80.5): así la tarjeta, el veredicto del escaneo (`origen: "escaneo"`) y las líneas de teleconexión salen de la misma celda. El punto queda a 124 km y su humedad del aire se parece poco (r = 0.77). Decisión de B1 y F3, 15-nov-2026.
 - El umbral mensual de El Niño (índice ≥ 0.5) y La Niña (≤ −0.5) es una **simplificación**; NOAA exige cinco estaciones seguidas. Se indica en el glosario.
 - Las cifras de simulaciones (falsos positivos, potencia) son **de series sintéticas**, no de datos reales. No las presentes como resultados sobre datos reales.
 - Las referencias de literatura de los informes se citaron **de memoria** y hay que verificarlas antes de la entrega.
@@ -558,9 +559,9 @@ Si la celda clicada no está en la rejilla, el origen es la **celda de ScanMap m
 
 // demos/{id}
 { "id": "efecto-espejo", "titulo": "El efecto espejo de El Niño", "variable": "PRECTOTCORR",
-  "celda": { "lat": -5.0, "lon": -80.5 },
+  "celda": { "lat": -6.0, "lon": -80.0 },
   "pasos": [ { "n": 1, "texto": "Esta es Piura. Mira la lluvia: hay meses que parecen catastróficos.",
-               "acciones": [ { "tipo": "seleccionar_celda", "lat": -5.0, "lon": -80.5 },
+               "acciones": [ { "tipo": "seleccionar_celda", "lat": -6.0, "lon": -80.0 },
                              { "tipo": "quitar_el_nino", "valor": false } ] } ] }
 ```
 
