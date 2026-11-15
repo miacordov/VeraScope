@@ -7,6 +7,7 @@ ruido. `resultados.parquet` trae el vínculo con El Niño de cada celda.
 
 import importlib
 import json
+import time
 from unittest.mock import Mock
 
 import numpy as np
@@ -279,3 +280,54 @@ def test_compare_periods_power_lento_se_devuelve_tal_cual(monkeypatch, tmp_path,
         respuesta = _comparar(c)
     assert respuesta.status_code == 504
     assert respuesta.json()["error"]["codigo"] == "power_lento"
+
+
+# ── rendimiento ──────────────────────────────────────────────────────────────
+
+
+@pytest.mark.lento
+def test_rendimiento_teleconnect_rejilla_completa(monkeypatch, tmp_path, sin_red):
+    """Issue #6: `teleconnect` < 50 ms sobre la rejilla real (4235 celdas × 540 meses).
+
+    Mide la ruta completa (HTTP, lectura del escaneo y búsqueda). Las anomalías son
+    sintéticas y se ponen en memoria directamente, para no pagar los ~16 s del arranque.
+    """
+    from app.datos.celdas import rejilla
+    from app.estadistica.teleconexion import preparar_matrices
+
+    celdas = np.array(rejilla(), dtype=float)
+    rng = np.random.default_rng(11)
+    oni = _oni(rng)
+    tabla = tmp_path / "tabla"
+    tabla.mkdir()
+    np.save(tabla / "celdas.npy", celdas)
+    (tabla / "meses.json").write_text(json.dumps(MESES), encoding="utf-8")
+    np.save(tabla / "ONI.npy", oni.astype(np.float32))
+
+    # Un tercio de las celdas responde a El Niño con signo +, otro tercio con signo −.
+    respuesta = rng.choice([-1.0, 0.0, 1.0], size=len(celdas))
+    anomalias = respuesta[:, None] * oni[None, :] + rng.normal(0, 0.5, (len(celdas), N))
+    pd.DataFrame(
+        {
+            "variable": "PRECTOTCORR",
+            "celda": np.arange(len(celdas)),
+            "lat": celdas[:, 0],
+            "lon": celdas[:, 1],
+            "r_enso": np.where(respuesta == 0, 0.02, 0.8 * respuesta),
+            "p_enso": np.where(respuesta == 0, 0.8, 1e-8),
+        }
+    ).to_parquet(tmp_path / "resultados.parquet")
+
+    with _cliente(monkeypatch, tmp_path, sin_red) as c:
+        c.app.state.rejilla.matrices["PRECTOTCORR"] = preparar_matrices(anomalias)
+        origen = int(np.flatnonzero(respuesta == 1)[0])
+        params = {"variable": "PRECTOTCORR", "lat": celdas[origen, 0], "lon": celdas[origen, 1]}
+        primera = c.get("/api/v1/teleconnect", params=params)
+        assert primera.status_code == 200, primera.text
+        assert primera.json()["lineas"], "el escenario tiene que producir líneas"
+        tiempos = []
+        for _ in range(10):
+            inicio = time.perf_counter()
+            assert c.get("/api/v1/teleconnect", params=params).status_code == 200
+            tiempos.append(time.perf_counter() - inicio)
+    assert np.median(tiempos) < 0.050
