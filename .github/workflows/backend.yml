@@ -26,6 +26,8 @@ jobs:
           cache-dependency-path: backend/pyproject.toml
       - name: Instalar API y herramientas
         run: pip install -e ".[dev]"
+      - name: Instalar el preparador de datos
+        run: pip install -e verascope_datos
       - name: Revisar código
         run: ruff check app tests pyproject.toml
       - name: Revisar formato
