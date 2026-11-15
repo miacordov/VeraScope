@@ -1,6 +1,6 @@
 # Reglas de colaboración con IA · Frontend de VeraScope
 
-Reglas obligatorias para las **3 personas del frontend** (F1 Kevin, F2 Isabel, F3 Franco) y para **cualquier IA**
+Reglas obligatorias para las **3 personas del frontend** (F1, F2 y F3) y para **cualquier IA**
 que use cada una (Claude Code, Copilot, Cursor, ChatGPT…). Tienen dos objetivos: que el trabajo de una persona
 **nunca rompa ni borre** el avance de otra, y que el repositorio **no quede con marcas de IA**.
 
@@ -11,10 +11,11 @@ que use cada una (Claude Code, Copilot, Cursor, ChatGPT…). Tienen dos objetivo
 > Este archivo no cambia ninguna regla técnica de la guía: solo agrega cómo colaborar sin pisarse y sin marcas de
 > IA. El reparto de tareas y el horario están en [`SPRINT_FRONTEND.md`](SPRINT_FRONTEND.md).
 >
-> **Cambios acordados el 15 de noviembre:** la base del frontend **ya la hizo Kevin (F1)** en `chore/contratos`, con
-> **Expo SDK 58** (su rama ya actualiza `frontend/CLAUDE.md` y `AGENTS.md`). Entra a `main` cuando Isabel (F2) apruebe
-> el PR. El prototipo de Kevin (`KevinDC65/Frontend`) sigue sirviendo de referencia: se pueden copiar sus piezas
-> visuales (sección 4).
+> **Estado al 15 de noviembre:** la base del frontend (F1) ya está en `main`, con **Expo SDK 58** fijo. Las ramas
+> `chore/base-frontend`, `fe/graficos-enso-v2`, `fe/tiempo-comparador-v2` y `fe/distribucion-v2` **se borraron y no se
+> vuelven a crear** (ver `CLAUDE.md` de la raíz y la sección 8). El avance por sprint está en
+> [`AVANCE_FRONTEND_POR_SPRINT.md`](AVANCE_FRONTEND_POR_SPRINT.md). El prototipo de F1 sigue sirviendo de referencia
+> visual (sección 4).
 
 ---
 
@@ -38,17 +39,17 @@ que use cada una (Claude Code, Copilot, Cursor, ChatGPT…). Tienen dos objetivo
 
 | Zona | Dueño | Ramas (issue) | Archivos |
 |---|---|---|---|
-| **F1 · Base, mapa y líneas** | Kevin | `chore/contratos` (#1, parte frontend), `fe/mapa-celda` (#9), `fe/lineas-mosaico` (#13) | Esqueleto de `frontend/` (`package.json`, `tsconfig.json`, `eslint.config.js`, `scripts/`), `src/estado/store.ts`, `src/estado/seleccion.ts`, `src/shared/api/`, `src/shared/geo.ts`, `src/shared/tema.ts`, `src/shared/ui/`, `src/shared/ejemploSimulado.ts`, `app/espacio.tsx`, `src/features/map/`, `variable-picker/`, `teleconnection-lines/`, `assets/geo/`, `.github/workflows/frontend.yml` |
-| **F2 · Gráficos, El Niño, tiempo y distribución** | Isabel | `fe/graficos-enso` (#10), `fe/tiempo-comparador` (#14), `fe/distribucion` (#12) | `src/features/series-charts/`, `enso-toggle/`, `time-comparator/`, `src/estado/queryClient.ts`, `src/estado/persistencia.ts`, `src/estado/ProveedorConsultas.tsx`, `eas.json`, `app.json` |
-| **F3 · Veredicto, feed, inicio, demos y glosario** | Franco | `fe/veredicto-feed` (#11), `fe/demos-glosario` (#15) | `src/features/verdict-card/`, `scan-feed/`, `guided-tours/`, `glossary/`, `src/shared/components/`, `src/shared/format.ts`, `app/_layout.tsx`, `app/index.tsx`, `app/glosario.tsx`, `assets/demo/` |
+| **F1 · Base, mapa y líneas** | F1 | `fe/mapa-celda` (#9), `fe/lineas-mosaico` (#13) · base ✅ ya en `main` (#1) | Esqueleto de `frontend/` (`package.json`, `tsconfig.json`, `eslint.config.js`, `scripts/`), `src/estado/store.ts`, `src/estado/seleccion.ts`, `src/shared/api/`, `src/shared/geo.ts`, `src/shared/tema.ts`, `src/shared/ui/`, `src/shared/ejemploSimulado.ts`, `app/espacio.tsx`, `src/features/map/`, `variable-picker/`, `teleconnection-lines/`, `assets/geo/`, `.github/workflows/frontend.yml` |
+| **F2 · Gráficos, El Niño, tiempo y distribución** | F2 | `fe/graficos-enso` (#10), `fe/tiempo-comparador` (#14), `fe/distribucion` (#12) | `src/features/series-charts/`, `enso-toggle/`, `time-comparator/`, `src/estado/queryClient.ts`, `src/estado/persistencia.ts`, `src/estado/ProveedorConsultas.tsx`, `eas.json`, `app.json` |
+| **F3 · Veredicto, feed, inicio, demos y glosario** | F3 | `fe/veredicto-feed` (#11), `fe/demos-glosario` (#15), `feat/f3-logo-textos-estados`, `fix/f3-atribucion-fuente` | `src/features/verdict-card/`, `scan-feed/`, `guided-tours/`, `glossary/`, `src/shared/components/`, `src/shared/format.ts`, `app/_layout.tsx`, `app/index.tsx`, `app/glosario.tsx`, `assets/demo/` |
 
-**Cómo se reparte la base:** Kevin creó en `chore/contratos` todos los archivos de la base, incluidos algunos que son
-de otros. Cuando se fusione, cada archivo pasa a su dueño según esta tabla:
-- `queryClient.ts` y `app.json` pasan a Isabel.
-- `format.ts`, `src/shared/components/`, `app/_layout.tsx`, `app/index.tsx` y `app/glosario.tsx` pasan a Franco.
+**Cómo quedó la base (ya en `main`):** F1 creó todos los archivos de la base, incluidos algunos que son de otros. Desde
+que se fusionó, cada archivo es de su dueño según esta tabla:
+- `queryClient.ts`, `app.json` y `eas.json` son de F2.
+- `format.ts`, `src/shared/components/`, `app/_layout.tsx`, `app/index.tsx` y `app/glosario.tsx` son de F3.
 
-La base todavía no tiene carpetas en `src/features/`: cada persona crea la suya en su rama. Para que su feature
-aparezca en `espacio.tsx`, se le pide a Kevin que agregue el hueco.
+Cada persona crea su carpeta en `src/features/` en su rama. Para que su feature aparezca en `espacio.tsx` (de F1), deja
+un hueco marcado con un comentario y lo avisa en el PR; F1 lo revisa.
 
 **Zona compartida (riesgo alto):** cualquier cambio se **anuncia antes** y lo **revisan las otras dos personas**.
 
@@ -127,10 +128,10 @@ u otro store) para lo mismo.
   vez y ambos responden a El Niño".
 - Cada dato muestra fuente, unidad, celda y periodo.
 
-**Qué se copia del prototipo de Kevin (`KevinDC65/Frontend`)**
+**Qué se copia del prototipo de F1 (repositorio de pruebas de F1)**
 - ✅ **Sí:** piezas visuales de `src/components/vs/`. Se copia la lógica de toque y dibujo de `maps.tsx` a
-  `features/map/` (Kevin), `charts.tsx` a `features/series-charts/` (Isabel), `verdict.tsx` a `features/verdict-card/`
-  (Franco) y, si falta alguno, los componentes básicos de `ui.tsx` a `src/shared/ui/` (Kevin). Cada uno copia a **su**
+  `features/map/` (F1), `charts.tsx` a `features/series-charts/` (F2), `verdict.tsx` a `features/verdict-card/`
+  (F3) y, si falta alguno, los componentes básicos de `ui.tsx` a `src/shared/ui/` (F1). Cada uno copia a **su**
   carpeta.
 - ❌ **No:** `src/lib/stats.ts`, `analysis.ts` ni `simulate.ts`, ni nada que calcule tendencias, p-valores o
   veredictos. Tampoco `simulation.tsx` (el estado es `store.ts`), `colors.ts` (el tema es grafito `#0E0F11`) ni datos
@@ -199,14 +200,12 @@ ayudado una IA.
   Si muestra algo y el commit **todavía no está subido**, corrígelo con `git commit --amend` (solo el último) o
   pide ayuda. Si ya está subido, avisa al grupo: no se reescribe historia compartida.
 
-**Si una firma ya quedó en una rama subida (caso de `chore/contratos`):** GitHub muestra el avatar de la IA junto al
-autor por la línea `Co-Authored-By` del mensaje. Hay dos formas de quitarla, y en las dos el código no cambia:
-1. **Al fusionar (recomendada, sin reescribir nada):** el PR se fusiona con **"Squash and merge"** y, en la caja del
-   mensaje, se borran las líneas `Co-authored-by: Claude…` antes de confirmar. A `main` entra un solo commit limpio
-   firmado por el autor. Los commits viejos solo quedan en la pestaña del PR y en la rama, que se borra al fusionar.
-2. **Limpiar la rama antes de abrir el PR:** **solo su autor** reescribe los mensajes (rebase) y hace
-   `git push --force-with-lease` a **su** rama, avisando antes para que nadie tenga trabajo local sobre ella. Nunca
-   se hace sobre `main`.
+**Si una firma ya quedó en una rama subida:** GitHub muestra el avatar de la herramienta junto al autor por la línea
+`Co-Authored-By` del mensaje. El código no cambia al quitarla.
+1. **Al fusionar (recomendada):** "Squash and merge" y, en la caja del mensaje, se borran las líneas `Co-authored-by`
+   antes de confirmar.
+2. **Si ya entró a `main`, se deja así.** Quitarla exigiría reescribir `main` con push forzado, que está prohibido
+   (sección 8). Pasó una vez con los 8 commits de la base (PR #25): no se repite.
 
 > Esto es sobre la autoría en el repositorio. Si las reglas de NASA Space Apps piden **declarar** el uso de IA en la
 > entrega, se declara en la descripción del proyecto; lo decide el equipo completo.
@@ -247,7 +246,12 @@ autor por la línea `Co-Authored-By` del mensaje. Hay dos formas de quitarla, y 
   del frontend (F1 → revisa F2 · F2 → revisa F3 · F3 → revisa F1) y el CI en verde.
 - Se usan **las ramas de los issues** (tabla de la sección 2). Para una corrección pequeña aparte:
   `fix/f2-huecos-grafico`, `docs/f3-glosario` (la letra indica de quién es).
-- Ramas cortas: se integra a `main` **al menos cada 4 a 6 horas**. Antes de abrir el PR: `git rebase main`.
+- Ramas cortas: se integra a `main` **al menos cada 4 a 6 horas**. Para ponerte al día con `main`: si tu rama **aún no
+  está subida**, `git pull --rebase origin main`; si **ya está subida**, `git merge origin/main` (GitHub **no permite
+  forzar el push** en las ramas `fe/…`, así que no se reescribe una rama subida).
+- **Ramas borradas que no se vuelven a crear:** `chore/base-frontend`, `fe/graficos-enso-v2`, `fe/tiempo-comparador-v2`
+  y `fe/distribucion-v2`. Se usan `main`, `fe/graficos-enso`, `fe/tiempo-comparador` y `fe/distribucion`. Si tienes
+  copias locales: `git fetch --prune` y `git branch -D <rama>`. Nunca hagas push de una copia local de esas ramas.
 - Desde la hora 36 (`v1.0-freeze`) solo entran ramas `fix/…` hacia `release/demo`.
 - **Dependencias y configuración** (`package.json`, `app.json`, `eas.json`…) van en un **PR aparte** que solo hace
   eso, anunciado al grupo, y se fusiona antes que el resto.
