@@ -3,6 +3,9 @@ import numpy as np
 import pymannkendall as mk
 from scipy.stats import false_discovery_control, norm, t as tdist
 
+# Implementación única del control de calidad (la API y el preparador usan la misma).
+from app.datos.validacion import rellenar_huecos
+
 ALFA = 0.05
 MIN_MESES = 120
 
@@ -15,21 +18,6 @@ def anomalias(valores, meses_calendario):
         if s.any():
             out[s] = v[s] - np.nanmean(v[s])
     return out
-
-
-def rellenar_huecos(y, max_hueco=2, max_faltante=0.10):
-    y = np.asarray(y, float).copy(); malo = np.isnan(y)
-    if not malo.any():
-        return y
-    if malo.mean() > max_faltante:
-        return None
-    racha = 0
-    for b in malo:
-        racha = racha + 1 if b else 0
-        if racha > max_hueco:
-            return None
-    i = np.arange(y.size); y[malo] = np.interp(i[malo], i[~malo], y[~malo])
-    return y
 
 
 def tendencia(y, alfa=ALFA, lag=12):
