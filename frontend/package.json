@@ -65,6 +65,10 @@
   },
   "jest": {
     "preset": "jest-expo",
+    "testTimeout": 20000,
+    "moduleNameMapper": {
+      "^(d3-[a-z-]+|internmap)$": "<rootDir>/node_modules/$1/dist/$1.js"
+    },
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/dist/"

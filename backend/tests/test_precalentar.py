@@ -17,3 +17,9 @@ def test_las_celdas_de_las_demos_estan_en_la_rejilla_de_scanmap():
 def test_piura_usa_la_celda_de_scanmap():
     piura = [(lat, lon) for nombre, lat, lon in DEMOS if "Piura" in nombre]
     assert piura == [(-6.0, -80.0)]
+
+
+def test_incluye_las_celdas_de_borneo_y_del_norte_de_australia():
+    """Los tres lugares de las demos (data/demo/*.json) se precalientan."""
+    celdas = {(lat, lon) for _, lat, lon in DEMOS}
+    assert {(-6.0, -80.0), (-2.0, 116.0), (-14.0, 132.0)} <= celdas
