@@ -121,7 +121,7 @@ Variables principales:
 - `VERASCOPE_SIMULADO=1`: usa únicamente los JSON locales de `backend/app/catalogo/simulado/`.
 - `VERASCOPE_FIN`: último año completo disponible; por defecto, año actual menos uno.
 - `VERASCOPE_CORS`: orígenes web permitidos, separados por coma.
-- `VERASCOPE_DATOS`: carpeta persistente que utilizará la integración real.
+- `VERASCOPE_DATOS`: carpeta persistente de datos; por defecto, `backend/data`. La API la resuelve al arrancar y la caché (`datos/cache.py`) la usará para leer y guardar. En la imagen vale `/data` (volumen). La API corre sin root (uid `10001`): un volumen de Docker nuevo ya queda con ese dueño, pero si montás una carpeta de tu máquina (`-v "$PWD/data:/data"`) con Docker nativo de Linux, dale permiso de escritura a ese uid (`sudo chown -R 10001 data`) o corré el contenedor con tu usuario (`--user "$(id -u):$(id -g)"`). Docker Desktop traduce los permisos de las carpetas compartidas y no necesita este paso.
 
 Pruebas y estilo:
 
@@ -130,6 +130,13 @@ cd backend
 .venv/Scripts/python.exe -m pytest -q
 .venv/Scripts/ruff.exe check app tests pyproject.toml
 .venv/Scripts/ruff.exe format --check app tests
+```
+
+Prueba opcional de la imagen (necesita Docker y red para bajar `python:3.11-slim`): construye la imagen, la levanta en modo simulado, espera el healthcheck de `/api/v1/salud` y comprueba que corre sin root, que puede escribir en `/data` y que no lleva `jobs/`, el preparador ni las pruebas:
+
+```bash
+cd backend
+VERASCOPE_PRUEBA_DOCKER=1 .venv/Scripts/python.exe -m pytest -q tests/test_imagen_docker.py
 ```
 
 La URL pública con HTTPS se documentará cuando el equipo active el alojamiento temporal. No se publica una URL antes de verificar el despliegue.

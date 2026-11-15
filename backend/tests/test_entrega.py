@@ -31,13 +31,22 @@ def test_dockerfile_usa_python_311_un_worker_y_solo_la_api():
     assert "COPY data" not in texto
 
 
-def test_dockerignore_excluye_preparador_datos_y_pruebas():
+def test_dockerfile_corre_sin_root_con_volumen_de_datos_y_salud():
+    texto = (BACKEND / "Dockerfile").read_text(encoding="utf-8")
+    assert "USER verascope" in texto
+    assert "VERASCOPE_DATOS=/data" in texto
+    assert 'VOLUME ["/data"]' in texto
+    assert "HEALTHCHECK" in texto and "/api/v1/salud" in texto
+    assert "COPY --from=construccion" in texto
+
+
+def test_dockerignore_excluye_preparador_datos_jobs_y_pruebas():
     lineas = {
         linea.strip()
         for linea in (BACKEND / ".dockerignore").read_text(encoding="utf-8").splitlines()
         if linea.strip() and not linea.lstrip().startswith("#")
     }
-    assert {"verascope_datos/", "data/", "tests/", ".venv/"} <= lineas
+    assert {"verascope_datos/", "data/", "tests/", "jobs/", ".venv/"} <= lineas
 
 
 def test_ci_fija_python_311_y_ejecuta_lint_formato_y_pruebas():

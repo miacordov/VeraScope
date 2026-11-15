@@ -52,3 +52,16 @@ def test_gzip_no_altera_el_json_publico(cliente):
     assert comprimida.headers["content-encoding"] == "gzip"
     assert "content-encoding" not in original.headers
     assert comprimida.json() == original.json()
+
+
+def test_arranque_lee_la_carpeta_de_verascope_datos(cliente, tmp_path):
+    assert cliente.app.state.datos == tmp_path
+
+
+def test_carpeta_de_datos_por_defecto_es_backend_data(monkeypatch):
+    from pathlib import Path
+
+    from app.datos import carpeta_datos
+
+    monkeypatch.delenv("VERASCOPE_DATOS", raising=False)
+    assert carpeta_datos() == Path(__file__).resolve().parents[1] / "data"
