@@ -1,0 +1,27 @@
+{
+  "sujetos": {
+    "PRECTOTCORR": "La lluvia",
+    "T2M": "La temperatura",
+    "GWETROOT": "La humedad del suelo en la zona de raíces",
+    "GWETTOP": "La humedad del suelo en la superficie",
+    "RH2M": "La humedad relativa"
+  },
+  "plantillas": {
+    "cambio_robusto": {
+      "sube": "{sujeto} sube de forma sostenida, aun quitando El Niño",
+      "baja": "{sujeto} baja de forma sostenida, aun quitando El Niño"
+    },
+    "sensible_a_el_nino": {
+      "sube": "{sujeto} sube, pero la tendencia depende de El Niño",
+      "baja": "{sujeto} baja, pero la tendencia depende de El Niño"
+    },
+    "cambio_oculto": {
+      "sube": "El Niño ocultaba que {sujeto_min} sube",
+      "baja": "El Niño ocultaba que {sujeto_min} baja"
+    },
+    "sin_tendencia": {
+      "plana": "No se detecta una tendencia clara en {sujeto_min}"
+    },
+    "opuestas": "{sujeto} sube aquí y baja allá"
+  }
+}

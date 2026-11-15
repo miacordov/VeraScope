@@ -119,7 +119,7 @@ verascope-datos panel                       # panel visual del preparador de dat
 | `VERASCOPE_SIMULADO` | `1` = responde con JSON simulados | `0` |
 | `VERASCOPE_CORS` | Orígenes de la **versión web** permitidos, separados por coma (las apps nativas no usan CORS) | `http://localhost:8081` (servidor de desarrollo de Expo para web) |
 
-**HTTPS:** las apps nativas bloquean las conexiones sin cifrar. Publica la API detrás de TLS (el proxy o el hosting) **desde la hora 6**. En desarrollo, el teléfono con Expo Go alcanza la API por la IP de la laptop (`--host 0.0.0.0` en `uvicorn`).
+**HTTPS:** las apps nativas bloquean las conexiones sin cifrar. Publica la API detrás de TLS (el proxy o el hosting) **desde la hora 6**. El equipo eligió un Quick Tunnel gratuito de Cloudflare para la demostración; antes de instalarlo, ejecutarlo o conectar el frontend, sigue `docs/despliegue-cloudflare-tunnel.md`. En desarrollo, el teléfono con Expo Go alcanza la API por la IP de la laptop (`--host 0.0.0.0` en `uvicorn`).
 
 No hay secretos en el repositorio. Las credenciales de Earthdata solo las usa el preparador de datos, en la máquina de quien lo corre, **nunca** en la imagen de la API.
 
@@ -596,6 +596,16 @@ Los archivos de contratos y el estado global son **compartidos**: los edita su d
 ### Ramas (flujo corto sobre `main`)
 
 `main` siempre es desplegable y cada fusión se despliega sola. Cada rama vive **horas, no días**.
+
+Antes de empezar o retomar trabajo, actualiza las referencias remotas y `main`; después vuelve a tu rama y actualízala. `main` se usa como base actualizada, no como rama de trabajo ni de commits:
+
+```bash
+git fetch --prune
+git switch main
+git pull --ff-only origin main
+git switch <tu-rama>
+git pull --ff-only
+```
 
 | Rama | Propósito | Dueño | Horas |
 |---|---|---|---|
