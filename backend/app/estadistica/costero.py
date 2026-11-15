@@ -50,3 +50,26 @@ def aviso_nino_costero(lat, lon, anomalias, oni, nino12) -> tuple[str, str] | No
         f"sigue mejor a esta serie que el ONI: correlación {abs(con_n12.r):.2f} frente a "
         f"{abs(con_oni.r):.2f}. Puedes repetir el análisis con el índice Niño 1+2.",
     )
+
+
+AVISO_NO_LINEAL = "respuesta_no_lineal"
+VARIABLE_NO_LINEAL = "PRECTOTCORR"
+
+
+def aviso_respuesta_no_lineal(lat, lon, variable) -> tuple[str, str] | None:
+    """Cálculo C12, respuesta no lineal: `(código, texto)` o `None`.
+
+    Regla del informe técnico (diagnósticos y limitaciones): la lluvia de la costa norte
+    del Perú responde sobre todo a eventos extremos, no de forma proporcional al índice,
+    y la interfaz lo indica en esa región. Quitar El Niño es una regresión lineal, así que
+    parte de esa señal puede quedar en la serie sin El Niño. Solo para la lluvia y en la
+    misma franja que `en_costa_nino12`.
+    """
+    if variable != VARIABLE_NO_LINEAL or not en_costa_nino12(lat, lon):
+        return None
+    return (
+        AVISO_NO_LINEAL,
+        "En la costa norte del Perú, la lluvia responde sobre todo a eventos extremos de "
+        "El Niño y no en proporción al índice. Quitar El Niño es un ajuste lineal, así que "
+        "parte de su efecto puede quedar en la serie sin El Niño.",
+    )

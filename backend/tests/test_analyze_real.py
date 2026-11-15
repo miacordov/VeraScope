@@ -170,3 +170,48 @@ def test_meses_inusuales_usan_la_fase_del_indice_rezagado(cliente_real):
     obtenidos = [(m["fecha"], m["fase"]) for m in datos["meses_inusuales"]]
     assert obtenidos == esperados
     assert all(posicion[m] >= rezago for m, _ in obtenidos)
+
+
+def _codigos(datos):
+    return [a["codigo"] for a in datos["avisos"]]
+
+
+def test_analyze_avisa_respuesta_no_lineal_en_la_lluvia_de_piura(cliente_real):
+    cliente, _ = cliente_real
+    datos = cliente.get("/api/v1/analyze", params=PARAMETROS).json()
+    assert "respuesta_no_lineal" in _codigos(datos)
+    AnalyzeRespuesta.model_validate(datos)
+
+
+def test_analyze_no_avisa_respuesta_no_lineal_fuera_de_la_lluvia(cliente_real):
+    cliente, _ = cliente_real
+    datos = cliente.get("/api/v1/analyze", params={**PARAMETROS, "variable": "T2M"}).json()
+    assert "respuesta_no_lineal" not in _codigos(datos)
+
+
+def test_analyze_agrega_nino_costero_con_oni_y_no_con_nino12(cliente_real, monkeypatch):
+    analyze = importlib.import_module("app.api.analyze")
+    llamadas = []
+
+    def falso(lat, lon, anomalias, oni, nino12):
+        llamadas.append((len(anomalias), len(oni), len(nino12)))
+        return ("nino_costero", "texto de prueba")
+
+    monkeypatch.setattr(analyze, "aviso_nino_costero", falso)
+    cliente, _ = cliente_real
+    datos = cliente.get("/api/v1/analyze", params=PARAMETROS).json()
+    assert "nino_costero" in _codigos(datos)
+    n = len(datos["fechas"])
+    assert llamadas == [(n, n, n)]  # serie, ONI y Niño 1+2 alineados a la ventana
+
+    datos = cliente.get("/api/v1/analyze", params={**PARAMETROS, "indice": "NINO12"}).json()
+    assert "nino_costero" not in _codigos(datos)
+    assert len(llamadas) == 1
+
+
+def test_analyze_sin_nino12_responde_sin_el_aviso_costero(cliente_real, tmp_path):
+    (tmp_path / "tabla" / "NINO12.npy").unlink()  # el aviso es complementario: no rompe analyze
+    cliente, _ = cliente_real
+    respuesta = cliente.get("/api/v1/analyze", params=PARAMETROS)
+    assert respuesta.status_code == 200, respuesta.text
+    assert "nino_costero" not in _codigos(respuesta.json())
