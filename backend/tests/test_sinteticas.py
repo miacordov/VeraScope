@@ -1,4 +1,7 @@
-"""Pruebas del generador de series sintéticas: si el generador miente, las pruebas del motor también."""
+"""Pruebas del generador de series sintéticas.
+
+Si el generador miente, las pruebas del motor también.
+"""
 
 import numpy as np
 import pytest

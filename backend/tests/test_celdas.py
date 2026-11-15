@@ -55,7 +55,16 @@ def test_toques_a_100_m_dan_la_misma_llave():
 
 @pytest.mark.parametrize(
     "lon, esperado",
-    [(0, 0.0), (90, 90.0), (180, 180.0), (-180, 180.0), (270, -90.0), (330, -30.0), (360, 0.0), (-190, 170.0)],
+    [
+        (0, 0.0),
+        (90, 90.0),
+        (180, 180.0),
+        (-180, 180.0),
+        (270, -90.0),
+        (330, -30.0),
+        (360, 0.0),
+        (-190, 170.0),
+    ],
 )
 def test_lon_a_180(lon, esperado):
     assert lon_a_180(lon) == esperado
@@ -113,15 +122,13 @@ def test_rejilla_limites_y_orden():
 
 
 def test_rejilla_igual_a_la_del_preparador():
-    pytest.importorskip("verascope_datos")
-    from verascope_datos import config
+    config = pytest.importorskip("verascope_datos.config")
 
     assert rejilla() == [(float(a), float(o)) for a, o in config.rejilla()]
 
 
 def test_lugar_celda_igual_al_del_preparador():
-    pytest.importorskip("verascope_datos")
-    from verascope_datos.almacen import lugar_celda as lugar_prep
+    lugar_prep = pytest.importorskip("verascope_datos.almacen").lugar_celda
 
     for la, lo in rejilla()[::97] + [(-5.0, -80.5)]:
         assert lugar_celda(la, lo) == lugar_prep(la, lo)
