@@ -26,35 +26,48 @@ backend.
 
 ---
 
-## 1. Dónde estamos (15 de noviembre, hacia la hora 36)
+## 1. Dónde estamos (15 de noviembre, tarde · `main` en `5f85edc`)
 
 | | Estado |
 |---|---|
-| **Sprint en el que deberíamos estar** | **S4 → S5** (congelamiento en la hora 36) |
-| **Sprint en el que está el frontend** | **S1–S3**: la base está en `main`. F2 terminó el gráfico, el interruptor y la reproducción, y F3 la tarjeta y los textos de estados, pero **nada de eso está fusionado todavía**. F1 no ha empezado el mapa ni las líneas |
-| **Backend** | ✅ `analyze` real con caché de dos niveles y precalentamiento (#30), avisos de Niño costero (#29, #31), demo de Piura en la celda de ScanMap (−6, −80) (#32), precalentamiento de Borneo y norte de Australia (#39). **Por avanzar:** URL pública con HTTPS, rutas reales de feed y mosaico (#7) y respuestas de demo para la app sin red (#8) |
-| **Correcciones de la dueña del repo** | Pasó `main` a las ramas del frontend, subió el tiempo límite de `espacio.test.tsx` (#36) y dejó escrito en `CLAUDE.md` qué ramas se borraron y no se vuelven a crear (#37, #38) |
+| **Sprint en el que deberíamos estar** | **S4 → S5** (congelamiento en la hora 36; `release/demo` todavía no existe) |
+| **Sprint en el que está el frontend** | **S2–S3**: en `main` están la base, el panel de gráficos con el interruptor (F2, #40) y la tarjeta de veredicto, el logo y los textos de estados (F3, #33, #34, #35). **Por avanzar:** montar la tarjeta en `espacio.tsx` (F1), fusionar la reproducción (F2, `fe/tiempo-comparador`), el mapa y las líneas (F1) y las demos (F3) |
+| **Backend** | ✅ `analyze` real con caché y precalentamiento (#30), avisos de Niño costero (#29, #31), demo de Piura en la celda (−6, −80) (#32), `teleconnect` y `compare-periods` con datos reales (#41, #42) y **paquete de datos reales en el repo** (#43, `backend/paquete-datos/verascope-datos-20261115.tar.gz`). **Por avanzar:** URL pública con HTTPS, rutas del feed y del mosaico (#7) y respuestas de demo para la app sin red (#8). `/salud` dice escaneo `en_curso` aunque el escaneo esté listo (error conocido) |
+| **Verificación de `main`** | `npx tsc --noEmit`, `npm run lint` y `npm run test` en verde (14 archivos, 92 pruebas). Con los datos reales, `analyze` de Piura (−6, −80) devuelve 540 meses y veredicto `sin_tendencia` (origen `escaneo`) |
+
+### ⚠️ Lo que hay que resolver ya
+
+- **La tarjeta de veredicto está en `main` pero no se ve:** `app/espacio.tsx` todavía muestra solo `InsigniaVeredicto`.
+  Hasta que F1 ponga `TarjetaVeredicto` en su lugar, el interruptor cambia el gráfico pero no el veredicto (criterio
+  del hito 20).
+- **Los textos de estados (`textosEstados.ts`) y el logo (`LogoVeraScope`) no los usa ninguna pantalla todavía.**
+  `espacio.tsx` usa su propio `ErrorConReintento`, sin el botón "Usar la celda cercana" de `power_lento`.
+- **Guion de la demo 1:** con los datos reales (comentario en el issue #6), la lluvia de Piura **no tiene líneas** hacia
+  Indonesia ni hacia el norte de Australia; solo `RH2M` da líneas de efecto opuesto, hacia el Pacífico norte tropical.
+  El guion se ajusta a los datos: hay que decidirlo con B3 antes de construir la demo 1 (cambios ya pedidos en el
+  issue #15: celda (−6, −80), 1998 en vez de 1983, Niño costero 2017, `cambio_oculto` en el norte de Australia y
+  cautela con Borneo).
 
 ### Ramas vigentes (las `-v2` y `chore/base-frontend` se borraron: no se vuelven a crear)
 
 | Rama | Rol | Estado |
 |---|---|---|
-| `fe/graficos-enso` | F2 | 🟡 código del #10 listo y actualizado con `main` · **por avanzar:** abrir PR y fusionar |
-| `fe/tiempo-comparador` | F2 | 🟡 código del #14 (reproducción) listo, incluye el #10 · **por avanzar:** PR después del #10 |
+| `fe/graficos-enso` | F2 | ✅ fusionada en `main` (#40) |
+| `fe/tiempo-comparador` | F2 | 🟡 reproducción lista (7 commits fuera de `main`) · **por avanzar:** abrir PR y fusionar |
 | `fe/distribucion` | F2 | ✅ `eas.json` ya en `main` · **por avanzar:** primer APK, web y versiones finales |
-| `feat/f3-logo-textos-estados` | F3 | 🟡 PR #33 abierto · **por avanzar:** revisión y fusión |
-| `fe/veredicto-feed` | F3 | 🟡 PR #34 abierto · **por avanzar:** revisión y fusión |
-| `fix/f3-atribucion-fuente` | F3 | 🟡 PR #35 abierto (incluye el #34) · **por avanzar:** revisión y fusión |
-| `fe/mapa-celda` | F1 | **por avanzar:** sin commits |
-| `fe/lineas-mosaico` | F1 | **por avanzar:** sin commits |
-| `fe/demos-glosario` | F3 | **por avanzar:** sin commits |
+| `fe/veredicto-feed` | F3 | ✅ tarjeta en `main` (#34, #35) · **por avanzar:** que se vea en `espacio.tsx`; el feed está recortado |
+| `fe/mapa-celda` | F1 | **por avanzar:** sin commits propios |
+| `fe/lineas-mosaico` | F1 | **por avanzar:** sin commits propios |
+| `fe/demos-glosario` | F3 | **por avanzar:** sin commits propios |
 
 ### Pendientes en GitHub
 
 - [x] Cerrar el PR #28 sin fusionarlo ✅
 - [x] Borrar las ramas `-v2` y `chore/base-frontend` ✅ (#37, #38)
-- [ ] Cerrar el issue #1 (parte frontend fusionada en el #25) — **por avanzar**
-- [ ] Asignar en GitHub los issues #10, #12 y #14 a F2, y los #11 y #15 a F3 — **por avanzar**
+- [x] Cerrar el issue #1 ✅
+- [x] Asignar los issues #11 y #15 a F3 ✅
+- [ ] Asignar en GitHub los issues #10, #12 y #14 a F2 — **por avanzar**
+- [ ] Cerrar el issue #10 (código fusionado en #40) — **por avanzar** (F2)
 - [ ] ~~Quitar la firma de IA de los 8 commits de la base que ya están en `main`~~ ✂️ no se hace: exigiría reescribir
       `main`. Desde aquí ningún commit nuevo lleva firma de IA
 
@@ -71,7 +84,7 @@ backend.
 - [x] `store.ts`, `tema.ts`, `geo.ts`, cliente único en `shared/api/` y fixtures ✅ (#25)
 - [x] Pantallas `_layout`, `index`, `espacio` y `glosario` con la banda "Datos simulados" ✅ (#25)
 - [x] CI `frontend.yml` ✅ (#25)
-- [ ] Cerrar el issue #1 — **por avanzar**
+- [x] Cerrar el issue #1 ✅
 
 **F2**
 - [x] Revisar que el esqueleto compile en web (`expo export -p web` en verde) ✅
@@ -79,9 +92,9 @@ backend.
 - [ ] Cuenta de Expo y `eas login` — **por avanzar**
 
 **F3**
-- [x] Logo oficial en `assets/` (sin redibujar) 🟡 (`feat/f3-logo-textos-estados`, PR #33) — **por avanzar:** fusionar
-- [x] Textos de los estados de error y de la interfaz (`textosEstados.ts`, con pruebas) 🟡 (PR #33) — **por avanzar:**
-      fusionar
+- [x] Logo oficial en `assets/marca/` (sin redibujar) y `LogoVeraScope` ✅ (#33) — **por avanzar:** mostrarlo en una
+      pantalla
+- [x] Textos de los estados de error y de la interfaz (`textosEstados.ts`, con pruebas) ✅ (#33)
 - [x] `_layout.tsx` con Inter, pantalla de arranque, barra de estado y áreas seguras ✅ (venía en la base, #25)
 
 **Criterio del hito 6:**
@@ -104,19 +117,19 @@ backend.
 
 **F2 · `fe/distribucion` (#12) y `fe/graficos-enso` (#10)**
 - [x] `eas.json` con perfil `preview` (APK) y `expo.android.package` ✅ (#25)
-- [x] GraficoSerie con react-native-svg y d3 (los `null` son huecos) 🟡 (`fe/graficos-enso`) — **por avanzar:** fusionar
+- [x] GraficoSerie con react-native-svg y d3 (los `null` son huecos) ✅ (#40)
 - [ ] `EXPO_PUBLIC_API_URL` con la URL HTTPS — **por avanzar** (falta la URL del backend)
 - [ ] Primer APK con `eas build -p android --profile preview` — **por avanzar**
 - [ ] Primera web publicada y su origen enviado al backend para `VERASCOPE_CORS` — **por avanzar**
 
 **F3 · `fe/veredicto-feed` (#11), parte veredicto**
-- [x] Tarjeta: "Tendencia aparente" con el interruptor apagado e insignia de 4 estados con el interruptor encendido 🟡
-      (PR #34) — **por avanzar:** fusionar
+- [x] Tarjeta: "Tendencia aparente" con el interruptor apagado e insignia de 4 estados con el interruptor encendido ✅
+      (#34)
 - [x] Pendiente por década con intervalo y unidad, cambio % solo si viene, p-valor (corregido si viene del escaneo),
-      vínculo con El Niño, avisos tal cual, fuente y "análisis individual" 🟡 (PR #34 y #35) — **por avanzar:** fusionar
-- [x] Cambio de veredicto anunciado a lectores de pantalla 🟡 (PR #34) — **por avanzar:** fusionar
-- [x] Atribución de la fuente y pruebas de los avisos de la costa 🟡 (PR #35) — **por avanzar:** fusionar
-- [x] `format.ts` es-PE con unidad ✅ (#25; ajuste en PR #35)
+      vínculo con El Niño, avisos tal cual, fuente y "análisis individual" ✅ (#34, #35)
+- [x] Cambio de veredicto anunciado a lectores de pantalla ✅ (#34)
+- [x] Atribución de la fuente y pruebas de los avisos de la costa ✅ (#35)
+- [x] `format.ts` es-PE con unidad ✅ (#25; ajuste en #35)
 
 **Criterio de cierre (hora 13):**
 - [ ] Mapa con toque → celda, en el teléfono y en la web — **por avanzar** (F1)
@@ -128,38 +141,45 @@ backend.
 
 **F1 · cierre de `fe/mapa-celda` (#9)**
 - [ ] `espacio.tsx` adaptable (teléfono con hoja inferior, tableta, web) — **por avanzar**
+- [ ] Montar `TarjetaVeredicto` en `espacio.tsx` en lugar de `InsigniaVeredicto` — **por avanzar** (la tarjeta ya está
+      en `main`, #34)
+- [ ] Usar `estadoDeError()` de `textosEstados.ts` en los errores de `espacio.tsx` (botón "Usar la celda cercana") —
+      **por avanzar**
 - [ ] Rendimiento en un Android de gama baja — **por avanzar**
 - [ ] Colores de La Niña y de la línea de mismo efecto, con captura — **por avanzar**
-- [ ] Probar contra el `analyze` real (el backend ya lo tiene, #30) — **por avanzar**
+- [ ] Probar contra el `analyze` real (el backend ya lo tiene, #30; datos en #43) — **por avanzar**
 
-**F2 · `fe/graficos-enso` (#10)** 🟡 todo hecho en la rama
-- [x] Panel **Causa** (índice con franjas de El Niño y trama de La Niña, referencias ±0.5) 🟡
-- [x] Panel **Consecuencia** (`serie_z` de la celda y del destino superpuestas) 🟡
-- [x] Panel **Realidad** (serie original o sin El Niño, recta completa, meses inusuales marcados) 🟡
-- [x] Lectura con el dedo o el cursor, compartida por contexto de React 🟡
-- [x] Interruptor "Quitar El Niño" accesible, sin red, con la frase del rezago 🟡
+**F2 · `fe/graficos-enso` (#10)** ✅ fusionado en `main` (#40)
+- [x] Panel **Causa** (índice con franjas de El Niño y trama de La Niña, referencias ±0.5) ✅ (#40)
+- [x] Panel **Consecuencia** (`serie_z` de la celda y del destino superpuestas) ✅ (#40)
+- [x] Panel **Realidad** (serie original o sin El Niño, recta completa, meses inusuales marcados) ✅ (#40)
+- [x] Lectura con el dedo o el cursor, compartida por contexto de React ✅ (#40)
+- [x] Interruptor "Quitar El Niño" accesible, sin red, con la frase del rezago ✅ (#40)
 - [x] `queryClient.ts` completo: persistencia en AsyncStorage, descarte por `version_metodo`, sin reintentar
-      `power_lento` 🟡
-- [x] Pruebas: interruptor 10 veces = 0 llamadas, huecos en los `null`, caché 🟡
-- [ ] **Abrir PR de `fe/graficos-enso` y fusionar en `main`** (lo aprueba F3) — **por avanzar**
+      `power_lento` ✅ (#40)
+- [x] Pruebas: interruptor 10 veces = 0 llamadas, huecos en los `null`, caché ✅ (#40)
+- [x] Abrir PR de `fe/graficos-enso` y fusionar en `main` ✅ (#40)
 
 **F3 · `fe/veredicto-feed` (#11), inicio y errores**
-- [ ] Inicio: frase de VeraScope, Investigar, Escanear, demos y "Usar demo sin conexión" — **por avanzar**
-- [x] Textos de los estados de error (`power_lento`, `sin_datos_tierra`, red) 🟡 (PR #33) — **por avanzar:** mostrarlos
-      en pantalla y fusionar
-- [x] Tarjeta conectada a `quitarElNino` del store 🟡 (PR #34) — **por avanzar:** fusionar
-- [ ] ~~Feed de ScanMap con pestañas~~ ✂️ como mucho, lista simple si sobra tiempo
+- [ ] Inicio: frase de VeraScope, Investigar, Escanear, demos y "Usar demo sin conexión" — **por avanzar** (hoy: frase,
+      Investigar y Glosario, de la base)
+- [x] Textos de los estados de error (`power_lento`, `sin_datos_tierra`, red) ✅ (#33) — **por avanzar:** que
+      `espacio.tsx` los muestre (F1)
+- [x] Tarjeta conectada a `quitarElNino` del store ✅ (#34) — **por avanzar:** montarla en `espacio.tsx` (F1)
+- [ ] ~~Feed de ScanMap con pestañas~~ ✂️ como mucho, lista simple si sobra tiempo (el backend #7 sigue abierto)
 
 **Criterio del hito 20:**
 - [ ] Tocar el mapa (teléfono y web) lleva al veredicto — **por avanzar** (falta el mapa de F1)
-- [ ] El interruptor cambia gráfico y veredicto sin red — **por avanzar:** fusionar #10 (F2) y #34 (F3)
+- [ ] El interruptor cambia gráfico y veredicto sin red — **por avanzar:** el gráfico ya cambia (#40); falta montar la
+      tarjeta (#34) en `espacio.tsx`
 
 ---
 
 ### S3 · Diferenciadores I (horas 20–28)
 
 **F1 · `fe/lineas-mosaico` (#13)**
-- [ ] Arco de Piura hacia el otro lado del Pacífico, **solo efecto opuesto** (continua y roja) — **por avanzar**
+- [ ] Arco de Piura hacia el otro lado del Pacífico, **solo efecto opuesto** (continua y roja) — **por avanzar** (con
+      datos reales, la lluvia de Piura no tiene líneas; ver la sección 1)
 - [ ] Se enciende en los meses de coincidencia según `mesVisible` — **por avanzar** (la animación de F2 ya existe en
       `fe/tiempo-comparador`)
 - [ ] Zona táctil ancha, `elegirDestino`, lista accesible y `mensaje_vacio` — **por avanzar**
@@ -169,7 +189,7 @@ backend.
 - [x] Reproducir/Pausa y barra de tiempo accesible (adjustable, aumentar/disminuir, arrastre) 🟡
 - [x] ~30 s por tiempo transcurrido; cambia `mesVisible` solo al cambiar de mes y termina en `null` 🟡
 - [x] Prueba con temporizadores falsos, sin red 🟡
-- [ ] **Abrir PR de `fe/tiempo-comparador` y fusionar** (después del #10) — **por avanzar**
+- [ ] **Abrir PR de `fe/tiempo-comparador` y fusionar** — **por avanzar** (el #10 ya está en `main`, #40)
 - [ ] Avisar a F1 que `mesVisible` ya está animado — **por avanzar**
 
 **F3**
@@ -187,23 +207,27 @@ backend.
 **F1**
 - [ ] ~~Mosaico de ScanMap~~ ✂️
 - [ ] Captura de la línea de Piura cruzando el Pacífico — **por avanzar**
-- [ ] Revisar los PR de F3 (#33, #34, #35) — **por avanzar**
+- [ ] Revisar los PR de F3 — **por avanzar** (#33, #34 y #35 ya se fusionaron con la aprobación de miacordov)
 
 **F2**
 - [ ] ~~"Antes y después" con `compare-periods`~~ ✂️ (queda la reproducción)
 - [ ] ~~Franja de CO₂ de Mauna Loa~~ ✂️
 
 **F3 · `fe/demos-glosario` (#15)**
+- [ ] Acordar con B3 el guion de la demo 1 según los datos reales (sección 1) — **por avanzar**
 - [ ] Acciones del contrato en el ejecutor de guiones — **por avanzar**
 - [ ] **Demo 1 "El efecto espejo de El Niño"** con la celda de Piura (−6, −80) — **por avanzar** (núcleo)
 - [ ] ~~Demo 2~~ solo si sobra tiempo
-- [ ] Modo sin red con `assets/demo/` y banda "Sin conexión" — **por avanzar** (necesita las respuestas del backend, #8)
-- [ ] Página de glosario simple y créditos (Natural Earth, NASA POWER, NOAA CPC) — **por avanzar**
+- [ ] Modo sin red con `assets/demo/` y banda "Sin conexión" — **por avanzar** (`assets/demo/` y
+      `backend/data/demo/respuestas/` siguen vacías; necesita el backend #8)
+- [ ] Página de glosario con créditos (Natural Earth, NASA POWER, NOAA CPC) y enlaces desde la tarjeta — **por
+      avanzar** (hoy `glosario.tsx` lista los términos de `/glosario`, de la base)
 - [ ] Ensayo en proyector y en teléfono a plena luz — **por avanzar**
 
 **Criterio del hito 36:**
 - [ ] La demo 1 corre completa en el teléfono y en la web, con y sin red — **por avanzar**
-- [ ] El núcleo está en `main` — **por avanzar**
+- [ ] El núcleo está en `main` — **por avanzar** (están el análisis con y sin El Niño y el interruptor; faltan la línea
+      de Piura, la reproducción y la demo 1)
 
 ---
 
@@ -240,13 +264,13 @@ backend.
 
 | # | Qué | Rol | Depende de |
 |---|---|---|---|
-| 1 | Fusionar `fe/graficos-enso` (#10) | F2 (aprueba F3) | — |
-| 2 | Fusionar los PR de F3: #33, #34 y #35 | F3 (aprueba F1; si no está, F2) | — |
+| 1 | Montar `TarjetaVeredicto` y los textos de error en `espacio.tsx` | F1 | — (la tarjeta ya está en `main`) |
+| 2 | Acordar el guion de la demo 1 con los datos reales | F3 + B3 | — |
 | 3 | Mapa con toque → celda y acceso a Piura (#9) | F1 | Base (ya está) |
-| 4 | Fusionar `fe/tiempo-comparador` (#14) | F2 (aprueba F3) | #10 en `main` |
-| 5 | Línea de Piura que se enciende al reproducir (#13) | F1 | #9; #14 para encenderse |
-| 6 | Inicio con acceso a la demo y "Usar demo sin conexión" | F3 | — |
-| 7 | Demo 1 con modo sin red (#15) | F3 | #9, #10, #11, #13, #14 y las respuestas del backend (#8) |
+| 4 | Fusionar `fe/tiempo-comparador` (#14) | F2 (aprueba F3) | — (#10 ya en `main`) |
+| 5 | Línea de Piura que se enciende al reproducir (#13) | F1 | #9; #14 para encenderse; guion acordado |
+| 6 | Ejecutor de guiones e inicio con acceso a la demo y "Usar demo sin conexión" | F3 | — |
+| 7 | Demo 1 con modo sin red (#15) | F3 | #9, #13, #14, guion acordado y las respuestas del backend (#8) |
 | 8 | Cuenta de Expo, `eas login` y primer APK (#12) | F2 | — |
 | 9 | APK y web finales en modo avión (#12) | F2 | Demo 1 y `assets/demo/` |
 | 10 | URL HTTPS de la API | Backend | — (sin ella, todo funciona con la demo guardada) |

@@ -430,7 +430,7 @@ Las simulaciones del informe sirven para **elegir** el método; no dicen nada so
 - No expongas el panel del preparador a la red ni lo metas en la imagen de la API; no mantengas dos copias del motor estadístico.
 - No agregues Redis, colas, servicios, contenedores ni un segundo proceso.
 - No llames a POWER ni a ningún servicio externo desde pruebas ni desde rutas que no sean `analyze`; no pidas dos veces la misma celda.
-- No subas a Git `data/` (salvo `data/demo/`), credenciales ni archivos de más de unos pocos MB.
+- No subas a Git `data/` (salvo `data/demo/`), credenciales ni archivos de más de unos pocos MB. La única excepción es el paquete de datos en `paquete-datos/` (regla 5 de la sección 18).
 - No agregues resolución diaria/anual, polígonos, radios ni variables que POWER no sirva en vivo.
 - No "arregles" un resultado incómodo (una tendencia que no sale, una línea que no apunta a donde la demo esperaba): **es un hallazgo**.
 - No atribuyas causas en ningún texto que genere la API.
@@ -632,7 +632,7 @@ git pull --ff-only
 2. **Revisión cruzada:** todo PR lo aprueba **otra persona de la misma área**. Un cambio de contratos lo aprueban **una de backend y una de frontend**.
 3. **CI en verde para fusionar:** pruebas del motor estadístico (backend) + en el frontend `tsc --noEmit`, `jest` y `expo export -p web`.
 4. **Congelamiento en la hora 36:** se etiqueta `v1.0-freeze`, se abre `release/demo` y desde ahí **solo entran correcciones** en ramas `fix/…`. La entrega final se etiqueta `v1.0-entrega`.
-5. **Datos fuera de Git.** La caché, el casillero y los resultados del escaneo **no se suben**; las únicas excepciones son la instantánea de las demos en `backend/data/demo/` (incluidas las `respuestas/` para la app) y su copia en `frontend/assets/demo/`.
+5. **Datos reales en Git solo como paquete.** Los datos van en **`backend/paquete-datos/verascope-datos-AAAAMMDD.tar.gz`** (un solo archivo, verificado con SHA-256) y cada uno los instala en `backend/data/` con `verascope-datos instalar` (ver README, «Datos»). Lo instalado en `backend/data/` (casillero, `tabla/`, resultados) **no se sube**: la API escribe en el casillero mientras corre. Excepciones: la instantánea de las demos en `backend/data/demo/` (incluidas las `respuestas/` para la app) y su copia en `frontend/assets/demo/`. Al publicar datos nuevos se borra el paquete viejo en el mismo PR (decisión del 15-nov-2026).
 6. **Commits con prefijo:** `feat:`, `fix:`, `docs:`, `chore:` (y `test:` si solo cambian pruebas). Mensaje en español, en presente, corto. Si el cambio toca una regla estadística, cita su número (por ejemplo `fix: intervalo con varianza corregida (C8)`).
 7. **No se hace `push --force` a `main`, ni se salta la revisión, ni se desactivan pruebas para que pase el CI.**
 8. Si una tarea te obliga a salir de tu carpeta (`backend/` ↔ `frontend/`), **detente y avisa**: probablemente es un cambio de contrato.
