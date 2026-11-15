@@ -1,8 +1,10 @@
 # ── Datos: fuera de Git salvo backend/data/demo/ (incluidas demo/respuestas/) ──
-# El paquete .tar.gz (~50 MB) se reparte por un release de GitHub o una carpeta compartida.
+# Los datos reales viajan en Git como un solo paquete (backend/paquete-datos/*.tar.gz, 33 MB, no se
+# modifica al usar la API). Se instala en backend/data/ con `verascope-datos instalar`.
 backend/data/*
 !backend/data/demo/
 *.tar.gz
+!backend/paquete-datos/*.tar.gz
 datos/
 # app/datos/ es código (cliente de POWER, celdas), no datos
 !backend/app/datos/
