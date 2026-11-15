@@ -34,9 +34,7 @@ def cargar_catalogos():
     """Valida la única fuente editorial de variables y glosario."""
     carpeta = Path(__file__).resolve().parents[1] / "catalogo"
     return {
-        nombre: MODELOS[nombre].model_validate_json(
-            (carpeta / f"{nombre}.json").read_text("utf-8")
-        )
+        nombre: MODELOS[nombre].model_validate_json((carpeta / f"{nombre}.json").read_text("utf-8"))
         for nombre in ("variables", "glosario")
     }
 

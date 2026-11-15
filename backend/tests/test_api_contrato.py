@@ -120,7 +120,8 @@ def test_cada_respuesta_simulada_procede_de_json_local_validado(cliente, modelo_
     carpeta = catalogo / "simulado"
     # Variables y glosario son editoriales, compartidos por ambos modos.
     archivos = sorted(
-        archivo for archivo in carpeta.glob("*.json")
+        archivo
+        for archivo in carpeta.glob("*.json")
         if archivo.stem not in {"variables", "glosario"}
     ) + [catalogo / "variables.json", catalogo / "glosario.json"]
     assert archivos, "Faltan los JSON locales del catálogo"
@@ -135,9 +136,7 @@ def test_cada_respuesta_simulada_procede_de_json_local_validado(cliente, modelo_
         coinciden = [archivo for archivo, documento in documentos.items() if documento == datos]
         assert coinciden, f"{ruta} no coincide con ningún JSON local autorizado"
         for archivo in coinciden:
-            assert archivo.parent == (
-                catalogo if ruta in {"/variables", "/glosario"} else carpeta
-            )
+            assert archivo.parent == (catalogo if ruta in {"/variables", "/glosario"} else carpeta)
         modelo = modelo_respuesta(ruta_esquema(ruta))
         for archivo in coinciden:
             modelo.model_validate(documentos[archivo])

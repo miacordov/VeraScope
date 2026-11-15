@@ -43,13 +43,29 @@ def fila(celda=0, variable="PRECTOTCORR", **cambios):
     """Esquema de resultados.parquet; ningún valor representa una observación real."""
     lat, lon = rejilla()[celda]
     return {
-        "variable": variable, "celda": celda, "lat": lat, "lon": lon,
-        "pendiente_original": 0.6, "p_original": 0.001,
-        "pendiente": 0.23456789, "ic_bajo": 0.12345678, "ic_alto": 0.34567891,
-        "p": 0.002, "p_original_ajustado": 0.003, "p_ajustado": 0.00456789,
-        "rezago": 2, "r_enso": 0.4, "p_enso": 0.01, "colinealidad": 0.1,
-        "efecto": -1.23456789, "meses": 540, "veredicto": "cambio_robusto",
-        "unidad": "mm/día", "pareja": None, "ventana": "1981-2025", **cambios,
+        "variable": variable,
+        "celda": celda,
+        "lat": lat,
+        "lon": lon,
+        "pendiente_original": 0.6,
+        "p_original": 0.001,
+        "pendiente": 0.23456789,
+        "ic_bajo": 0.12345678,
+        "ic_alto": 0.34567891,
+        "p": 0.002,
+        "p_original_ajustado": 0.003,
+        "p_ajustado": 0.00456789,
+        "rezago": 2,
+        "r_enso": 0.4,
+        "p_enso": 0.01,
+        "colinealidad": 0.1,
+        "efecto": -1.23456789,
+        "meses": 540,
+        "veredicto": "cambio_robusto",
+        "unidad": "mm/día",
+        "pareja": None,
+        "ventana": "1981-2025",
+        **cambios,
     }
 
 
@@ -73,7 +89,10 @@ def test_feed_incompleto_expone_avance_real_sin_tarjetas(api_real, tipo, hay_res
     if not hay_resultados:
         api_real.app.state.escaneo_resultados = None
     assert consultar_feed(api_real, tipo) == {
-        "tipo": tipo, "pagina": 0, "por_pagina": 20, "total": 0,
+        "tipo": tipo,
+        "pagina": 0,
+        "por_pagina": 20,
+        "total": 0,
         "escaneo": {"estado": "en_curso", "celdas_listas": 137, "celdas_total": 4235},
         "tarjetas": [],
     }
@@ -94,19 +113,23 @@ def test_fuertes_orden_absoluto_empates_ids_y_paginacion(api_real):
     esperadas = sorted(filas[:26], key=lambda f: (-abs(f["efecto"]), f["variable"], f["celda"]))
     assert [t["id"] for t in tarjetas] == [f"{f['variable']}-{f['celda']}" for f in esperadas]
     assert {t["veredicto"] for t in tarjetas} == {"cambio_robusto"}
-    assert tarjetas[0]["titular"] == (
-        "La lluvia sube de forma sostenida, aun quitando El Niño"
-    )
+    assert tarjetas[0]["titular"] == ("La lluvia sube de forma sostenida, aun quitando El Niño")
     pd.testing.assert_frame_equal(api_real.app.state.escaneo_resultados, antes)
     assert consultar_feed(api_real) == paginas[0]
 
 
 def test_ocultas_solo_veredicto_y_titulares_por_signo(api_real):
-    preparar(api_real, [
-        fila(1, veredicto="cambio_oculto", efecto=2),
-        fila(2, "GWETROOT", veredicto="cambio_oculto", pendiente=-0.2, efecto=-3, unidad="0 a 1"),
-        fila(3), fila(4, veredicto="sin_tendencia"),
-    ])
+    preparar(
+        api_real,
+        [
+            fila(1, veredicto="cambio_oculto", efecto=2),
+            fila(
+                2, "GWETROOT", veredicto="cambio_oculto", pendiente=-0.2, efecto=-3, unidad="0 a 1"
+            ),
+            fila(3),
+            fila(4, veredicto="sin_tendencia"),
+        ],
+    )
     datos = consultar_feed(api_real, "ocultas")
     assert datos["total"] == 2
     assert [t["veredicto"] for t in datos["tarjetas"]] == ["cambio_oculto"] * 2
@@ -117,12 +140,15 @@ def test_ocultas_solo_veredicto_y_titulares_por_signo(api_real):
 
 
 def test_opuestas_una_por_par_origen_positivo_y_destino_negativo(api_real):
-    preparar(api_real, [
-        fila(8, pareja="par-b", pendiente=-0.8, efecto=-5),
-        fila(2, pareja="par-b", pendiente=0.2, efecto=1),
-        fila(9, pareja="par-a", pendiente=-0.9, efecto=-5),
-        fila(3, pareja="par-a", pendiente=0.3, efecto=2),
-    ])
+    preparar(
+        api_real,
+        [
+            fila(8, pareja="par-b", pendiente=-0.8, efecto=-5),
+            fila(2, pareja="par-b", pendiente=0.2, efecto=1),
+            fila(9, pareja="par-a", pendiente=-0.9, efecto=-5),
+            fila(3, pareja="par-a", pendiente=0.3, efecto=2),
+        ],
+    )
     datos = consultar_feed(api_real, "opuestas")
     assert datos["total"] == 2
     assert [t["id"] for t in datos["tarjetas"]] == ["PRECTOTCORR-3", "PRECTOTCORR-2"]
@@ -130,22 +156,26 @@ def test_opuestas_una_por_par_origen_positivo_y_destino_negativo(api_real):
     for tarjeta, destino in zip(datos["tarjetas"], destinos):
         assert tarjeta["pendiente_decada"] > 0
         assert tarjeta["pareja"] == {
-            "lat": destino["lat"], "lon": destino["lon"],
+            "lat": destino["lat"],
+            "lon": destino["lon"],
             "pendiente_decada": destino["pendiente"],
         }
         assert tarjeta["titular"] == "La lluvia sube aquí y baja allá"
 
 
-@pytest.mark.parametrize("miembros", [
-    [fila(0, pareja="x")],
-    [fila(0, pareja="x"), fila(1, pareja="x"), fila(2, pareja="x", pendiente=-1)],
-    [fila(0, pareja="x"), fila(1, "T2M", pareja="x", pendiente=-1)],
-    [fila(0, pareja="x"), fila(0, pareja="x", pendiente=-1)],
-    [fila(0, pareja="x"), fila(1, pareja="x", pendiente=0)],
-    [fila(0, pareja="x"), fila(1, pareja="x", pendiente=1)],
-    [fila(0, pareja="x"), fila(1, pareja="x", pendiente=-1, efecto=float("nan"))],
-    [fila(0, pareja=None), fila(1, pareja="", pendiente=-1)],
-])
+@pytest.mark.parametrize(
+    "miembros",
+    [
+        [fila(0, pareja="x")],
+        [fila(0, pareja="x"), fila(1, pareja="x"), fila(2, pareja="x", pendiente=-1)],
+        [fila(0, pareja="x"), fila(1, "T2M", pareja="x", pendiente=-1)],
+        [fila(0, pareja="x"), fila(0, pareja="x", pendiente=-1)],
+        [fila(0, pareja="x"), fila(1, pareja="x", pendiente=0)],
+        [fila(0, pareja="x"), fila(1, pareja="x", pendiente=1)],
+        [fila(0, pareja="x"), fila(1, pareja="x", pendiente=-1, efecto=float("nan"))],
+        [fila(0, pareja=None), fila(1, pareja="", pendiente=-1)],
+    ],
+)
 def test_opuestas_omite_pares_malformados_y_huerfanos(api_real, miembros):
     preparar(api_real, miembros)
     datos = consultar_feed(api_real, "opuestas")
@@ -160,8 +190,11 @@ def test_s6_proyeccion_publica_redondeada_como_analyze(api_real):
     preparar(api_real, [original])
     tarjeta = consultar_feed(api_real)["tarjetas"][0]
     for campo, columna in {
-        "pendiente_decada": "pendiente", "ic_bajo": "ic_bajo", "ic_alto": "ic_alto",
-        "p_ajustado": "p_ajustado", "efecto": "efecto",
+        "pendiente_decada": "pendiente",
+        "ic_bajo": "ic_bajo",
+        "ic_alto": "ic_alto",
+        "p_ajustado": "p_ajustado",
+        "efecto": "efecto",
     }.items():
         assert tarjeta[campo] == round(float(original[columna]), 6)
     for campo in ("veredicto", "unidad", "variable"):
@@ -180,11 +213,13 @@ def test_layer_incompleto_o_sin_resultados_error_estandar(api_real, estado, resu
         api_real.app.state.escaneo_resultados = None
     respuesta = api_real.get("/api/v1/scan/layer", params={"variable": "PRECTOTCORR"})
     assert respuesta.status_code == 503
-    assert respuesta.json() == {"error": {
-        "codigo": "escaneo_en_curso",
-        "mensaje": "El escaneo sigue en curso. Vuelve a intentarlo más tarde.",
-        "celda_cercana": None,
-    }}
+    assert respuesta.json() == {
+        "error": {
+            "codigo": "escaneo_en_curso",
+            "mensaje": "El escaneo sigue en curso. Vuelve a intentarlo más tarde.",
+            "celda_cercana": None,
+        }
+    }
     ErrorRespuesta.model_validate(respuesta.json())
 
 
@@ -193,8 +228,7 @@ def test_layer_rejilla_oficial_valores_y_mar_nulo(api_real, variable, unidad):
     # Piura y Borneo, sobre tierra; (0, -140), océano, no tiene fila válida.
     tierra = [rejilla().index((-6.0, -80.0)), rejilla().index((0.0, 114.0))]
     filas = [
-        fila(i, variable, unidad=unidad, pendiente=i / 10000, efecto=-i / 1000)
-        for i in tierra
+        fila(i, variable, unidad=unidad, pendiente=i / 10000, efecto=-i / 1000) for i in tierra
     ]
     preparar(api_real, list(reversed(filas)) + [fila(10, "T2M", unidad="°C")])
     respuesta = api_real.get("/api/v1/scan/layer", params={"variable": variable})
@@ -210,7 +244,9 @@ def test_layer_rejilla_oficial_valores_y_mar_nulo(api_real, variable, unidad):
     assert (datos["lat"][-1], datos["lon"][-1]) == (34, -30)
     por_celda = {f["celda"]: f for f in filas}
     columnas = [
-        ("veredicto", "veredicto"), ("pendiente_decada", "pendiente"), ("efecto", "efecto"),
+        ("veredicto", "veredicto"),
+        ("pendiente_decada", "pendiente"),
+        ("efecto", "efecto"),
     ]
     for i in range(4235):
         for campo, columna in columnas:
@@ -242,7 +278,8 @@ def test_feed_cache_invalida_resultados(api_real, monkeypatch, actualizacion):
 
     def filas(inicio):
         return [
-            fila(inicio), fila(inicio + 1, veredicto="cambio_oculto"),
+            fila(inicio),
+            fila(inicio + 1, veredicto="cambio_oculto"),
             fila(inicio + 2, pareja="par", pendiente=1),
             fila(inicio + 3, pareja="par", pendiente=-1),
         ]
@@ -290,7 +327,10 @@ def test_feed_real_mediana_menor_20_ms(api_real):
     plantilla = fila()
     base = [
         {
-            **plantilla, "celda": i, "lat": lat, "lon": lon,
+            **plantilla,
+            "celda": i,
+            "lat": lat,
+            "lon": lon,
             "veredicto": "cambio_robusto" if i < 80 else "sin_tendencia",
         }
         for i, (lat, lon) in enumerate(rejilla())

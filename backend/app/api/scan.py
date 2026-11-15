@@ -39,7 +39,14 @@ def _tarjeta(fila: dict, tipo: TipoFeed, titulares: dict) -> Tarjeta | None:
         numeros = {
             campo: float(fila[campo])
             for campo in (
-                "celda", "lat", "lon", "pendiente", "ic_bajo", "ic_alto", "p_ajustado", "efecto"
+                "celda",
+                "lat",
+                "lon",
+                "pendiente",
+                "ic_bajo",
+                "ic_alto",
+                "p_ajustado",
+                "efecto",
             )
         }
         if not all(isfinite(valor) for valor in numeros.values()):
@@ -78,12 +85,19 @@ def _seleccionar_tarjetas(resultados, tipo: TipoFeed, titulares: dict) -> list[T
         veredicto = "cambio_robusto" if tipo == TipoFeed.FUERTES else "cambio_oculto"
         # Filtrar en pandas antes de materializar las 21 175 filas en Python.
         columnas = (
-            "variable", "celda", "lat", "lon", "pendiente", "ic_bajo", "ic_alto",
-            "p_ajustado", "efecto", "veredicto", "unidad",
+            "variable",
+            "celda",
+            "lat",
+            "lon",
+            "pendiente",
+            "ic_bajo",
+            "ic_alto",
+            "p_ajustado",
+            "efecto",
+            "veredicto",
+            "unidad",
         )
-        seleccion = resultados.loc[resultados["veredicto"] == veredicto].reindex(
-            columns=columnas
-        )
+        seleccion = resultados.loc[resultados["veredicto"] == veredicto].reindex(columns=columnas)
         # Una conversión de la selección estrecha, no un iterador pandas por
         # cada columna del esquema del productor (incluidas las irrelevantes).
         filas = (dict(zip(columnas, valores)) for valores in seleccion.to_numpy().tolist())
@@ -94,11 +108,10 @@ def _seleccionar_tarjetas(resultados, tipo: TipoFeed, titulares: dict) -> list[T
             if (tarjeta := _tarjeta(fila, tipo, titulares)) is not None
         ]
         return [
-            tarjeta for _, tarjeta in sorted(
+            tarjeta
+            for _, tarjeta in sorted(
                 tarjetas,
-                key=lambda par: (
-                    -abs(par[0]), par[1].variable, int(par[1].id.rsplit("-", 1)[1])
-                ),
+                key=lambda par: (-abs(par[0]), par[1].variable, int(par[1].id.rsplit("-", 1)[1])),
             )
         ]
 
@@ -158,9 +171,7 @@ def _tarjetas_cacheadas(estado, resultados, tipo: TipoFeed) -> list[Tarjeta]:
         # También admite aplicaciones pequeñas que no ejecutan lifespan.
         if not hasattr(estado, "feed_titulares"):
             estado.feed_titulares = cargar_titulares()
-        tarjetas_por_tipo[tipo] = _seleccionar_tarjetas(
-            resultados, tipo, estado.feed_titulares
-        )
+        tarjetas_por_tipo[tipo] = _seleccionar_tarjetas(resultados, tipo, estado.feed_titulares)
     return tarjetas_por_tipo[tipo]
 
 
