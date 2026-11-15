@@ -6,7 +6,7 @@ import type { AnalyzeRespuesta } from '@/shared/api/tipos';
 import { EtiquetaFuente } from '@/shared/components/EtiquetaFuente';
 import { InsigniaVeredicto } from '@/shared/components/InsigniaVeredicto';
 import { colores, espacios, radios } from '@/shared/tema';
-import { Tarjeta, Texto } from '@/shared/ui';
+import { Boton, Tarjeta, Texto } from '@/shared/ui';
 
 import {
   anuncio,
@@ -23,8 +23,17 @@ import {
 /**
  * Tarjeta de veredicto (F3, #11). Lee `quitarElNino` del store y no hace peticiones:
  * el interruptor solo cambia qué parte de la respuesta ya recibida se muestra.
+ *
+ * `alVerGlosario` (opcional): si la pantalla lo pasa, la tarjeta ofrece "Qué significan estos términos" para ir al
+ * glosario (#15). Sin él, la tarjeta se ve igual que antes. La navegación la decide la pantalla, no la tarjeta.
  */
-export function TarjetaVeredicto({ analisis }: { analisis: AnalyzeRespuesta }) {
+export function TarjetaVeredicto({
+  analisis,
+  alVerGlosario,
+}: {
+  analisis: AnalyzeRespuesta;
+  alVerGlosario?: () => void;
+}) {
   const quitarElNino = useEstado((e) => e.quitarElNino);
   const tendencia = quitarElNino ? analisis.tendencia_sin_el_nino : analisis.tendencia_original;
   const { unidad } = analisis;
@@ -79,6 +88,15 @@ export function TarjetaVeredicto({ analisis }: { analisis: AnalyzeRespuesta }) {
       ))}
 
       <EtiquetaFuente analisis={analisis} />
+
+      {alVerGlosario ? (
+        <Boton
+          texto="Qué significan estos términos"
+          variante="secundario"
+          etiqueta="Abrir el glosario: qué significan pendiente, intervalo, p-valor y veredicto"
+          onPress={alVerGlosario}
+        />
+      ) : null}
     </Tarjeta>
   );
 }
