@@ -14,6 +14,7 @@ import { altoDelMapa } from '../features/map/tamano';
 import { analyze, variables } from '../shared/api/__fixtures__';
 import type { SaludRespuesta } from '../shared/api/tipos';
 import { BandaSimulado } from '../shared/components/BandaSimulado';
+import { TEXTOS_ACCION, TEXTOS_ERROR } from '../shared/components/textosEstados';
 import { TEXTOS_VEREDICTO } from '../shared/components/textosVeredicto';
 import { lineaFuente } from '../shared/format';
 
@@ -24,7 +25,15 @@ const salud: SaludRespuesta = {
   escaneo: { estado: 'en_curso', celdas_listas: 0, celdas_total: 4235 },
 };
 
+/** Error que debe devolver `analyze` en una prueba (cuerpo de error estándar de la API), o `null`. */
+let errorAnalyze: { status: number; error: { codigo: string; mensaje: string; celda_cercana: unknown } } | null =
+  null;
+
 const fetchSimulado = jest.fn((url: string) => {
+  if (errorAnalyze && url.includes('/analyze')) {
+    const { status, error } = errorAnalyze;
+    return Promise.resolve({ ok: false, status, json: () => Promise.resolve({ error }) });
+  }
   const cuerpo = url.includes('/salud')
     ? salud
     : url.includes('/analyze')
@@ -54,6 +63,7 @@ const llamadasA = (ruta: string) => fetchSimulado.mock.calls.filter(([url]: [str
 
 beforeEach(() => {
   fetchSimulado.mockClear();
+  errorAnalyze = null;
   global.fetch = fetchSimulado as unknown as typeof fetch;
   useEstado.getState().reiniciar();
 });
@@ -73,11 +83,13 @@ describe('espacio de trabajo con la API simulada', () => {
     expect(llamadasA('/analyze')).toBe(0);
   });
 
-  it('el ejemplo simulado pide analyze una vez y muestra veredicto y fuente', async () => {
+  it('el ejemplo simulado pide analyze una vez y muestra la tarjeta de veredicto y la fuente', async () => {
     await montar();
     await fireEvent.press(await screen.findByRole('button', { name: /Ver el ejemplo simulado/ }));
 
-    expect(await screen.findByText(TEXTOS_VEREDICTO[analyze.veredicto.estado].titulo)).toBeOnTheScreen();
+    // Con el interruptor apagado, la tarjeta de F3 muestra la tendencia aparente, no el veredicto.
+    expect(await screen.findByText('Tendencia aparente')).toBeOnTheScreen();
+    expect(screen.queryByText(TEXTOS_VEREDICTO[analyze.veredicto.estado].titulo)).toBeNull();
     expect(screen.getByText(lineaFuente(analyze))).toBeOnTheScreen();
     expect(screen.getByText('análisis individual')).toBeOnTheScreen();
 
@@ -89,10 +101,66 @@ describe('espacio de trabajo con la API simulada', () => {
   it('el interruptor de El Niño no hace peticiones', async () => {
     await montar();
     await fireEvent.press(await screen.findByRole('button', { name: /Ver el ejemplo simulado/ }));
-    await screen.findByText(TEXTOS_VEREDICTO[analyze.veredicto.estado].titulo);
+    await screen.findByText('Tendencia aparente');
     const antes = fetchSimulado.mock.calls.length;
     for (let i = 0; i < 10; i++) useEstado.getState().alternarElNino();
     expect(fetchSimulado.mock.calls.length).toBe(antes);
+  });
+
+  it('al quitar El Niño la tarjeta muestra el veredicto de 4 estados, sin pedir datos', async () => {
+    await montar();
+    await fireEvent.press(await screen.findByRole('button', { name: /Ver el ejemplo simulado/ }));
+    await screen.findByText('Tendencia aparente');
+    const antes = fetchSimulado.mock.calls.length;
+
+    await act(() => useEstado.getState().alternarElNino());
+    expect(await screen.findByText(TEXTOS_VEREDICTO[analyze.veredicto.estado].titulo)).toBeOnTheScreen();
+    expect(screen.queryByText('Tendencia aparente')).toBeNull();
+
+    await act(() => useEstado.getState().alternarElNino());
+    expect(await screen.findByText('Tendencia aparente')).toBeOnTheScreen();
+    expect(fetchSimulado.mock.calls.length).toBe(antes);
+  });
+});
+
+describe('errores con los textos de F3 (estadoDeError)', () => {
+  it('power_lento con celda cercana ofrece "Usar la celda cercana" y la elige', async () => {
+    errorAnalyze = {
+      status: 504,
+      error: { codigo: 'power_lento', mensaje: 'NASA POWER está tardando.', celda_cercana: { lat: -6, lon: -80 } },
+    };
+    await montar();
+    await fireEvent.press(await screen.findByRole('button', { name: /Ver el ejemplo simulado/ }));
+
+    expect(await screen.findByText(TEXTOS_ERROR.power_lento.titulo)).toBeOnTheScreen();
+    expect(screen.getByText('NASA POWER está tardando.')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole('button', { name: TEXTOS_ACCION.celda_cercana }));
+    expect(useEstado.getState().celda).toEqual({ lat: -6, lon: -80 });
+  });
+
+  it('power_lento sin celda cercana ofrece reintentar', async () => {
+    errorAnalyze = { status: 504, error: { codigo: 'power_lento', mensaje: 'Tarda.', celda_cercana: null } };
+    await montar();
+    await fireEvent.press(await screen.findByRole('button', { name: /Ver el ejemplo simulado/ }));
+
+    expect(await screen.findByRole('button', { name: TEXTOS_ACCION.reintentar })).toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: TEXTOS_ACCION.celda_cercana })).toBeNull();
+  });
+
+  it('sin_datos_tierra ofrece ver la lluvia y conserva la celda', async () => {
+    errorAnalyze = {
+      status: 422,
+      error: { codigo: 'sin_datos_tierra', mensaje: 'Sobre el mar no hay humedad del suelo.', celda_cercana: null },
+    };
+    await montar();
+    await fireEvent.press(await screen.findByRole('button', { name: /Ver el ejemplo simulado/ }));
+    await act(() => useEstado.getState().cambiarVariable('GWETROOT'));
+
+    expect(await screen.findByText(TEXTOS_ERROR.sin_datos_tierra.titulo)).toBeOnTheScreen();
+    const celda = useEstado.getState().celda;
+    await fireEvent.press(screen.getByRole('button', { name: TEXTOS_ACCION.usar_lluvia }));
+    expect(useEstado.getState().variable).toBe('PRECTOTCORR');
+    expect(useEstado.getState().celda).toEqual(celda);
   });
 });
 
