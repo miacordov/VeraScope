@@ -10,7 +10,13 @@ import pytest
 
 from app.contracts import CodigoAviso
 from app.estadistica.constantes import ALFA, COSTA_NINO12_LAT, COSTA_NINO12_LON
-from app.estadistica.costero import AVISO_COSTERO, aviso_nino_costero, en_costa_nino12
+from app.estadistica.costero import (
+    AVISO_COSTERO,
+    AVISO_NO_LINEAL,
+    aviso_nino_costero,
+    aviso_respuesta_no_lineal,
+    en_costa_nino12,
+)
 from app.estadistica.enso import quitar_enso
 from tests.sinteticas import ar1, generador
 
@@ -99,3 +105,26 @@ def test_no_modifica_la_entrada():
     aviso_nino_costero(*PIURA, a, oni, n12)
     for original, copia in zip((a, oni, n12), copias):
         np.testing.assert_array_equal(original, copia)
+
+
+# ------------------------------------------------- respuesta no lineal (C12)
+
+
+def test_no_lineal_el_codigo_es_el_del_contrato():
+    assert AVISO_NO_LINEAL == CodigoAviso.NO_LINEAL.value
+
+
+def test_no_lineal_avisa_la_lluvia_en_la_costa_norte():
+    codigo, texto = aviso_respuesta_no_lineal(*PIURA, "PRECTOTCORR")
+    assert codigo == AVISO_NO_LINEAL
+    assert "eventos extremos" in texto and "lineal" in texto
+
+
+@pytest.mark.parametrize("variable", ["T2M", "RH2M", "GWETROOT", "GWETTOP"])
+def test_no_lineal_solo_para_la_lluvia(variable):
+    assert aviso_respuesta_no_lineal(*PIURA, variable) is None
+
+
+@pytest.mark.parametrize("lugar", [(-12.0, -77.0), (-6.2, 106.8), (-2.0, 116.0)])
+def test_no_lineal_solo_en_la_costa_norte(lugar):
+    assert aviso_respuesta_no_lineal(*lugar, "PRECTOTCORR") is None
