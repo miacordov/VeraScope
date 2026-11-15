@@ -132,10 +132,23 @@ class Cache:
     """
 
     def __init__(self, carpeta_datos: Path) -> None:
+        import sqlite3
+
         from verascope_datos.almacen import Casillero
 
         ruta_sqlite = carpeta_datos / ARCHIVO_CASILLERO
-        self.series = Casillero(str(ruta_sqlite))
+
+        # Construcción normal para preservar cualquier estado futuro del
+        # constructor.  Después reemplazamos solo la conexión por una con
+        # check_same_thread=False, necesaria porque FastAPI sirve peticiones
+        # desde hilos distintos al de arranque.
+        casillero = Casillero(str(ruta_sqlite))
+        casillero.db.close()
+        casillero.db = sqlite3.connect(
+            str(ruta_sqlite), timeout=30, check_same_thread=False,
+        )
+        casillero.db.execute("PRAGMA journal_mode=WAL")
+        self.series = casillero
         self.resultados = CacheResultados(ruta_sqlite)
 
     def cerrojo(self, llave: str) -> threading.Lock:
