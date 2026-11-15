@@ -60,7 +60,7 @@ El plan original tenía errores que un jurado técnico habría detectado. Estas 
 
 | # | Tema | Regla final (la que se construye) |
 |---|---|---|
-| V1 | Plataforma | App de **React Native con Expo** (SDK 57, fijo) para iOS y Android; **la web sale del mismo código** con React Native for Web. Ya no hay web aparte con Vite. |
+| V1 | Plataforma | App de **React Native con Expo** (**SDK 58**, fijo; antes 57, ver sección 4) para iOS y Android; **la web sale del mismo código** con React Native for Web. Ya no hay web aparte con Vite. |
 | V2 | Mapa | **Mapa propio en SVG** centrado en el Pacífico, con las costas dentro de la app. Ya no hay Leaflet ni teselas de OpenStreetMap. |
 | V3 | Gráficos | Componente propio con `react-native-svg` y d3. Ya no hay Recharts. |
 | V4 | Estilos y pruebas | `StyleSheet` con tokens de tema; **Jest** (`jest-expo`). Ya no hay Tailwind ni Vitest. |
@@ -91,30 +91,34 @@ El plan original tenía errores que un jurado técnico habría detectado. Estas 
 
 ## 4. Stack, comandos, variables de entorno y entrega
 
-**Stack:** **Expo SDK 57** (React Native 0.86, React 19.2) · TypeScript (modo estricto) · **Expo Router** (rutas por archivos) · **Zustand** (estado global) · **TanStack Query** con persistencia en AsyncStorage (datos del servidor) · **react-native-svg** + **d3-scale / d3-shape / d3-array** (mapa y gráficos, propios) · **react-native-gesture-handler** + **react-native-reanimated** (pellizcar y arrastrar) · `StyleSheet` + `src/shared/tema.ts` (estilos; **sin Tailwind**) · `@expo-google-fonts/inter` (tipografía, **incluida en la app**) · **Jest (`jest-expo`) + Testing Library para React Native** (pruebas) · `openapi-typescript` (tipos del contrato).
+**Stack:** **Expo SDK 58** (React Native 0.88, React 19.3) · TypeScript (modo estricto) · **Expo Router** (rutas por archivos) · **Zustand** (estado global) · **TanStack Query** con persistencia en AsyncStorage (datos del servidor) · **react-native-svg** + **d3-scale / d3-shape / d3-array** (mapa y gráficos, propios) · **react-native-gesture-handler** + **react-native-reanimated** (pellizcar y arrastrar) · `StyleSheet` + `src/shared/tema.ts` (estilos; **sin Tailwind**) · `@expo-google-fonts/inter` (tipografía, **incluida en la app**) · **Jest (`jest-expo`) + Testing Library para React Native** (pruebas) · `openapi-typescript` (tipos del contrato).
 
 **Una sola base de código para tres salidas:** app iOS, app Android y **web** (React Native for Web, que dibuja con React DOM). No hay un segundo proyecto web. *(Alternativa descartada por ahora: una web aparte con React + Vite que comparta tipos, cliente y estado; se decide con el humano en la hora 0; ver sección 18.)*
 
 **No se usan:** Leaflet, `react-native-maps`, MapLibre/Mapbox, WebView con mapas, Skia, Recharts, Plotly, WebGL, Tailwind/NativeWind, Vite ni Vitest. Con series mensuales (~540 puntos) y un mapa propio en SVG alcanza (correcciones C6, V2, V3). **No se agregan librerías de estado, de UI, de gráficos ni de animación sin avisar:** cada dependencia es peso y riesgo en 48 horas.
 
-**Versión de Expo (decisión tomada, se confirma en la hora 0):** se **fija el SDK 57** y **no se pasa al 58 durante el evento**. Según lo revisado el 12 de nov de 2026, Expo Go para el SDK 58 aún no estaba en las tiendas, y la versión de Expo Go de la tienda de iOS ha ido por detrás de los SDK. **Hora 0:** abre el proyecto en un teléfono real con Expo Go y confirma que corre; si no, plan B = versión de desarrollo (`expo-dev-client`) o el APK. Instala dependencias **siempre con `npx expo install <paquete>`** (elige la versión que corresponde al SDK) y verifica con `npx expo install --check`.
+**Versión de Expo (decisión de la hora 0, 15 nov 2026): se fija el SDK 58** y **no se cambia durante el evento**. El plan original fijaba el 57 porque el 12 de nov Expo Go para el 58 aún no estaba en las tiendas; en la comprobación de la hora 0 (F1, teléfono Android real) la Expo Go de la tienda **ya solo abría el SDK 58** (las tiendas solo traen la última; para el 57 solo queda un APK de Android instalado a mano y nada para iPhone real). Por eso se subió a 58 en `chore/contratos` (cambio de regla: lo aprueban F2, F3 y B1 en el PR). Si en un teléfono no corre, plan B = versión de desarrollo (`expo-dev-client`) o el APK. Instala dependencias **siempre con `npx expo install <paquete>`** (elige la versión que corresponde al SDK) y verifica con `npx expo install --check`.
 
 ```bash
 cd frontend
 npm ci                          # instala exactamente lo del lockfile
+npm run dev                     # TODO EN UNO: API simulada (crea backend/.venv la 1.ª vez) + IP local para Expo Go + expo start
 npx expo start                  # menú: i (simulador iOS), a (Android), w (web); QR para Expo Go en el teléfono
 npx expo start --web            # solo web, normalmente en http://localhost:8081
 npx expo export -p web          # sitio estático en dist/  (esto corre el CI)
 npx tsc --noEmit                # solo tipos
 npm run test                    # Jest (jest-expo), sin red
 npm run lint                    # ESLint
-npm run tipos                   # regenera los tipos TS desde http://localhost:8000/openapi.json (openapi-typescript)
+npm run tipos                   # regenera src/shared/api/esquema.ts desde http://localhost:8000/openapi.json (openapi-typescript)
+npm run fixtures:copiar         # regenera src/shared/api/__fixtures__/*.ts desde ../backend/app/catalogo/simulado/*.json
 npm run demo:copiar             # copia ../backend/data/demo/respuestas/*.json a assets/demo/
 npx expo install --check        # ¿las versiones coinciden con el SDK?
 eas build -p android --profile preview    # APK instalable (hace falta cuenta de Expo y `eas login`)
 ```
 
-> Si un comando no coincide con lo que hay en el repositorio, **corrige esta sección en el mismo PR**. Los scripts `tipos`, `demo:copiar`, `lint` y `test` se crean en `package.json` en la rama `chore/contratos`.
+> Si un comando no coincide con lo que hay en el repositorio, **corrige esta sección en el mismo PR**. Los scripts `tipos`, `fixtures:copiar`, `demo:copiar`, `lint` y `test` se crean en `package.json` en la rama `chore/contratos`.
+>
+> **Notas del esqueleto (`chore/contratos`):** el SDK 58 trae TypeScript 6 y `openapi-typescript` 7 solo acepta TypeScript 5, así que **no es dependencia del proyecto**: `npm run tipos` lo ejecuta con `npx openapi-typescript@7.13.0` (instalación aparte). `esquema.ts` y los fixtures se suben a Git; el CI no los regenera. Los fixtures son módulos `.ts` anotados con los tipos del contrato (un `.json` importado perdería los tipos literales): si el backend cambia un campo, `tsc` falla, y una prueba avisa si se desincronizan de los JSON simulados. Con TypeScript 6, `tsconfig.json` declara `"types": ["jest", "node"]`. En modo simulado el backend solo responde a Piura (−5.0, −80.5), `PRECTOTCORR`, 1981–1990, ONI: el espacio de trabajo ofrece ese ejemplo mientras `salud.simulado` sea verdadero.
 
 | Variable | Para qué | Por defecto |
 |---|---|---|
@@ -123,6 +127,7 @@ eas build -p android --profile preview    # APK instalable (hace falta cuenta de
 - **En el teléfono, `localhost` no es tu laptop.** Con Expo Go usa la **IP de la laptop** en la red local (`http://192.168.x.x:8000`) o la URL desplegada. En el emulador de Android la laptop es `http://10.0.2.2:8000`. En el simulador de iOS, `localhost` sí funciona.
 - **HTTPS:** las apps nativas **bloquean por defecto las conexiones sin cifrar**. En desarrollo con Expo Go una URL `http://` suele funcionar; en el **APK y en iOS de producción se exige `https://`**. La API se publica con HTTPS desde la hora 6 (backend). Nunca dejes una URL `http://` en un build de entrega.
 - Para desarrollar sin esperar al motor real, levanta el backend con `VERASCOPE_SIMULADO=1` (o usa la URL simulada desplegada en la hora 6).
+- **`npm run dev` (desde `frontend/`) hace todo eso solo:** prepara `backend/.venv` con Python ≥ 3.11 (uv si está; solo la primera vez o si cambia `pyproject.toml`), arranca la API simulada en `0.0.0.0:8000` con CORS para la web, detecta la IP de la laptop, se la pasa a la app como `EXPO_PUBLIC_API_URL` y abre `expo start` (si el 8081 está ocupado usa el siguiente libre). Ctrl+C apaga los dos. Si ya defines `EXPO_PUBLIC_API_URL` (p. ej. la URL https desplegada), no levanta la API local. Solo ejecuta el backend: no modifica archivos versionados de `backend/`.
 
 **Entrega (tres salidas):**
 
@@ -458,7 +463,7 @@ Las pruebas usan **respuestas de ejemplo** (`src/shared/api/__fixtures__/`, copi
 - [ ] Sin dependencias nuevas sin aviso; `npx expo install --check` en verde.
 - [ ] Revisado por otra persona del frontend. Este archivo actualizado si cambió una regla o un comando.
 
-**Comprobaciones tempranas (horas 0–6):** que la app abra en **Expo Go en un teléfono real** con el SDK 57 · que el mapa con longitudes 0–360 dibuje la línea de Piura a Indonesia **cruzando el Pacífico** (con datos de ejemplo) y sin rayas en las costas · que los tipos se generen desde `/openapi.json` · que la tipografía y el mapa funcionen **sin internet** · que el tema oscuro se lea en un proyector y en un teléfono · que `salud.simulado` active la banda "Datos simulados" · que la web exporte (`npx expo export -p web`). **Antes de la hora 14:** rendimiento del mosaico en un teléfono modesto, primer APK con EAS Build y la web desplegada.
+**Comprobaciones tempranas (horas 0–6):** que la app abra en **Expo Go en un teléfono real** con el SDK 58 · que el mapa con longitudes 0–360 dibuje la línea de Piura a Indonesia **cruzando el Pacífico** (con datos de ejemplo) y sin rayas en las costas · que los tipos se generen desde `/openapi.json` · que la tipografía y el mapa funcionen **sin internet** · que el tema oscuro se lea en un proyector y en un teléfono · que `salud.simulado` active la banda "Datos simulados" · que la web exporte (`npx expo export -p web`). **Antes de la hora 14:** rendimiento del mosaico en un teléfono modesto, primer APK con EAS Build y la web desplegada.
 
 ## 17. Contrato de la API (`/api/v1`)
 
@@ -676,7 +681,7 @@ Los archivos de contratos y el estado global son **compartidos**: los edita su d
 |---|---|---|
 | Entregables de la sede | Qué pide el evento y a qué hora cierra la entrega | Todos, antes del evento |
 | Una base de código con Expo (adoptada) o web aparte con React | Confirmarlo con el humano | Todos; propone F1, hora 0 |
-| Versión de Expo Go de las tiendas y SDK que se fija | Comprobarlo en un teléfono real (hoy: SDK 57) | F1, hora 0 |
+| Versión de Expo Go de las tiendas y SDK que se fija | **Hecho (15 nov):** la Expo Go de la tienda solo abre el SDK 58 → se fija el 58 | F1, hora 0 |
 | Rendimiento del mapa SVG con el mosaico en un teléfono modesto | Medirlo; si no alcanza, se recorta el mosaico | F1, antes de la hora 14 |
 | Primer APK con EAS Build y primera exportación web | Que salgan sin sorpresas de cuenta o de cola | F2, antes de la hora 14 |
 | Cuenta de Apple Developer (TestFlight) o iOS solo con Expo Go y simulador | Decidirlo | Todos, antes del evento |

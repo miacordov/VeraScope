@@ -1,0 +1,35 @@
+// Generado por `npm run fixtures:copiar` desde backend/app/catalogo/simulado/feed.json. No editar a mano.
+import type { FeedRespuesta } from '../tipos';
+
+const fixture: FeedRespuesta = {
+  "tipo": "fuertes",
+  "pagina": 0,
+  "por_pagina": 20,
+  "total": 1,
+  "escaneo": {
+    "estado": "completo",
+    "celdas_listas": 2,
+    "celdas_total": 2
+  },
+  "tarjetas": [
+    {
+      "id": "PRECTOTCORR-0",
+      "titular": "Ejemplo simulado: la lluvia sube en Piura aun quitando El Niño",
+      "variable": "PRECTOTCORR",
+      "unidad": "mm/día",
+      "celda": {
+        "lat": -5,
+        "lon": -80.5
+      },
+      "veredicto": "cambio_robusto",
+      "pendiente_decada": 0.25,
+      "ic_bajo": 0.2,
+      "ic_alto": 0.3,
+      "p_ajustado": 0.000001,
+      "efecto": 1.1,
+      "pareja": null
+    }
+  ]
+};
+
+export default fixture;
