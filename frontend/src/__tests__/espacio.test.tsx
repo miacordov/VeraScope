@@ -29,7 +29,16 @@ const salud: SaludRespuesta = {
 let errorAnalyze: { status: number; error: { codigo: string; mensaje: string; celda_cercana: unknown } } | null =
   null;
 
+/** Error de `/variables`: un cuerpo de error estándar, o `'red'` para simular que no hay conexión. */
+let errorVariables: { status: number; error: { codigo: string; mensaje: string; celda_cercana: null } } | 'red' | null =
+  null;
+
 const fetchSimulado = jest.fn((url: string) => {
+  if (errorVariables && url.includes('/variables')) {
+    if (errorVariables === 'red') return Promise.reject(new TypeError('Network request failed'));
+    const { status, error } = errorVariables;
+    return Promise.resolve({ ok: false, status, json: () => Promise.resolve({ error }) });
+  }
   if (errorAnalyze && url.includes('/analyze')) {
     const { status, error } = errorAnalyze;
     return Promise.resolve({ ok: false, status, json: () => Promise.resolve({ error }) });
@@ -64,6 +73,7 @@ const llamadasA = (ruta: string) => fetchSimulado.mock.calls.filter(([url]: [str
 beforeEach(() => {
   fetchSimulado.mockClear();
   errorAnalyze = null;
+  errorVariables = null;
   global.fetch = fetchSimulado as unknown as typeof fetch;
   useEstado.getState().reiniciar();
 });
@@ -124,6 +134,29 @@ describe('espacio de trabajo con la API simulada', () => {
 });
 
 describe('errores con los textos de F3 (estadoDeError)', () => {
+  it('si /variables responde escaneo_en_curso, el selector muestra el título y el mensaje sin botón', async () => {
+    errorVariables = {
+      status: 503,
+      error: { codigo: 'escaneo_en_curso', mensaje: 'Los datos aún no están listos.', celda_cercana: null },
+    };
+    await montar();
+    expect(await screen.findByText(TEXTOS_ERROR.escaneo_en_curso.titulo)).toBeOnTheScreen();
+    expect(screen.getByText('Los datos aún no están listos.')).toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: TEXTOS_ACCION.reintentar })).toBeNull();
+  });
+
+  it('si /variables falla por la red, el selector ofrece reintentar y vuelve a pedirlo', async () => {
+    errorVariables = 'red';
+    await montar();
+    // Los errores de red se reintentan una vez antes de mostrarse (queryClient), por eso se espera más.
+    expect(await screen.findByText(TEXTOS_ERROR.sin_conexion.titulo, {}, { timeout: 5000 })).toBeOnTheScreen();
+    const antes = llamadasA('/variables');
+    errorVariables = null;
+    await fireEvent.press(screen.getByRole('button', { name: TEXTOS_ACCION.reintentar }));
+    expect(await screen.findByText(variables.variables[0].nombre)).toBeOnTheScreen();
+    expect(llamadasA('/variables')).toBeGreaterThan(antes);
+  });
+
   it('power_lento con celda cercana ofrece "Usar la celda cercana" y la elige', async () => {
     errorAnalyze = {
       status: 504,

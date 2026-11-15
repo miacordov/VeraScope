@@ -5,6 +5,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { ANIO_INICIO_REGISTRO, useEstado } from '@/estado/store';
 import { useSalud, useVariables } from '@/shared/api/consultas';
 import type { DefinicionIndice, DefinicionVariable } from '@/shared/api/tipos';
+import { estadoDeError, TEXTOS_ACCION } from '@/shared/components/textosEstados';
 import { colores, espacios, radios, TOQUE_MIN } from '@/shared/tema';
 import { Boton, Tarjeta, Texto } from '@/shared/ui';
 
@@ -27,10 +28,16 @@ export function SelectorVariable() {
     );
   }
   if (variables.isError) {
+    // Título y mensaje según los textos de F3 (§11); el mensaje del servidor va tal cual. Para el catálogo la única
+    // acción que tiene sentido es volver a pedirlo: no hay celda cercana ni otra variable que ofrecer.
+    const { titulo, mensaje, accion } = estadoDeError(variables.error);
     return (
       <Tarjeta accessibilityRole="alert">
-        <Texto>{variables.error.message}</Texto>
-        <Boton texto="Reintentar" variante="secundario" onPress={() => variables.refetch()} />
+        <Texto variante="cuerpoFuerte">{titulo}</Texto>
+        <Texto>{mensaje}</Texto>
+        {accion ? (
+          <Boton texto={TEXTOS_ACCION.reintentar} variante="secundario" onPress={() => variables.refetch()} />
+        ) : null}
       </Tarjeta>
     );
   }
