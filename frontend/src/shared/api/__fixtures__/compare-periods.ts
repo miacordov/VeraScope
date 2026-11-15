@@ -1,0 +1,30 @@
+// Generado por `npm run fixtures:copiar` desde backend/app/catalogo/simulado/compare-periods.json. No editar a mano.
+import type { ComparePeriodsRespuesta } from '../tipos';
+
+const fixture: ComparePeriodsRespuesta = {
+  "p1": {
+    "anios": [
+      1981,
+      2001
+    ],
+    "media_original": 0.1,
+    "media_sin_el_nino": 0,
+    "meses_inusuales": 12,
+    "meses_inusuales_en_el_nino": 9
+  },
+  "p2": {
+    "anios": [
+      2003,
+      2025
+    ],
+    "media_original": 0.4,
+    "media_sin_el_nino": 0.05,
+    "meses_inusuales": 14,
+    "meses_inusuales_en_el_nino": 10
+  },
+  "delta_original": 0.3,
+  "delta_sin_el_nino": 0.05,
+  "nota": "Datos simulados. Comparación descriptiva: la significancia la da la tendencia."
+};
+
+export default fixture;
