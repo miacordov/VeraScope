@@ -1,0 +1,1 @@
+export { TarjetaVeredicto } from './TarjetaVeredicto';
