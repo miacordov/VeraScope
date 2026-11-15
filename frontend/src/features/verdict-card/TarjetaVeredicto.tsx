@@ -10,6 +10,7 @@ import { Tarjeta, Texto } from '@/shared/ui';
 
 import {
   anuncio,
+  atribucion,
   cambioPorcentual,
   direccionSinElNino,
   intervalo,
@@ -42,6 +43,9 @@ export function TarjetaVeredicto({ analisis }: { analisis: AnalyzeRespuesta }) {
     <Tarjeta accessibilityLiveRegion="polite">
       <Texto variante="etiqueta" suave>
         {analisis.nombre} · {unidad}
+      </Texto>
+      <Texto variante="pequeno" suave>
+        {atribucion(analisis)}
       </Texto>
 
       {quitarElNino ? (

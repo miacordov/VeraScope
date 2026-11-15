@@ -121,6 +121,32 @@ describe('TarjetaVeredicto', () => {
     anunciar.mockRestore();
   });
 
+  it('atribuye el resultado a la fuente que llega en la respuesta, en los dos modos', async () => {
+    await render(<TarjetaVeredicto analisis={sensible} />);
+    expect(screen.getByText(`Según los datos de ${analyze.fuente}`)).toBeOnTheScreen();
+    await alternar();
+    expect(screen.getByText(`Según los datos de ${analyze.fuente}`)).toBeOnTheScreen();
+  });
+
+  it('muestra tal cual los dos avisos de la costa norte del Perú (respuesta no lineal y Niño costero)', async () => {
+    // Plantillas de backend/app/estadistica/costero.py (PR #31); las correlaciones son de ejemplo, solo para la prueba.
+    const noLineal =
+      'En la costa norte del Perú, la lluvia responde sobre todo a eventos extremos de El Niño y no en proporción al índice. Quitar El Niño es un ajuste lineal, así que parte de su efecto puede quedar en la serie sin El Niño.';
+    const costero =
+      'En la costa norte del Perú, el índice Niño 1+2 (que capta los Niños costeros) sigue mejor a esta serie que el ONI: correlación 0.45 frente a 0.18. Puedes repetir el análisis con el índice Niño 1+2.';
+    const costa: AnalyzeRespuesta = {
+      ...sensible,
+      avisos: [
+        { codigo: 'respuesta_no_lineal', texto: noLineal },
+        { codigo: 'nino_costero', texto: costero },
+      ],
+    };
+    await render(<TarjetaVeredicto analisis={costa} />);
+    expect(screen.getByText(noLineal)).toBeOnTheScreen();
+    expect(screen.getByText(costero)).toBeOnTheScreen();
+    expect(screen.getByLabelText(`Aviso: ${noLineal}`)).toBeOnTheScreen();
+  });
+
   it('alternar el interruptor 10 veces no hace ninguna petición', async () => {
     await render(<TarjetaVeredicto analisis={sensible} />);
     for (let i = 0; i < 10; i++) await alternar();

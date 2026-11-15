@@ -10,6 +10,15 @@ import { conUnidad, numero, pValor } from '@/shared/format';
 type Vinculo = AnalyzeRespuesta['vinculo_el_nino'];
 type Origen = AnalyzeRespuesta['veredicto']['origen'];
 
+/**
+ * Atribución que va sobre el veredicto en TODAS las tarjetas: el resultado es lo que muestra la fuente,
+ * no un hecho absoluto (revisión de anomalías, hallazgo 6: tendencias de lluvia de MERRA-2 en los
+ * trópicos). La fuente sale de la respuesta; no se hace un caso especial por lugar.
+ */
+export function atribucion(analisis: Pick<AnalyzeRespuesta, 'fuente'>): string {
+  return `Según los datos de ${analisis.fuente}`;
+}
+
 /** Interruptor apagado: "Tendencia aparente", leída de `tendencia_original`. Flecha + texto (no solo color). */
 export function tendenciaAparente(t: Tendencia): { simbolo: string; texto: string } {
   if (t.significativa && t.direccion === 'sube') return { simbolo: '↗', texto: 'Parece que sube' };
