@@ -108,13 +108,16 @@ npx expo export -p web          # sitio estático en dist/  (esto corre el CI)
 npx tsc --noEmit                # solo tipos
 npm run test                    # Jest (jest-expo), sin red
 npm run lint                    # ESLint
-npm run tipos                   # regenera los tipos TS desde http://localhost:8000/openapi.json (openapi-typescript)
+npm run tipos                   # regenera src/shared/api/esquema.ts desde http://localhost:8000/openapi.json (openapi-typescript)
+npm run fixtures:copiar         # regenera src/shared/api/__fixtures__/*.ts desde ../backend/app/catalogo/simulado/*.json
 npm run demo:copiar             # copia ../backend/data/demo/respuestas/*.json a assets/demo/
 npx expo install --check        # ¿las versiones coinciden con el SDK?
 eas build -p android --profile preview    # APK instalable (hace falta cuenta de Expo y `eas login`)
 ```
 
-> Si un comando no coincide con lo que hay en el repositorio, **corrige esta sección en el mismo PR**. Los scripts `tipos`, `demo:copiar`, `lint` y `test` se crean en `package.json` en la rama `chore/contratos`.
+> Si un comando no coincide con lo que hay en el repositorio, **corrige esta sección en el mismo PR**. Los scripts `tipos`, `fixtures:copiar`, `demo:copiar`, `lint` y `test` se crean en `package.json` en la rama `chore/contratos`.
+>
+> **Notas del esqueleto (`chore/contratos`):** el SDK 57 trae TypeScript 6 y `openapi-typescript` 7 solo acepta TypeScript 5, así que **no es dependencia del proyecto**: `npm run tipos` lo ejecuta con `npx openapi-typescript@7.13.0` (instalación aparte). `esquema.ts` y los fixtures se suben a Git; el CI no los regenera. Los fixtures son módulos `.ts` anotados con los tipos del contrato (un `.json` importado perdería los tipos literales): si el backend cambia un campo, `tsc` falla, y una prueba avisa si se desincronizan de los JSON simulados. Con TypeScript 6, `tsconfig.json` declara `"types": ["jest", "node"]`. En modo simulado el backend solo responde a Piura (−5.0, −80.5), `PRECTOTCORR`, 1981–1990, ONI: el espacio de trabajo ofrece ese ejemplo mientras `salud.simulado` sea verdadero.
 
 | Variable | Para qué | Por defecto |
 |---|---|---|
