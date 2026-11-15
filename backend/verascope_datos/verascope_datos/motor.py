@@ -15,9 +15,9 @@ from app.estadistica.veredicto import estado as veredicto
 __all__ = ["ALFA", "MIN_MESES", "analizar", "anomalias", "fdr", "rellenar_huecos", "tendencia", "veredicto"]
 
 
-def tendencia(y):
+def tendencia(y, alfa=ALFA):
     """`app.estadistica.tendencia.tendencia` con la forma de diccionario de antes."""
-    r = _tendencia(y)
+    r = _tendencia(y, alfa)
     return {"pendiente_dec": r.pendiente_decada, "ic": (r.ic_bajo, r.ic_alto), "p": r.p}
 
 
