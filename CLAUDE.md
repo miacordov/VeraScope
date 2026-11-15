@@ -1,0 +1,18 @@
+# CLAUDE.md · VeraScope
+
+Las guías completas están en `backend/CLAUDE.md` y `frontend/CLAUDE.md`; las reglas de revisión, en `AGENTS.md`. Lee la guía de tu carpeta antes de trabajar.
+
+## Ramas borradas: no se vuelven a crear
+
+El 15-nov-2026 se borraron estas ramas, porque su contenido ya está en `main` o en las ramas vigentes:
+
+| Rama borrada | Usa en su lugar |
+|---|---|
+| `fe/graficos-enso-v2` | `fe/graficos-enso` |
+| `fe/tiempo-comparador-v2` | `fe/tiempo-comparador` |
+| `chore/base-frontend` | `main` |
+
+- Antes de crear una rama, cambiarte a ella o hacer `push`, comprueba que no sea una de las borradas. Si te piden una, avisa y usa la vigente.
+- No hagas `push` de una copia local de esas ramas: el push vuelve a crearlas en GitHub.
+- Si todavía están en la máquina: `git fetch --prune`, cámbiate a la rama vigente y bórrala con `git branch -D <rama>`.
+- La versión estable del equipo es `main`. Antes de empezar, actualízate: `git pull --rebase origin main`.
