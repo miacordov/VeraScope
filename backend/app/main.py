@@ -1,8 +1,10 @@
-"""Arranque del servicio de contratos con escenarios explícitamente simulados."""
+"""Arranque del servicio: carga datos, caché, cliente POWER y catálogo."""
 
+import json
 import logging
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 from time import perf_counter
 
 from fastapi import FastAPI, Request
@@ -16,16 +18,64 @@ from app.api import analyze, catalogo, compare_periods, router, scan, teleconnec
 from app.api.simulados import cargar_escenarios
 from app.contracts import ErrorRespuesta
 from app.datos import carpeta_datos
+from app.datos.cache import Cache
+from app.datos.escaneo import ARCHIVO_RESULTADOS
+from app.datos.power_client import ClientePower, timeout_vivo
 
 logger = logging.getLogger(__name__)
 
 
+def _cargar_variables() -> dict:
+    """Catálogo de las 5 variables: dict keyed by id con nombre, unidad, fuente, definicion."""
+    ruta = Path(__file__).resolve().parent / "catalogo" / "simulado" / "variables.json"
+    datos = json.loads(ruta.read_text(encoding="utf-8"))
+    return {v["id"]: v for v in datos["variables"]}
+
+
+def _cargar_resultados(carpeta: Path):
+    """Carga resultados.parquet si existe; devuelve (DataFrame | None, mtime | None)."""
+    ruta = carpeta / ARCHIVO_RESULTADOS
+    if not ruta.exists():
+        return None, None
+    try:
+        import pandas as pd
+
+        return pd.read_parquet(ruta), ruta.stat().st_mtime
+    except Exception:
+        logger.warning("No se pudo cargar %s; el escaneo se considerará en curso.", ruta)
+        return None, None
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.simulado = os.environ.get("VERASCOPE_SIMULADO", "0") == "1"
-    app.state.datos = carpeta_datos()
-    app.state.escenarios = cargar_escenarios() if app.state.simulado else {}
-    yield
+    datos = carpeta_datos()
+    simulado = os.environ.get("VERASCOPE_SIMULADO", "0") == "1"
+
+    app.state.simulado = simulado
+    app.state.datos = datos
+    app.state.escenarios = cargar_escenarios() if simulado else {}
+    app.state.variables = _cargar_variables()
+
+    # Caché de dos niveles (N1 series + N2 resultados)
+    cache = Cache(datos)
+    app.state.cache = cache
+
+    # Cliente POWER para descargas en vivo
+    app.state.power = ClientePower(timeout=timeout_vivo())
+
+    # Resultados del escaneo (ScanMap)
+    app.state.escaneo_resultados, app.state._resultados_mtime = _cargar_resultados(datos)
+
+    logger.info(
+        "arranque simulado=%s datos=%s escaneo=%s",
+        simulado,
+        datos,
+        "cargado" if app.state.escaneo_resultados is not None else "no_disponible",
+    )
+    try:
+        yield
+    finally:
+        cache.cerrar()
 
 
 app = FastAPI(
@@ -83,12 +133,29 @@ def error_http(request: Request, exc: HTTPException):
 @app.middleware("http")
 async def registrar_peticion(request: Request, call_next):
     inicio = perf_counter()
+
+    # Recargar resultados.parquet si cambió en disco
+    estado = request.app.state
+    if not estado.simulado:
+        ruta_res = estado.datos / ARCHIVO_RESULTADOS
+        if ruta_res.exists():
+            mtime = ruta_res.stat().st_mtime
+            if estado._resultados_mtime is None or mtime > estado._resultados_mtime:
+                estado.escaneo_resultados, estado._resultados_mtime = _cargar_resultados(
+                    estado.datos
+                )
+                logger.info("escaneo recargado mtime=%.2f", mtime)
+
     respuesta = await call_next(request)
+
+    # Detectar acierto/fallo de caché desde los headers internos
+    cache_estado = respuesta.headers.get("X-VeraScope-Cache", "no_aplica")
     logger.info(
-        "peticion metodo=%s ruta=%s estado=%s t_total_ms=%.2f cache=no_aplica",
+        "peticion metodo=%s ruta=%s estado=%s t_total_ms=%.2f cache=%s",
         request.method,
         request.scope.get("route").path if request.scope.get("route") else "desconocida",
         respuesta.status_code,
         (perf_counter() - inicio) * 1000,
+        cache_estado,
     )
     return respuesta
