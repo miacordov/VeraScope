@@ -15,6 +15,7 @@ from starlette.exceptions import HTTPException
 from app.api import analyze, catalogo, compare_periods, router, scan, teleconnect  # noqa: F401
 from app.api.simulados import cargar_escenarios
 from app.contracts import ErrorRespuesta
+from app.datos import carpeta_datos
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,7 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.simulado = os.environ.get("VERASCOPE_SIMULADO", "0") == "1"
+    app.state.datos = carpeta_datos()
     app.state.escenarios = cargar_escenarios() if app.state.simulado else {}
     yield
 

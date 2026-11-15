@@ -12,8 +12,13 @@ dist/
 verascope_datos/
 data/
 tests/
+jobs/
 
 # Repositorio y archivos locales
 .git/
 .env
 .env.*
+
+# Documentación que no necesita la imagen
+docs/
+*.md
