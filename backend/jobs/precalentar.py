@@ -34,7 +34,8 @@ logger = logging.getLogger(__name__)
 # ── Celdas de las demos ──────────────────────────────────────────────────────
 
 DEMOS = [
-    ("efecto-espejo (Piura)", -5.0, -80.5),
+    # Celda de ScanMap (no el punto −5.0, −80.5): tarjeta, escaneo y líneas coinciden.
+    ("efecto-espejo (Piura)", -6.0, -80.0),
     ("senal-o-ruido", -6.0, -80.0),
 ]
 
