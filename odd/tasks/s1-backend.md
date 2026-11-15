@@ -30,11 +30,24 @@ S3. B3 · be/motor-enso (#4)
 - "veredicto.py (cuatro estados y avisos) y fdr.py (Benjamini-Hochberg)."
 - "Pruebas: recuperación, sin tendencia, coherencia IC ↔ p (0 % contradicciones), falsos positivos, potencia, correlación con tamaño efectivo, mismos meses, rendimiento."
 
+S4. Pendientes adicionales pedidos por el humano (L6)
+- "B1: datos/cache.py. Carga de ScanMap en main.py. jobs/precalentar.py y jobs/instantaneas.py. URL pública con HTTPS."
+- "B2: power_client.py, validacion.py, indices.py y jobs/scanmap.py."
+- "B3: todo estadistica/ menos constantes.py." (incluye teleconexion.py y periodos.py)
+- jobs/ entra en la imagen de la API (L7).
+
 ## Tasks
 
-- [ ] T1 · S1 · pendiente de visto bueno del plan · rama be/api-cache-despliegue · commit: —
-- [ ] T2 · S2 · pendiente · rama be/datos-power · commit: —
-- [ ] T3 · S3 · pendiente · rama be/motor-enso · commit: —
+Orden B2 → B3 → B1 (L7). Un bloque por vez en su rama be/*; el agente NO hace commits ni push: deja el diff y el humano commitea (L7).
+
+- [x] T2 · S2, S4 · B2 datos: power_client.py, validacion.py, indices.py · rama be/datos-power · verificado (PASS), sin commitear: lo commitea el humano · commit: (humano)
+- [ ] T3 · S3, S4 · B3 motor: anomalias, enso, tendencia, veredicto, fdr · rama be/motor-enso · commit: (humano)
+- [ ] T4 · S4 · B3 teleconexion.py y periodos.py · rama be/teleconexion-periodos · commit: (humano)
+- [ ] T5 · S4 · B2 jobs/scanmap.py · rama be/scanmap-job · commit: (humano)
+- [ ] T1 · S1, S4 · B1 cache.py, analyze real, jobs/precalentar.py, jobs/ en la imagen · rama be/api-cache-despliegue · commit: (humano)
+- [ ] T6 · S4 · B1 carga de ScanMap en main.py y rutas scan · rama be/scan-feed-api · commit: (humano)
+- [ ] T7 · S4 · B1 jobs/instantaneas.py · rama be/instantaneas-demo · commit: (humano)
+- [ ] T8 · S1, S4 · B1 URL pública con HTTPS · bloqueada: falta proveedor y autorización de cuenta (L7) · commit: (humano)
 
 ## Log
 
@@ -43,3 +56,9 @@ L2: Previo: chore/verifica-b1 verifica B1 de S0 (184 pruebas, ruff, Docker, late
 L3: Hallazgo B2 S0: POWER usa 0.625° en longitud (MERRA-2 nativo); decisión de equipo pendiente, celdas.py sigue la regla 0.5° de la guía.
 L4: Decisión del humano sobre la malla: "Mantener 0.5° y declararlo". celdas.py sigue igual; queda documentado en backend/docs/comprobaciones-b2.md.
 L5: Comprobaciones B2 verificadas con POWER real (14-nov-2026): PRECTOTCORR en mm/day, mes 13 presente, GWETROOT -999 en el mar y GWETTOP 1.0. Pendiente: Prueba rápida del panel y latencia desde la sede.
+L6 (humano, literal): "se eliminaria jobs solo si es una carpeta que no sirve para el proyecto y quiero que resolvamos esto nunca subas ni comitees eso lo voy a hacer yo    B1: - datos/cache.py. - Carga de ScanMap en main.py. - jobs/precalentar.py y jobs/instantaneas.py. - URL pública con HTTPS. - B2: power_client.py, validacion.py, indices.py y jobs/scanmap.py. - B3: todo estadistica/ menos constantes.py."
+L7: Decisiones del humano: orden B2 → B3 → B1; un bloque por vez en su rama be/*, sin commits del agente; HTTPS: el humano dirá el proveedor; jobs/ entra en la imagen. jobs/ NO se borra (aloja scanmap, precalentar, instantaneas).
+L8: Diseño B2 (mapa del explorador): app.datos es la implementación única; el preparador importa de app.datos (no al revés, porque el preparador no entra en la imagen). Se mueven parsear/ClientePower (fuentes/power.py), parsear_oni/parsear_nino12 (fuentes/noaa.py), ventana_valida (calcular.py) y rellenar_huecos (motor.py) a app/datos/.
+L9: T2 hecho en be/datos-power (sin commitear): app/datos/{power_client,validacion,indices}.py + 63 pruebas; preparador importa de app.datos (fuentes/power.py como subclase adaptadora por --fin). Backend 250 pasan, ruff verde, preparador 13 pasan. Cambio intencional: timeout de POWER no se reintenta (PowerLento inmediato). Abierto: datos/ importa estadistica/constantes (choca con CLAUDE.md §5).
+L10: Verificación independiente de T2: PASS (251 pruebas backend, 13 preparador, ruff verde, comparación antes/después del preparador sin diferencias no buscadas). Mensaje de PowerLento neutro; prueba de no-reintento del preparador agregada. Pendiente de decisión humana: excepción de CLAUDE.md §5 para estadistica/constantes.py.
+L11 (humano, literal): "todo lo quiero en spañol no respondas en ingles"

@@ -1,11 +1,15 @@
-"""V6 ONI, V7 Niño 1+2 y V13 CO₂: archivos de texto pequeños de NOAA."""
+"""V6 ONI, V7 Niño 1+2 y V13 CO₂: archivos de texto pequeños de NOAA.
+
+La lectura de ONI y Niño 1+2 vive en el backend (`app.datos.indices`): una sola implementación.
+"""
 import numpy as np
 import requests
+
+from app.datos.indices import TEMPORADAS, parsear_nino12, parsear_oni  # noqa: F401
 
 URL_ONI = "https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt"
 URL_SSTOI = "https://www.cpc.ncep.noaa.gov/data/indices/sstoi.indices"
 URL_CO2 = "https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_mm_mlo.txt"
-TEMPORADAS = ["DJF", "JFM", "FMA", "MAM", "AMJ", "MJJ", "JJA", "JAS", "ASO", "SON", "OND", "NDJ"]
 
 
 def bajar(url, timeout=60):
@@ -16,32 +20,6 @@ def bajar(url, timeout=60):
 
 def _a_serie(tabla, meses):
     return np.array([tabla.get(m, np.nan) for m in meses], dtype=np.float32)
-
-
-def parsear_oni(texto, meses):
-    """Columnas SEAS YR TOTAL ANOM. Cada temporada de 3 meses se asigna a su mes central (DJF -> enero)."""
-    t = {}
-    for linea in texto.splitlines():
-        p = linea.split()
-        if len(p) >= 4 and p[0] in TEMPORADAS:
-            try:
-                t[f"{int(p[1])}-{TEMPORADAS.index(p[0]) + 1:02d}"] = float(p[3])
-            except ValueError:
-                continue
-    return _a_serie(t, meses)
-
-
-def parsear_nino12(texto, meses):
-    """sstoi.indices: YR MON NINO1+2 ANOM NINO3 ANOM NINO4 ANOM NINO3.4 ANOM. Se usa la anomalía de Niño 1+2."""
-    t = {}
-    for linea in texto.splitlines():
-        p = linea.split()
-        if len(p) >= 4 and p[0].isdigit() and p[1].isdigit():
-            try:
-                t[f"{int(p[0])}-{int(p[1]):02d}"] = float(p[3])
-            except ValueError:
-                continue
-    return _a_serie(t, meses)
 
 
 def parsear_co2(texto, meses):

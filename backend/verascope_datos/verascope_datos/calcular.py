@@ -6,15 +6,11 @@ from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 import pandas as pd
 
+from app.datos.indices import ventana_valida  # misma regla de ventana que el backend
+
 from . import config, motor
 from .almacen import Casillero, lugar_celda
 from .variables import INDICES, POWER, POR_CODIGO
-
-
-def ventana_valida(indice):
-    """Meses con índice de El Niño disponible (al final puede faltar el último trimestre)."""
-    ok = np.where(np.isfinite(indice))[0]
-    return (int(ok[0]), int(ok[-1]) + 1) if ok.size else (0, 0)
 
 
 def armar_tabla(rutas, avance=None):
