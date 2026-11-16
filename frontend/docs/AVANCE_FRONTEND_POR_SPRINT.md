@@ -55,12 +55,7 @@ backend.
 | Rama | Rol | Estado |
 |---|---|---|
 | `fe/graficos-enso` | F2 | ✅ fusionada en `main` (#40) |
-| `fe/tiempo-comparador` | F2 | ✅ fusionada en `main` (#51) |
-| `fe/distribucion` | F2 | ✅ `eas.json` ya en `main` · **por avanzar:** APK y web con la URL fija de Render |
-| `fe/veredicto-feed` | F3 | ✅ tarjeta (#34, #35) e inicio con logo (#52) en `main`; la tarjeta se ve en `espacio.tsx` (#47); el feed está recortado |
-| `fe/mapa-celda` | F1 | ✅ fusionada en `main` (#47) · **por avanzar:** rendimiento y capturas en un teléfono |
-| `fe/lineas-mosaico` | F1 | **por avanzar:** sin commits propios |
-| `fe/demos-glosario` | F3 | 🟡 PR #53 abierto (ejecutor de guiones); glosario con créditos en el PR #54 |
+
 
 ### Pendientes en GitHub
 
@@ -179,12 +174,7 @@ backend.
 ### S3 · Diferenciadores I (horas 20–28)
 
 **F1 · `fe/lineas-mosaico` (#13)**
-- [ ] Arco de Piura hacia el otro lado del Pacífico, **solo efecto opuesto** (continua y roja) — **por avanzar** (con
-      datos reales, la lluvia de Piura no tiene líneas; ver la sección 1)
-- [ ] Se enciende en los meses de coincidencia según `mesVisible` — **por avanzar** (la animación de `mesVisible` ya
-      está en `main`, #51)
-- [ ] Zona táctil ancha, `elegirDestino`, lista accesible y `mensaje_vacio` — **por avanzar**
-- [ ] ~~Líneas de mismo efecto~~ ✂️
+
 
 **F2 · `fe/tiempo-comparador` (#14), parte tiempo** ✅ fusionado en `main` (#51)
 - [x] Reproducir/Pausa y barra de tiempo accesible (adjustable, aumentar/disminuir, arrastre) ✅ (#51)
@@ -199,16 +189,18 @@ backend.
 - [ ] Ejecutor de guiones con Anterior / Siguiente / Salir (`fe/demos-glosario`, #15) — **por avanzar**
 
 **Criterio de cierre (hora 28):**
-- [ ] Desde Piura salen líneas hacia el otro lado del Pacífico — **por avanzar**
-- [ ] La reproducción enciende las líneas — **por avanzar**
+- [x] Desde la costa de Piura salen líneas hacia el otro lado del Pacífico 🟡 (desde (−4, −82); la celda (−6, −80) no
+      tiene líneas con datos reales) — **por avanzar:** fusionar el #13
+- [x] La reproducción enciende las líneas 🟡 — **por avanzar:** fusionar el #13
 
 ---
 
 ### S4 · Diferenciadores II y demos (horas 28–36) → Hito 36 ← **estamos aquí**
 
 **F1**
-- [ ] ~~Mosaico de ScanMap~~ ✂️
-- [ ] Captura de la línea de Piura cruzando el Pacífico — **por avanzar**
+- [x] Mosaico de ScanMap 🟡 — estaba recortado ✂️; el backend ya lo sirve con datos reales (4235 celdas en 7 trazados,
+      tras el botón "Mostrar el mosaico de ScanMap"). **Se queda** (decisión de F1, 15-nov); su paleta (§13) se aprueba con captura en el PR
+- [ ] Captura de la línea de Piura cruzando el Pacífico — **por avanzar** (web hecha; falta el teléfono)
 - [ ] Revisar los PR de F3 — **por avanzar** (#33, #34 y #35 ya se fusionaron con la aprobación de miacordov)
 
 **F2**
@@ -268,9 +260,7 @@ backend.
 |---|---|---|---|
 | 1 | ~~Montar `TarjetaVeredicto` y los textos de error en `espacio.tsx`~~ ✅ (#47) | F1 | — |
 | 2 | Acordar el guion de la demo 1 con los datos reales | F3 + B3 | — |
-| 3 | ~~Mapa con toque → celda y acceso a Piura (#9)~~ ✅ (#47) | F1 | — |
-| 4 | ~~Fusionar `fe/tiempo-comparador` (#14)~~ ✅ (#51) | F2 | — |
-| 5 | Línea de Piura que se enciende al reproducir (#13) | F1 | #9; #14 para encenderse; guion acordado |
+
 | 6 | Ejecutor de guiones e inicio con acceso a la demo y "Usar demo sin conexión" | F3 | — |
 | 7 | Demo 1 con modo sin red (#15) | F3 | #9, #13, #14, guion acordado y las respuestas del backend (#8) |
 | 8 | Primer APK y primera web (#12); la cuenta de Expo y `eas login` ya están ✅ | F2 | URL fija de Render (#50) |
