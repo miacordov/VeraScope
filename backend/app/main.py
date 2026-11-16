@@ -1,6 +1,5 @@
 """Arranque del servicio: carga datos, caché, cliente POWER y catálogo."""
 
-import json
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -16,8 +15,8 @@ from starlette.exceptions import HTTPException
 
 from app.api import analyze, catalogo, compare_periods, router, scan, teleconnect  # noqa: F401
 from app.api.rejilla import cargar_rejilla
-from app.api.simulados import cargar_escenarios
-from app.contracts import ErrorRespuesta
+from app.api.simulados import cargar_catalogos, cargar_escenarios
+from app.contracts import ErrorRespuesta, VariablesRespuesta
 from app.datos import carpeta_datos
 from app.datos.cache import Cache
 from app.datos.escaneo import ARCHIVO_RESULTADOS
@@ -26,11 +25,9 @@ from app.datos.power_client import ClientePower, timeout_vivo
 logger = logging.getLogger(__name__)
 
 
-def _cargar_variables() -> dict:
-    """Catálogo de las 5 variables: dict keyed by id con nombre, unidad, fuente, definicion."""
-    ruta = Path(__file__).resolve().parent / "catalogo" / "simulado" / "variables.json"
-    datos = json.loads(ruta.read_text(encoding="utf-8"))
-    return {v["id"]: v for v in datos["variables"]}
+def _cargar_variables(validado: VariablesRespuesta) -> dict:
+    """Deriva el diccionario por id del catálogo ya validado en el arranque."""
+    return {variable.id: variable.model_dump(mode="json") for variable in validado.variables}
 
 
 def _cargar_resultados(carpeta: Path):
@@ -54,8 +51,11 @@ async def lifespan(app: FastAPI):
 
     app.state.simulado = simulado
     app.state.datos = datos
-    app.state.escenarios = cargar_escenarios() if simulado else {}
-    app.state.variables = _cargar_variables()
+    catalogos = cargar_catalogos()
+    app.state.catalogo_variables = catalogos["variables"]
+    app.state.catalogo_glosario = catalogos["glosario"]
+    app.state.escenarios = cargar_escenarios(catalogos) if simulado else {}
+    app.state.variables = _cargar_variables(app.state.catalogo_variables)
 
     # Caché de dos niveles (N1 series + N2 resultados)
     cache = Cache(datos)
@@ -66,6 +66,8 @@ async def lifespan(app: FastAPI):
 
     # Resultados del escaneo (ScanMap)
     app.state.escaneo_resultados, app.state._resultados_mtime = _cargar_resultados(datos)
+    app.state.feed_titulares = scan.cargar_titulares()
+    scan.reiniciar_cache_feed(app.state)
 
     # Matrices de la rejilla para teleconnect (≈ 16 s y ≈ 32 MB con la rejilla completa)
     app.state.rejilla = None if simulado else cargar_rejilla(datos)
@@ -148,6 +150,7 @@ async def registrar_peticion(request: Request, call_next):
                 estado.escaneo_resultados, estado._resultados_mtime = _cargar_resultados(
                     estado.datos
                 )
+                scan.reiniciar_cache_feed(estado)
                 logger.info("escaneo recargado mtime=%.2f", mtime)
 
     respuesta = await call_next(request)

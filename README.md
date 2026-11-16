@@ -75,6 +75,9 @@ git push -u origin <tu-rama>       # y abre el PR hacia main, enlazando tu issue
 
 - Todo PR lo aprueba **otra persona de tu área**; un cambio de contrato, **una de backend y una de frontend**.
 - CI en verde para fusionar. Nada de `push --force` a `main` ni pruebas desactivadas.
+- **Antes de abrir el PR, prueba todo el repositorio** con `scripts/testea-repo.sh` (Linux o macOS; ~5 min, `--rapido` ~3 min). Corre lo mismo que el CI en backend, preparador y frontend, y además levanta la
+  API simulada para comprobar la conexión: cada ruta que usa la app responde lo que esperan sus fixtures, CORS
+  de la web, el error estándar y que los tipos de `esquema.ts` coinciden con `/openapi.json`.
 - Si tu tarea te obliga a tocar la carpeta del otro lado (`backend/` ↔ `frontend/`), **detente y avisa**:
   casi seguro es un cambio de contrato.
 
@@ -95,10 +98,30 @@ instala el paquete que esa persona comparte. Todo queda en `backend/data/`, que 
 | 3 | `verascope-datos satelites` | GPM, GLDAS y MODIS (V8–V12) para las demos; pide cuenta de NASA Earthdata |
 | 4 | `verascope-datos calcular` | Tendencias con y sin El Niño, FDR y veredicto por celda → `resultados.parquet` |
 | 5 | `verascope-datos demos` | Respaldo JSON de Piura, Borneo y el norte de Australia |
-| 6 | `verascope-datos empaquetar` | Un `.tar.gz` para el equipo (nunca va a Git) |
+| 6 | `verascope-datos empaquetar` | Un `.tar.gz` para el equipo; va a Git en `backend/paquete-datos/` |
 
-Instalar el paquete del equipo: `pip install -e backend/verascope_datos` y
-`verascope-datos instalar verascope-datos-AAAAMMDD.tar.gz` (o súbelo desde el panel). Verifica cada archivo.
+### Usar los datos reales (todo el equipo)
+
+El paquete con los datos reales está en el repo: `backend/paquete-datos/verascope-datos-20261115.tar.gz`
+(33 MB: casillero de NASA POWER con las 4235 celdas, `tabla/`, `resultados.parquet` del escaneo y las demos).
+Llega con `git pull`; se instala **una vez** por versión de datos:
+
+```bash
+cd backend
+python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
+pip install -e ".[dev]" -e verascope_datos
+verascope-datos instalar paquete-datos/verascope-datos-20261115.tar.gz   # → backend/data/, verifica cada archivo
+uvicorn app.main:app --host 0.0.0.0 --port 8000        # API con datos reales (~16 s en arrancar)
+```
+
+Para la app con datos reales, con esa API corriendo: `cd frontend && EXPO_PUBLIC_API_URL=http://<IP-de-tu-laptop>:8000 npm run dev`
+(sin esa variable, `npm run dev` levanta la API **simulada**).
+
+- Lo instalado en `backend/data/` no se sube (está en `.gitignore`): la API escribe ahí su caché.
+- Si la API (o `npm run dev`) estaba corriendo al instalar, `instalar` lo avisa: reiníciala para que lea los datos nuevos.
+  Instalar ya no daña el casillero aunque la API lo tenga abierto, y un paquete dañado no toca lo instalado.
+- Una celda que no está en el paquete se pide a NASA POWER en vivo (hace falta internet) y queda en tu caché.
+- Cuando haya datos nuevos, llega otro `.tar.gz` con el `pull`: vuelve a correr `instalar` con ese archivo.
 
 Las credenciales de NASA Earthdata van por variables de entorno (`EARTHDATA_USERNAME`, `EARTHDATA_PASSWORD`),
 `~/.netrc` o el panel (solo en memoria). **Nunca en un archivo del repo.**
