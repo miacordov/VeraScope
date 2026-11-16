@@ -1,4 +1,4 @@
-import { act, cleanup, render, screen } from '@testing-library/react-native';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react-native';
 import { AccessibilityInfo } from 'react-native';
 
 import { useEstado } from '@/estado/store';
@@ -152,5 +152,18 @@ describe('TarjetaVeredicto', () => {
     for (let i = 0; i < 10; i++) await alternar();
     expect(global.fetch).not.toHaveBeenCalled();
     expect(screen.getByText('Parece que sube')).toBeOnTheScreen();
+  });
+
+  it('sin `alVerGlosario` no muestra el enlace al glosario (la tarjeta se ve igual que antes)', async () => {
+    await render(<TarjetaVeredicto analisis={sensible} />);
+    expect(screen.queryByText('Qué significan estos términos')).toBeNull();
+  });
+
+  it('con `alVerGlosario` ofrece el enlace al glosario y lo usa al tocarlo', async () => {
+    const alVerGlosario = jest.fn();
+    await render(<TarjetaVeredicto analisis={sensible} alVerGlosario={alVerGlosario} />);
+    await fireEvent.press(screen.getByRole('button', { name: /Abrir el glosario/ }));
+    expect(alVerGlosario).toHaveBeenCalledTimes(1);
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 });

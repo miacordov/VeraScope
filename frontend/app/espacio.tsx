@@ -1,17 +1,20 @@
+import { useEffect } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useShallow } from 'zustand/react/shallow';
 
 import { parametrosAnalyze } from '@/estado/seleccion';
 import { useEstado } from '@/estado/store';
 import { InterruptorElNino } from '@/features/enso-toggle/InterruptorElNino';
+import { ControlMosaico } from '@/features/map/ControlMosaico';
 import { MapaPacifico } from '@/features/map/MapaPacifico';
 import { altoDelMapa } from '@/features/map/tamano';
 import { PanelSeries } from '@/features/series-charts/PanelSeries';
 import { ControlTiempo } from '@/features/time-comparator/ControlTiempo';
+import { ListaLineas } from '@/features/teleconnection-lines/ListaLineas';
 import { SelectorVariable } from '@/features/variable-picker/SelectorVariable';
 import { TarjetaVeredicto } from '@/features/verdict-card';
 import { esErrorApi } from '@/shared/api/cliente';
-import { useAnalyze, useSalud } from '@/shared/api/consultas';
+import { useAnalyze, useLayer, useSalud, useTeleconnect } from '@/shared/api/consultas';
 import { estadoDeError, TEXTOS_ACCION } from '@/shared/components/textosEstados';
 import { EJEMPLO_SIMULADO } from '@/shared/ejemploSimulado';
 import { celda as textoCelda } from '@/shared/format';
@@ -20,8 +23,10 @@ import { cortes, espacios, type Colores } from '@/shared/tema';
 import { Boton, Tarjeta, Texto } from '@/shared/ui';
 
 /**
- * Espacio de trabajo (F1). Mapa del Pacífico y selector de variable y ventana (`fe/mapa-celda`, #9); pide
- * `analyze` y muestra la tarjeta de veredicto (F3). En pantallas anchas (≥ 1024) el mapa va al lado del panel.
+ * Espacio de trabajo (F1). Mapa del Pacífico y selector de variable y ventana (`fe/mapa-celda`, #9); elegir una celda
+ * pide `analyze` y `teleconnect` en paralelo (§6, regla 1) y muestra la tarjeta de veredicto (F3). Las líneas
+ * causa → consecuencia y el mosaico de ScanMap (`fe/lineas-mosaico`, #13) van en la columna del mapa. En pantallas
+ * anchas (≥ 1024) el mapa va al lado del panel.
  * Las features de F2 y F3 entran por su hueco.
  */
 export default function Espacio() {
@@ -33,6 +38,19 @@ export default function Espacio() {
   );
   const parametros = parametrosAnalyze(seleccion, salud.data?.ventana_fin);
   const analisis = useAnalyze(parametros);
+  const { destino, mesVisible, mosaicoVisible } = useEstado(
+    useShallow((e) => ({ destino: e.destino, mesVisible: e.mesVisible, mosaicoVisible: e.mosaicoVisible })),
+  );
+  const teleconexion = useTeleconnect(
+    seleccion.celda ? { variable: seleccion.variable, lat: seleccion.celda.lat, lon: seleccion.celda.lon } : null,
+  );
+  const mosaico = useLayer(seleccion.variable, mosaicoVisible);
+  // Al llegar `teleconnect` sin destino se elige la primera línea de efecto opuesto (§7); también cuando el destino
+  // se reinicia al volver a una celda cuya respuesta ya está en caché.
+  const lineas = teleconexion.data?.lineas;
+  useEffect(() => {
+    if (lineas && destino === null) useEstado.getState().destinoPorDefecto(lineas);
+  }, [lineas, destino]);
   const { width } = useWindowDimensions();
   const ancha = width >= cortes.laptop;
   const altoMapa = altoDelMapa(width);
@@ -60,6 +78,18 @@ export default function Espacio() {
             celda={celdaDibujada}
             alto={altoMapa}
             onElegirCelda={(c) => useEstado.getState().seleccionarCelda(c)}
+            teleconexion={
+              teleconexion.data
+                ? {
+                    origen: teleconexion.data.origen,
+                    lineas: teleconexion.data.lineas,
+                    destino,
+                    mesVisible,
+                    onElegirLinea: (l) => useEstado.getState().elegirDestino({ lat: l.lat, lon: l.lon }),
+                  }
+                : null
+            }
+            mosaico={mosaicoVisible && mosaico.data ? { datos: mosaico.data, variable: seleccion.variable } : null}
           />
           <Texto suave accessibilityLiveRegion="polite">
             {seleccion.celda
@@ -73,7 +103,25 @@ export default function Espacio() {
               onPress={usarEjemplo}
             />
           ) : null}
+          <ControlMosaico
+            visible={mosaicoVisible}
+            onAlternar={() => useEstado.getState().alternarMosaico()}
+            variable={seleccion.variable}
+            datos={mosaico.data}
+            cargando={mosaico.isFetching && !mosaico.data}
+            error={mosaico.isError ? mosaico.error : null}
+            reintentar={() => mosaico.refetch()}
+          />
         </Tarjeta>
+        {seleccion.celda ? (
+          <ListaLineas
+            respuesta={teleconexion.data}
+            cargando={teleconexion.isPending}
+            error={teleconexion.isError ? teleconexion.error : null}
+            destino={destino}
+            reintentar={() => teleconexion.refetch()}
+          />
+        ) : null}
       </View>
 
       <View style={ancha ? estilos.columnaPanel : estilos.columna}>
