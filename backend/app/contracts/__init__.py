@@ -105,7 +105,6 @@ class Escaneo(Modelo):
 
 
 class SaludRespuesta(Modelo):
-    simulado: bool
     ventana_fin: int
     version_metodo: int
     escaneo: Escaneo

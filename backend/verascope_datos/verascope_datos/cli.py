@@ -226,13 +226,21 @@ def cmd_satelites(a, r):
 
 # ---------------------------------------------------------------- cálculo, demos, paquete
 def cmd_calcular(a, r):
-    from . import calcular
-    with con.status("Armando la tabla gigante (celdas × meses)…"):
-        n, m = calcular.armar_tabla(r)
-    con.print(f"[green]✔[/] Tabla gigante: {n} celdas × {m} meses por variable")
-    with barra() as p:
-        t = p.add_task("Calculando tendencias con y sin El Niño", total=n * len(POWER))
-        df = calcular.calcular_resultados(r, procesos=a.procesos, avance=lambda k: p.advance(t, k))
+    """Calcula resultados usando jobs.scanmap.correr() — una sola implementación."""
+    try:
+        from jobs.scanmap import correr
+    except ImportError:
+        # Si no está en el backend, usar calcular directamente (modo standalone)
+        from . import calcular
+        with con.status("Armando la tabla gigante (celdas × meses)…"):
+            n, m = calcular.armar_tabla(r)
+        con.print(f"[green]✔[/] Tabla gigante: {n} celdas × {m} meses por variable")
+        with barra() as p:
+            t = p.add_task("Calculando tendencias con y sin El Niño", total=n * len(POWER))
+            df = calcular.calcular_resultados(r, procesos=a.procesos, avance=lambda k: p.advance(t, k),
+                                              minimo_celdas=getattr(a, "minimo_celdas", 0) or 0)
+    else:
+        df = correr(r.base, procesos=a.procesos, minimo_celdas=getattr(a, "minimo_celdas", None))
     t = Table(title=f"Lista de resultados · {len(df)} series · ventana {df.ventana.iloc[0]}", header_style="bold")
     for c in ("Variable", "Cambio robusto", "Sensible a El Niño", "Cambio oculto", "Sin tendencia"):
         t.add_column(c)
@@ -343,6 +351,8 @@ def main(argv=None):
     s = com("calcular", cmd_calcular, "arma la tabla gigante y la lista de resultados")
     s.add_argument("--procesos", type=int, help="núcleos de CPU a usar")
     s.add_argument("--paso", type=float, default=config.REJILLA_PASO, help="paso de la rejilla usada al descargar")
+    s.add_argument("--minimo-celdas", type=int, default=None,
+                   help="limitar el escaneo a las primeras N celdas (para pruebas parciales)")
     com("demos", cmd_demos, "exporta el respaldo JSON de las demos")
     com("empaquetar", cmd_empaquetar, "junta todo en un archivo para el equipo")
     s = com("instalar", cmd_instalar, "instala un paquete recibido de otro integrante")

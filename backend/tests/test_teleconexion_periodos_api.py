@@ -97,7 +97,6 @@ def _respuesta_power(meses):
 
 
 def _cliente(monkeypatch, tmp_path, sin_red):
-    monkeypatch.setenv("VERASCOPE_SIMULADO", "0")
     monkeypatch.setenv("VERASCOPE_FIN", "2025")
     monkeypatch.setenv("VERASCOPE_DATOS", str(tmp_path))
     monkeypatch.setenv("VERASCOPE_CORS", "https://web.example,https://otra.example")

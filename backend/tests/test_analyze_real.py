@@ -48,7 +48,6 @@ def _crear_indices_sinteticos(tabla_dir, meses):
 
 @pytest.fixture
 def cliente_real(monkeypatch, tmp_path, sin_red):
-    monkeypatch.setenv("VERASCOPE_SIMULADO", "0")
     monkeypatch.setenv("VERASCOPE_FIN", "2025")
     monkeypatch.setenv("VERASCOPE_DATOS", str(tmp_path))
     # Igual que `cliente` en conftest.py: main.py lee VERASCOPE_CORS al importarse.

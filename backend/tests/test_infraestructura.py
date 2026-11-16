@@ -30,23 +30,16 @@ def test_rutas_del_contrato_son_sincronas(cliente):
         for ruta in router.routes
         if isinstance(ruta, APIRoute) and ruta.path.startswith("/api/v1/")
     ]
-    assert len(rutas) == 9
+    assert len(rutas) == 8
     assert all(not inspect.iscoroutinefunction(ruta.endpoint) for ruta in rutas)
 
 
 def test_gzip_no_altera_el_json_publico(cliente):
-    parametros = {
-        "variable": "PRECTOTCORR",
-        "lat": -5.0,
-        "lon": -80.5,
-        "inicio": 1981,
-        "fin": 1990,
-    }
     comprimida = cliente.get(
-        "/api/v1/analyze", params=parametros, headers={"Accept-Encoding": "gzip"}
+        "/api/v1/variables", headers={"Accept-Encoding": "gzip"}
     )
     original = cliente.get(
-        "/api/v1/analyze", params=parametros, headers={"Accept-Encoding": "identity"}
+        "/api/v1/variables", headers={"Accept-Encoding": "identity"}
     )
     assert comprimida.status_code == original.status_code == 200
     assert comprimida.headers["content-encoding"] == "gzip"

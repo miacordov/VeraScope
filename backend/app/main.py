@@ -15,14 +15,26 @@ from starlette.exceptions import HTTPException
 
 from app.api import analyze, catalogo, compare_periods, router, scan, teleconnect  # noqa: F401
 from app.api.rejilla import cargar_rejilla
-from app.api.simulados import cargar_catalogos, cargar_escenarios
-from app.contracts import ErrorRespuesta, VariablesRespuesta
+from app.contracts import ErrorRespuesta, GlosarioRespuesta, VariablesRespuesta
 from app.datos import carpeta_datos
 from app.datos.cache import Cache
 from app.datos.escaneo import ARCHIVO_RESULTADOS
 from app.datos.power_client import ClientePower, timeout_vivo
 
 logger = logging.getLogger(__name__)
+
+
+def _cargar_catalogos() -> dict:
+    """Carga los catálogos editoriales (variables y glosario) desde JSON."""
+    carpeta = Path(__file__).resolve().parent / "catalogo"
+    return {
+        "variables": VariablesRespuesta.model_validate_json(
+            (carpeta / "variables.json").read_text("utf-8")
+        ),
+        "glosario": GlosarioRespuesta.model_validate_json(
+            (carpeta / "glosario.json").read_text("utf-8")
+        ),
+    }
 
 
 def _cargar_variables(validado: VariablesRespuesta) -> dict:
@@ -47,14 +59,11 @@ def _cargar_resultados(carpeta: Path):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     datos = carpeta_datos()
-    simulado = os.environ.get("VERASCOPE_SIMULADO", "0") == "1"
 
-    app.state.simulado = simulado
     app.state.datos = datos
-    catalogos = cargar_catalogos()
+    catalogos = _cargar_catalogos()
     app.state.catalogo_variables = catalogos["variables"]
     app.state.catalogo_glosario = catalogos["glosario"]
-    app.state.escenarios = cargar_escenarios(catalogos) if simulado else {}
     app.state.variables = _cargar_variables(app.state.catalogo_variables)
 
     # Caché de dos niveles (N1 series + N2 resultados)
@@ -70,11 +79,10 @@ async def lifespan(app: FastAPI):
     scan.reiniciar_cache_feed(app.state)
 
     # Matrices de la rejilla para teleconnect (≈ 16 s y ≈ 32 MB con la rejilla completa)
-    app.state.rejilla = None if simulado else cargar_rejilla(datos)
+    app.state.rejilla = cargar_rejilla(datos)
 
     logger.info(
-        "arranque simulado=%s datos=%s escaneo=%s",
-        simulado,
+        "arranque datos=%s escaneo=%s",
         datos,
         "cargado" if app.state.escaneo_resultados is not None else "no_disponible",
     )
@@ -87,7 +95,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="VeraScope",
     version="0.1.0",
-    description="API mensual. En modo simulado entrega escenarios fijos, no resultados reales.",
+    description="API mensual de tendencias del sistema Tierra con y sin El Niño.",
     lifespan=lifespan,
 )
 app.add_middleware(
@@ -142,16 +150,15 @@ async def registrar_peticion(request: Request, call_next):
 
     # Recargar resultados.parquet si cambió en disco
     estado = request.app.state
-    if not estado.simulado:
-        ruta_res = estado.datos / ARCHIVO_RESULTADOS
-        if ruta_res.exists():
-            mtime = ruta_res.stat().st_mtime
-            if estado._resultados_mtime is None or mtime > estado._resultados_mtime:
-                estado.escaneo_resultados, estado._resultados_mtime = _cargar_resultados(
-                    estado.datos
-                )
-                scan.reiniciar_cache_feed(estado)
-                logger.info("escaneo recargado mtime=%.2f", mtime)
+    ruta_res = estado.datos / ARCHIVO_RESULTADOS
+    if ruta_res.exists():
+        mtime = ruta_res.stat().st_mtime
+        if estado._resultados_mtime is None or mtime > estado._resultados_mtime:
+            estado.escaneo_resultados, estado._resultados_mtime = _cargar_resultados(
+                estado.datos
+            )
+            scan.reiniciar_cache_feed(estado)
+            logger.info("escaneo recargado mtime=%.2f", mtime)
 
     respuesta = await call_next(request)
 

@@ -82,6 +82,47 @@ verascope-datos instalar verascope-datos-AAAAMMDD.tar.gz
 
 El programa verifica que ningún archivo llegó dañado.
 
+### Subir a un release de GitHub
+
+1. Ve a https://github.com/miacordov/VeraScope/releases
+2. Haz clic en **Draft a new release**
+3. Tag: `datos-AAAAMMDD` (ejemplo: `datos-20261115`)
+4. Título: `Datos AAAAMMDD`
+5. Arrastra el `.tar.gz` de `backend/data/paquetes/` al cuadro de archivos adjuntos
+6. Publica el release
+
+Para instalar desde el release:
+
+```bash
+# Descargar el paquete
+curl -L -o verascope-datos-latest.tar.gz "https://github.com/miacordov/VeraScope/releases/latest/download/verascope-datos-AAAAMMDD.tar.gz"
+
+# Instalar en la carpeta de datos
+verascope-datos instalar verascope-datos-latest.tar.gz --datos /ruta/a/los/datos
+```
+
+### Verificar la instalación
+
+```bash
+verascope-datos estado --datos /ruta/a/los/datos
+```
+
+Deberías ver ✔ en "Tabla gigante", "Lista de resultados", "Respaldo de demos" y "Paquete".
+
+### Escaneo parcial para pruebas
+
+Si necesitas probar las rutas de la API sin esperar el escaneo completo (4235 celdas), usa `--minimo-celdas`:
+
+```bash
+# Escanear solo las primeras 10 celdas
+verascope-datos calcular --minimo-celdas 10
+
+# O desde el job directamente
+python -m jobs.scanmap --minimo-celdas 10
+```
+
+El estado del escaneo reflejará `celdas_total: 10` y la API mostrará solo esas celdas en `/scan/feed` y `/scan/layer`.
+
 ## 5. Comandos sueltos
 
 ```bash
@@ -159,11 +200,26 @@ Las pruebas del programa y del panel (13 en total) fabrican archivos con el mism
 no con datos reales) y corre el flujo completo, incluidos cortes de red y la instalación en otra
 carpeta.
 
-## Pendiente de verificar con los servicios reales
+## Decisiones sobre fuentes de datos
 
-El formato de cada fuente se tomó de su documentación y se probó con archivos simulados, pero
-desde el entorno donde se escribió el programa no había acceso a los servidores de la NASA.
-En la primera corrida real conviene revisar:
+### GLDAS escorrentía (V10)
 
-- **GLDAS, escorrentía (V10):** la conversión × 8 supone que `Qs_acc` y `Qsb_acc` son acumulados de 3 horas promediados en el mes. Confírmalo en la guía de GLDAS.
-- **AppEEARS (V12):** el nombre exacto de la capa (`CMG_0.05_Deg_Monthly_NDVI`). Si AppEEARS lo rechaza, búscalo en su lista de capas de MOD13C2.061.
+La variable `Qs_acc` + `Qsb_acc` de GLDAS NOAH viene en m/s (acumulado por paso de 3 h).
+Para obtener mm/día se multiplica por 8 (pasos de 3 h por día) × 1000 (m → mm) × 3600 (s → h)
+÷ 3 (horas por paso) = × 8 simplificado. **Decisión:** mantener la conversión × 8 hasta que
+alguien verifique con la guía de GLDAS NOAH025_M v2.1 que el factor es correcto.
+
+### NDVI de AppEEARS (V12)
+
+El NDVI usa MOD13C2 v061 (0.05° mensual) vía AppEEARS. AppEEARS tiene cola de procesamiento
+(puede tardar horas). **Decisión:** mantener NDVI como variable opcional. Si AppEEARS no
+responde, las demos funcionan con los 12 restantes.
+
+### Despliegue en Render
+
+El backend se despliega en Render (plan gratuito) con `render.yaml` y `scripts/start-render.sh`.
+Los datos se instalan desde un paquete `.tar.gz` incluido en el repo (`paquete-datos/`).
+El servicio se duerme después de 15 min sin tráfico; la primera petición tarda ~30 s.
+
+**Nota:** Render no tiene disco persistente en el plan gratuito. Cada reinicio reinstala los
+datos desde el paquete. Para datos actualizados, sube un nuevo paquete al repo y haz un deploy.

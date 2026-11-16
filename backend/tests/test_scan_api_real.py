@@ -11,10 +11,28 @@ from fastapi.testclient import TestClient
 from starlette.exceptions import HTTPException
 
 from app.api import router
-from app.api.simulados import cargar_catalogos
-from app.contracts import ErrorRespuesta, FeedRespuesta, LayerRespuesta
+from app.contracts import (
+    ErrorRespuesta,
+    FeedRespuesta,
+    GlosarioRespuesta,
+    LayerRespuesta,
+    VariablesRespuesta,
+)
 from app.datos.celdas import rejilla
 from app.datos.escaneo import escribir_estado
+
+
+def _cargar_catalogos() -> dict:
+    """Carga los catálogos editoriales (variables y glosario) desde JSON."""
+    carpeta = Path(__file__).resolve().parents[1] / "app" / "catalogo"
+    return {
+        "variables": VariablesRespuesta.model_validate_json(
+            (carpeta / "variables.json").read_text("utf-8")
+        ),
+        "glosario": GlosarioRespuesta.model_validate_json(
+            (carpeta / "glosario.json").read_text("utf-8")
+        ),
+    }
 
 
 @pytest.fixture
@@ -29,10 +47,9 @@ def api_real(tmp_path, sin_red, monkeypatch):
     app.state._resultados_mtime = None
     app.include_router(router)
     app.add_exception_handler(HTTPException, error_http)
-    app.state.simulado = False
     app.state.datos = tmp_path
     app.state.escaneo_resultados = None
-    catalogos = cargar_catalogos()
+    catalogos = _cargar_catalogos()
     app.state.catalogo_variables = catalogos["variables"]
     app.state.catalogo_glosario = catalogos["glosario"]
     with TestClient(app, backend_options={"loop_factory": lambda: sin_red}) as cliente:

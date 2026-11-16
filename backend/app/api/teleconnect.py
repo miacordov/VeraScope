@@ -1,15 +1,13 @@
 """Líneas causa → consecuencia desde una celda (guía §10).
 
-Con datos reales usa las matrices de la rejilla (`app.state.rejilla`) y el vínculo con
+Usa las matrices de la rejilla (`app.state.rejilla`) y el vínculo con
 El Niño de cada celda que dejó el escaneo (`r_enso`, `p_enso` de `resultados.parquet`).
-En modo simulado sirve el JSON de ejemplo de Piura.
 """
 
 import numpy as np
 from fastapi import HTTPException, Request
 
 from app.api import router
-from app.api.simulados import escenario_para_celda
 from app.api.validacion import LatitudConsulta, LongitudConsulta, rechazar
 from app.contracts import TeleconnectRespuesta, Variable
 from app.datos import celdas
@@ -52,10 +50,6 @@ def teleconnect(request: Request, variable: Variable, lat: LatitudConsulta, lon:
     Se aceptan longitudes 0–360. Ejemplo: PRECTOTCORR en Piura (-5, -80.5).
     """
     estado = request.app.state
-    if estado.simulado:
-        nombre = "teleconnect-t2m" if variable == Variable.TEMPERATURA else "teleconnect"
-        return escenario_para_celda(request, nombre, variable, lat, lon)
-
     rejilla = getattr(estado, "rejilla", None)
     escaneo = estado.escaneo_resultados
     if rejilla is None or escaneo is None:

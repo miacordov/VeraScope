@@ -111,11 +111,11 @@ def test_mientras_calcula_el_estado_es_en_curso(rutas, monkeypatch):
     vistos = []
     original = scanmap.calcular.calcular_resultados
 
-    def espia(r, procesos=None, avance=None):
+    def espia(r, procesos=None, avance=None, **kw):
         vistos.append(leer_estado(r.base)["estado"])
         avance(7)
         vistos.append(leer_estado(r.base))
-        return original(r, procesos=procesos, avance=avance)
+        return original(r, procesos=procesos, avance=avance, **kw)
 
     monkeypatch.setattr(scanmap.calcular, "calcular_resultados", espia)
     scanmap.correr(rutas.base, procesos=1)
@@ -146,6 +146,16 @@ def test_no_rearma_la_tabla_si_ya_existe_salvo_que_se_pida(rutas, monkeypatch):
     assert llamadas == []
     scanmap.correr(rutas.base, procesos=1, rearmar_tabla=True)
     assert llamadas == [1]
+
+
+def test_escaneo_parcial_con_minimo_celdas(rutas):
+    from jobs.scanmap import correr
+
+    df = correr(rutas.base, procesos=1, minimo_celdas=2)
+    celdas_usadas = set(df.celda.unique())
+    assert max(celdas_usadas) < 2  # solo las primeras 2 celdas
+    estado = json.loads((rutas.base / ARCHIVO_ESTADO).read_text())
+    assert estado["celdas_total"] == 2  # el total refleja el escaneo parcial
 
 
 def test_cli_corre_el_job(rutas, capsys):

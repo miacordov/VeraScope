@@ -29,15 +29,22 @@ except ImportError as error:  # pragma: no cover - mensaje para quien lo corre a
 from app.datos.escaneo import COMPLETO, EN_CURSO, escribir_estado
 
 
-def correr(datos=None, procesos: int | None = None, rearmar_tabla: bool = False):
+def correr(datos=None, procesos: int | None = None, rearmar_tabla: bool = False,
+           minimo_celdas: int | None = None):
     """Arma `tabla/` si falta (o si se pide), calcula `resultados.parquet` y marca el estado.
 
     Devuelve el `DataFrame` de resultados. `celdas_listas` avanza con las series
     calculadas ÷ 5 variables (aproximado: sobre el mar falta la humedad del suelo) y al
     final es el número de celdas con al menos una serie válida.
+
+    Si `minimo_celdas` se pasa, filtra la rejilla a las primeras N celdas para un
+    escaneo parcial (útil para probar las rutas de la API sin esperar el escaneo completo).
     """
     rutas = config.rutas(datos)
-    total = len(config.rejilla())
+    rejilla = config.rejilla()
+    if minimo_celdas is not None and minimo_celdas > 0:
+        rejilla = rejilla[:minimo_celdas]
+    total = len(rejilla)
     escribir_estado(rutas.base, EN_CURSO, 0, total)
     if rearmar_tabla or not (rutas.tabla / "meses.json").exists():
         calcular.armar_tabla(rutas)
@@ -49,7 +56,8 @@ def correr(datos=None, procesos: int | None = None, rearmar_tabla: bool = False)
         series_listas += int(n_series)
         escribir_estado(rutas.base, EN_CURSO, min(total, series_listas // len(POWER)), total)
 
-    df = calcular.calcular_resultados(rutas, procesos=procesos, avance=avance)
+    df = calcular.calcular_resultados(rutas, procesos=procesos, avance=avance,
+                                      minimo_celdas=minimo_celdas)
     escribir_estado(rutas.base, COMPLETO, int(df.celda.nunique()), total)
     return df
 
@@ -65,8 +73,13 @@ def main(argv=None) -> int:
     parser.add_argument(
         "--rearmar-tabla", action="store_true", help="vuelve a armar tabla/ desde el casillero"
     )
+    parser.add_argument(
+        "--minimo-celdas", type=int, default=None,
+        help="limitar el escaneo a las primeras N celdas (para pruebas parciales)"
+    )
     args = parser.parse_args(argv)
-    df = correr(args.datos, procesos=args.procesos, rearmar_tabla=args.rearmar_tabla)
+    df = correr(args.datos, procesos=args.procesos, rearmar_tabla=args.rearmar_tabla,
+                minimo_celdas=args.minimo_celdas)
     print(
         f"Escaneo completo: {df.celda.nunique()} celdas con datos, {len(df)} series, "
         f"{(df.veredicto != 'sin_tendencia').sum()} con tendencia."

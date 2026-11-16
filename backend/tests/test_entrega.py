@@ -61,10 +61,9 @@ def test_ci_fija_python_311_y_ejecuta_lint_formato_y_pruebas():
         assert esperado in texto
 
 
-def test_readme_documenta_arranque_simulado_y_variables():
+def test_readme_documenta_arranque_y_variables():
     texto = (RAIZ / "README.md").read_text(encoding="utf-8")
     for esperado in (
-        "VERASCOPE_SIMULADO=1",
         "uvicorn app.main:app",
         "VERASCOPE_CORS",
         "VERASCOPE_FIN",

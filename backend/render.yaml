@@ -4,8 +4,6 @@ web:
   buildCommand: pip install -e ".[dev]" && pip install -e verascope_datos
   startCommand: bash scripts/start-render.sh
   env:
-    - key: VERASCOPE_SIMULADO
-      value: "0"
     - key: VERASCOPE_CORS
       value: "*"
     - key: PYTHONUNBUFFERED

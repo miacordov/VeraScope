@@ -115,7 +115,6 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000        # API con datos reales (~
 ```
 
 Para la app con datos reales, con esa API corriendo: `cd frontend && EXPO_PUBLIC_API_URL=http://<IP-de-tu-laptop>:8000 npm run dev`
-(sin esa variable, `npm run dev` levanta la API **simulada**).
 
 - Lo instalado en `backend/data/` no se sube (está en `.gitignore`): la API escribe ahí su caché.
 - Si la API (o `npm run dev`) estaba corriendo al instalar, `instalar` lo avisa: reiníciala para que lea los datos nuevos.
@@ -126,22 +125,21 @@ Para la app con datos reales, con esa API corriendo: `cd frontend && EXPO_PUBLIC
 Las credenciales de NASA Earthdata van por variables de entorno (`EARTHDATA_USERNAME`, `EARTHDATA_PASSWORD`),
 `~/.netrc` o el panel (solo en memoria). **Nunca en un archivo del repo.**
 
-## API backend simulada
+## API backend
 
-La rama `chore/contratos` incluye una API FastAPI que sirve respuestas locales simuladas con el contrato público. No descarga datos ni ejecuta el motor estadístico.
+La API FastAPI opera con datos reales de NASA POWER y NOAA. Requiere los datos instalados en `backend/data/`.
 
 ```bash
 cd backend
 py -3.11 -m venv .venv
 .venv/Scripts/python.exe -m pip install -e ".[dev]"
-VERASCOPE_SIMULADO=1 .venv/Scripts/python.exe -m uvicorn app.main:app --reload --port 8000
+.venv/Scripts/python.exe -m uvicorn app.main:app --reload --port 8000
 ```
 
-En PowerShell, definí primero `$env:VERASCOPE_SIMULADO = "1"`. La salud queda disponible en `http://localhost:8000/api/v1/salud` y OpenAPI en `http://localhost:8000/docs`.
+La salud queda disponible en `http://localhost:8000/api/v1/salud` y OpenAPI en `http://localhost:8000/docs`.
 
 Variables principales:
 
-- `VERASCOPE_SIMULADO=1`: usa únicamente los JSON locales de `backend/app/catalogo/simulado/`.
 - `VERASCOPE_FIN`: último año completo disponible; por defecto, año actual menos uno.
 - `VERASCOPE_CORS`: orígenes web permitidos, separados por coma.
 - `VERASCOPE_DATOS`: carpeta persistente de datos; por defecto, `backend/data`. La API la resuelve al arrancar y la caché (`datos/cache.py`) la usará para leer y guardar. En la imagen vale `/data` (volumen). La API corre sin root (uid `10001`): un volumen de Docker nuevo ya queda con ese dueño, pero si montás una carpeta de tu máquina (`-v "$PWD/data:/data"`) con Docker nativo de Linux, dale permiso de escritura a ese uid (`sudo chown -R 10001 data`) o corré el contenedor con tu usuario (`--user "$(id -u):$(id -g)"`). Docker Desktop traduce los permisos de las carpetas compartidas y no necesita este paso.
@@ -155,7 +153,7 @@ cd backend
 .venv/Scripts/ruff.exe format --check app tests
 ```
 
-Prueba opcional de la imagen (necesita Docker y red para bajar `python:3.11-slim`): construye la imagen, la levanta en modo simulado, espera el healthcheck de `/api/v1/salud` y comprueba que corre sin root, que puede escribir en `/data` y que no lleva `jobs/`, el preparador ni las pruebas:
+Prueba opcional de la imagen (necesita Docker y red para bajar `python:3.11-slim`): construye la imagen, la levanta, espera el healthcheck de `/api/v1/salud` y comprueba que corre sin root, que puede escribir en `/data` y que no lleva `jobs/`, el preparador ni las pruebas:
 
 ```bash
 cd backend
