@@ -85,9 +85,17 @@ def tendencia(y, alfa: float = ALFA) -> ResultadoTendencia:
     Intervalo (cálculo C7, corrección C8): `C = z₁₋α/₂·√Var′(S)` con **la misma**
     varianza que el p-valor, `max(Hamed-Rao, sin corregir)`: Hamed-Rao solo puede
     ensanchar el intervalo, nunca achicarlo (decisión L14, `VERSION_METODO = 2`).
-    Va de la pendiente de orden `(N−C)/2` a la de orden
-    `(N+C)/2 + 1` (rangos redondeados y acotados a `[1, N]`) sobre las N pendientes
-    ordenadas. Así excluye el 0 si y solo si `p < alfa`. Pendiente e intervalo se
+    Va de la pendiente de orden `(N + Z0 − C)/2` a la de orden `(N − Z0 + C)/2 + 1`
+    (rangos 1-based redondeados y acotados a `[1, N]`) sobre las N pendientes
+    ordenadas, con `Z0` = número de pendientes exactamente iguales a 0 (decisión L16).
+    Derivación: con P pendientes positivas, M negativas y Z0 nulas, `S = P − M =
+    N − 2M − Z0` (S no cuenta los empates). La cota inferior supera a 0 si su rango
+    pasa de `M + Z0`, es decir, `round((S − C)/2) ≥ 1`, o sea `S − 1 ≥ C`; la superior
+    queda bajo 0 si `−S − 1 ≥ C`. Eso coincide con `|Z| > z₁₋α/₂` salvo en el borde
+    exacto. Sin `Z0` las cotas contaban las pendientes nulas y S no, y con empates
+    (meses secos en 0.00, redondeo, enteros) el IC contradecía al p. Equivale a
+    centrar las pendientes nulas; con datos continuos (`Z0 = 0`) no cambia nada.
+    Así excluye el 0 si y solo si `p < alfa`. Pendiente e intervalo se
     expresan por década (`× ESCALA_DECADA`); el intercepto es `mediana(y − b·t)` con
     `t = 0` en el primer mes analizado. Aplica a las cinco variables.
     """
@@ -96,8 +104,9 @@ def tendencia(y, alfa: float = ALFA) -> ResultadoTendencia:
     _, var_s, _, p = mann_kendall_hr(y)
     total = pendientes.size
     c = norm.ppf(1 - alfa / 2) * np.sqrt(var_s)
-    bajo = pendientes[int(max(round((total - c) / 2) - 1, 0))]
-    alto = pendientes[int(min(round((total + c) / 2), total - 1))]
+    ceros = int(np.count_nonzero(pendientes == 0))
+    bajo = pendientes[int(max(round((total + ceros - c) / 2) - 1, 0))]
+    alto = pendientes[int(min(round((total - ceros + c) / 2), total - 1))]
     intercepto = float(np.median(y - mediana * np.arange(y.size)))
     return ResultadoTendencia(
         pendiente_mes=mediana,
