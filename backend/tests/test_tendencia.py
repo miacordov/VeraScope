@@ -39,6 +39,7 @@ _BASE_SIN_TENDENCIA = 2000
 _BASE_AR1_FUERTE = 3000
 _BASE_POTENCIA = 4000
 _BASE_COHERENCIA = 5000
+_BASE_EMPATES = 6000
 
 
 def _ruido_ar1(i, n=480, rho=0.3):
@@ -185,6 +186,54 @@ def test_coherencia_ic_y_p_sin_contradicciones():
         if excluye != (res.p < ALFA):
             contradicciones.append((i, res))
     assert contradicciones == []
+
+
+def _anomalias_mensuales(valores):
+    """Andamio: resta el promedio de cada mes calendario (la serie empieza en enero)."""
+    meses = np.arange(valores.size) % 12
+    a = valores.astype(float).copy()
+    for k in range(12):
+        a[meses == k] -= valores[meses == k].mean()
+    return a
+
+
+def _contradicciones(series):
+    malas = []
+    for i, y in enumerate(series):
+        res = tendencia(y)
+        excluye = res.ic_bajo > 0 or res.ic_alto < 0
+        if excluye != (res.p < ALFA):
+            malas.append((i, res))
+    return malas
+
+
+def _lluvia_con_secos(i, n=240):
+    """Lluvia de costa árida (mm/día) ≥ 0, con estación seca recortada a 0.00 y 5 meses
+    secos más en 0.00, redondeada a 2 decimales y pasada a anomalías mensuales."""
+    rng = generador(_BASE_EMPATES + i)
+    beta = (0.0, 0.1, 0.2, 0.4)[i % 4]
+    v = serie(rng, n=n, beta_dec=beta, amplitud_estacional=2.0, sigma_ruido=1.0).valores + 1.0
+    v = np.clip(v, 0.0, None)
+    v[rng.choice(n, size=5, replace=False)] = 0.0
+    return _anomalias_mensuales(np.round(v, 2))
+
+
+def test_coherencia_ic_y_p_con_empates():
+    """Corrección C8 con empates (meses secos y redondeo): 0 contradicciones (L16)."""
+    assert _contradicciones(_lluvia_con_secos(i) for i in range(200)) == []
+
+
+def test_coherencia_ic_y_p_con_valores_enteros():
+    """Valores enteros (muchas pendientes exactamente 0): 0 contradicciones (L16)."""
+
+    def entera(i):
+        rng = generador(_BASE_EMPATES + 10_000 + i)
+        n = (120, 240)[i % 2]
+        beta = (0.0, 0.5, 1.0, 2.0)[i % 4]
+        y = ar1(n, 0.3, 2.0, rng) + beta / ESCALA_DECADA * np.arange(n)
+        return np.round(y)
+
+    assert _contradicciones(entera(i) for i in range(200)) == []
 
 
 def test_recuperacion_ic_contiene_pendiente_verdadera():
