@@ -16,13 +16,13 @@ from fastapi.testclient import TestClient
 # Forzar modo real
 os.environ["VERASCOPE_SIMULADO"] = "0"
 
-from app.main import app  # noqa: E402
 from app.contracts import (  # noqa: E402
     AnalyzeRespuesta,
     ComparePeriodsRespuesta,
     DemoRespuesta,
     TeleconnectRespuesta,
 )
+from app.main import app  # noqa: E402
 
 DESTINO = Path(__file__).resolve().parents[1] / "data" / "demo" / "respuestas"
 
@@ -64,7 +64,10 @@ def guardar(nombre: str, datos: dict, modelo):
     print(f"  ✓ {nombre}")
 
 
-def generar_analyze(cliente: TestClient, variable: str, lat: float, lon: float, inicio: int = 1981, fin: int = 2025):
+def generar_analyze(
+    cliente: TestClient, variable: str, lat: float, lon: float,
+    inicio: int = 1981, fin: int = 2025,
+):
     """Genera respuesta de /analyze."""
     params = {
         "variable": variable,

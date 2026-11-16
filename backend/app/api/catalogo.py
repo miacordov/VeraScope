@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from fastapi import HTTPException, Request
+from fastapi import Request
 
 from app.api import router
 from app.api.simulados import cargar_guion_demo, escenario
