@@ -166,4 +166,4 @@ desde el entorno donde se escribió el programa no había acceso a los servidore
 En la primera corrida real conviene revisar:
 
 - **GLDAS, escorrentía (V10):** la conversión × 8 supone que `Qs_acc` y `Qsb_acc` son acumulados de 3 horas promediados en el mes. Confírmalo en la guía de GLDAS.
-- **AppEEARS (V12):** el nombre exacto de la capa (`CMG_0.05_Deg_Monthly_NDVI`). Si AppEEARS lo rechaza, búscalo en su lista de capas de MOD13C2.061.
+- **AppEEARS (V12):** AppEEARS no ofrece MOD13C2 (CMG 0.05°); se usa MOD13A3.061, capa `_1_km_monthly_NDVI` (factor 0.0001, relleno −3000). Las fechas vienen en calendario juliano (hace falta `cftime`).

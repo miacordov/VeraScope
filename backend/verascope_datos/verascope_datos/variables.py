@@ -49,7 +49,7 @@ VARIABLES = (
              "Qs_acc + Qsb_acc, acumulados de 3 h; se multiplica por 8 (verificar en la guía de GLDAS)"),
     Variable("V11", "GLDAS_SUELO", "Humedad del suelo 0–10 cm (GLDAS)", "mm", "precalculada", "NASA GES DISC · GLDAS_NOAH025_M v2.1", 2000,
              "SoilMoi0_10cm_inst en kg m⁻² equivale a mm de agua"),
-    Variable("V12", "NDVI", "Índice de vegetación (MODIS)", "adimensional", "precalculada", "NASA LP DAAC · MOD13C2 v061 vía AppEEARS", 2000,
+    Variable("V12", "NDVI", "Índice de vegetación (MODIS)", "adimensional", "precalculada", "NASA LP DAAC · MOD13A3 v061 vía AppEEARS", 2000,
              "Factor de escala 0.0001"),
     Variable("V13", "CO2", "CO₂ atmosférico (Mauna Loa)", "ppm", "contexto", "NOAA GML", 1958,
              "Solo contexto: no se correlaciona con nada"),

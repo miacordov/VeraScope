@@ -1,4 +1,4 @@
-"""V12 MODIS NDVI (MOD13C2 v061) mediante la API de AppEEARS.
+"""V12 MODIS NDVI (MOD13A3 v061, mensual a 1 km) mediante la API de AppEEARS.
 
 AppEEARS recorta del lado del servidor y entrega NetCDF4. Las tareas tardan minutos u horas:
 el programa las envía, guarda su número y, si se vuelve a correr, retoma la misma tarea.
@@ -14,10 +14,10 @@ import requests
 import xarray as xr
 
 from .. import config
-from .region import caja, promedio_caja
+from .region import anio_mes, caja, promedio_caja
 
 BASE = "https://appeears.earthdatacloud.nasa.gov/api"
-PRODUCTO, CAPA = "MOD13C2.061", "CMG_0.05_Deg_Monthly_NDVI"
+PRODUCTO, CAPA = "MOD13A3.061", "_1_km_monthly_NDVI"  # AppEEARS no ofrece MOD13C2 (CMG 0.05°)
 
 
 def credenciales():
@@ -109,7 +109,4 @@ def leer_ndvi(archivo, lugar):
             da = da * 0.0001
         da = da.where((da >= -0.2) & (da <= 1.0))
         serie = promedio_caja(da, lugar)
-        t = serie["time"].values
-        import pandas as pd
-        return {f"{pd.Timestamp(x).year}-{pd.Timestamp(x).month:02d}": float(v)
-                for x, v in zip(t, serie.values) if np.isfinite(v)}
+        return {anio_mes(x): float(v) for x, v in zip(serie["time"].values, serie.values) if np.isfinite(v)}
