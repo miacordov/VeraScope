@@ -5,7 +5,7 @@ from typing import Literal
 from fastapi import HTTPException, Request
 
 from app.api import router
-from app.api.simulados import escenario
+from app.api.simulados import cargar_guion_demo, escenario
 from app.contracts import DemoRespuesta, GlosarioRespuesta, SaludRespuesta, VariablesRespuesta
 from app.datos.escaneo import leer_estado
 from app.estadistica.constantes import VERSION_METODO, ventana_fin
@@ -42,14 +42,5 @@ def glosario(request: Request):
 
 @router.get("/demos/{id}", response_model=DemoRespuesta)
 def demo(request: Request, id: Literal["efecto-espejo", "senal-o-ruido"]):
-    if request.app.state.simulado:
-        return escenario(request, id)
-    raise HTTPException(
-        status_code=503,
-        detail={
-            "codigo": "escaneo_en_curso",
-            "mensaje": "El guion de la demo real aún no está disponible. "
-            "Vuelve a intentarlo después de preparar los datos.",
-            "celda_cercana": None,
-        },
-    )
+    # Los guiones se sirven tanto en modo real como simulado
+    return cargar_guion_demo(id)

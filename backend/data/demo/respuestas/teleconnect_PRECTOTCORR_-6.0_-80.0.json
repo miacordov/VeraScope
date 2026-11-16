@@ -1,0 +1,11 @@
+{
+  "variable": "PRECTOTCORR",
+  "origen": {
+    "lat": -6.0,
+    "lon": -80.0,
+    "distancia_a_clic_km": 0.0,
+    "r_el_nino": 0.13919466806273684
+  },
+  "lineas": [],
+  "mensaje_vacio": "No se encontró un vínculo que cumpla los criterios."
+}
