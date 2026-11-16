@@ -3,6 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import { useEstado } from '@/estado/store';
 
 import Inicio from '../../../../app/index';
+import { PASO_PENDIENTE } from '../acciones';
 
 // Jest solo deja usar dentro de `jest.mock` variables cuyo nombre empieza con `mock`.
 const mockNavegar = jest.fn();
@@ -20,6 +21,7 @@ describe('Inicio', () => {
     expect(screen.getByLabelText('Logo de VeraScope')).toBeOnTheScreen();
     expect(screen.getByText(/tendencia real o solo El Niño/)).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: /Investigar/ })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: /Ver la demo guiada/ })).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Glosario' })).toBeOnTheScreen();
     expect(screen.queryByText('Escanear')).toBeNull();
   });
@@ -29,6 +31,14 @@ describe('Inicio', () => {
     await fireEvent.press(screen.getByRole('button', { name: /Investigar/ }));
     expect(mockNavegar).toHaveBeenCalledWith('/espacio');
     expect(useEstado.getState().demo).toBeNull();
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it('la demo empieza (pendiente del guion) y lleva al espacio de trabajo, sin pedir datos aquí', async () => {
+    await render(<Inicio />);
+    await fireEvent.press(screen.getByRole('button', { name: /Ver la demo guiada/ }));
+    expect(useEstado.getState().demo).toEqual({ id: 'efecto-espejo', paso: PASO_PENDIENTE });
+    expect(mockNavegar).toHaveBeenCalledWith('/espacio');
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
