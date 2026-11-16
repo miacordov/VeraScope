@@ -26,25 +26,24 @@ backend.
 
 ---
 
-## 1. Dónde estamos (15 de noviembre, tarde · `main` en `5f85edc`)
+## 1. Dónde estamos (15 de noviembre, noche · `main` en `d4ad255`)
 
 | | Estado |
 |---|---|
 | **Sprint en el que deberíamos estar** | **S4 → S5** (congelamiento en la hora 36; `release/demo` todavía no existe) |
-| **Sprint en el que está el frontend** | **S2–S3**: en `main` están la base, el panel de gráficos con el interruptor (F2, #40) y la tarjeta de veredicto, el logo y los textos de estados (F3, #33, #34, #35). En `fe/mapa-celda` (F1, sin fusionar): mapa, selector y la tarjeta montada en `espacio.tsx` (#9). **Por avanzar:** fusionar el #9 (F1), la reproducción (F2, `fe/tiempo-comparador`), las líneas (F1) y las demos (F3) |
-| **Backend** | ✅ `analyze` real con caché y precalentamiento (#30), avisos de Niño costero (#29, #31), demo de Piura en la celda (−6, −80) (#32), `teleconnect` y `compare-periods` con datos reales (#41, #42) y **paquete de datos reales en el repo** (#43, `backend/paquete-datos/verascope-datos-20261115.tar.gz`). **Por avanzar:** URL pública con HTTPS, rutas del feed y del mosaico (#7) y respuestas de demo para la app sin red (#8). `/salud` dice escaneo `en_curso` aunque el escaneo esté listo (error conocido) |
+| **Sprint en el que está el frontend** | **S3–S4**: en `main` están la base, el mapa con el selector y la tarjeta montada (F1, #47), el panel de gráficos con el interruptor (F2, #40), la **reproducción en el tiempo** (F2, #51) y la tarjeta de veredicto, el logo, los textos de estados y el inicio (F3, #33, #34, #35, #52). **Por avanzar:** las líneas (F1), las demos y el glosario (F3, PR #53 y #54 abiertos) y el APK y la web (F2, esperan la URL fija) |
+| **Backend** | ✅ `analyze` real con caché y precalentamiento (#30), avisos de Niño costero (#29, #31), demo de Piura en la celda (−6, −80) (#32), `teleconnect` y `compare-periods` con datos reales (#41, #42) y **paquete de datos reales en el repo** (#43, `backend/paquete-datos/verascope-datos-20261115.tar.gz`). Rutas del feed y del mosaico con datos reales (#45) y `/variables` y `/glosario` desde `catalogo/` (#48). **URL HTTPS:** hoy solo hay un túnel temporal de Cloudflare (cambia al reiniciarse; `backend/docs/despliegue-cloudflare-tunnel.md`); el equipo pasa a **Render con URL fija** (configuración en #50, URL todavía no publicada). **Por avanzar:** la URL fija de Render y las respuestas de demo para la app sin red (#8). `/salud` dice escaneo `en_curso` aunque el escaneo esté listo (error conocido) |
 | **Verificación de `main`** | `npx tsc --noEmit`, `npm run lint` y `npm run test` en verde (14 archivos, 92 pruebas). Con los datos reales, `analyze` de Piura (−6, −80) devuelve 540 meses y veredicto `sin_tendencia` (origen `escaneo`) |
 
 ### ⚠️ Lo que hay que resolver ya
 
-- ~~**La tarjeta de veredicto está en `main` pero no se ve.**~~ 🟡 Resuelto en `fe/mapa-celda` (F1): `espacio.tsx`
-  monta `TarjetaVeredicto` y el interruptor cambia el veredicto sin red (probado con datos reales de Piura) —
-  **por avanzar:** fusionar el #9.
-- ~~**Los textos de estados no los usa ninguna pantalla.**~~ 🟡 En `fe/mapa-celda`, los errores de `espacio.tsx` y del
-  selector de variable usan `estadoDeError()` (con "Usar la celda cercana" y "Ver la lluvia en este lugar") —
-  **por avanzar:** fusionar el #9. El logo (`LogoVeraScope`) sigue sin usarse en ninguna pantalla (F3).
-- **`/variables` con datos reales responde 503 (`escaneo_en_curso`):** el selector de variable no puede cargar el
-  catálogo; la app muestra el aviso y se puede analizar la lluvia (variable por defecto). Es del backend (B1).
+- ~~**La tarjeta de veredicto está en `main` pero no se ve.**~~ ✅ `espacio.tsx` monta `TarjetaVeredicto` y el
+  interruptor cambia el veredicto sin red (#47).
+- ~~**Los textos de estados no los usa ninguna pantalla.**~~ ✅ Los errores de `espacio.tsx` y del selector usan
+  `estadoDeError()` (#47) y el inicio muestra el logo (#52).
+- **`/variables` con datos reales respondía 503 (`escaneo_en_curso`):** ✅ arreglado en `main` (#48). Si un servidor
+  todavía muestra "El escaneo aún no termina", corre una versión anterior al #48 y hay que actualizarlo y reiniciarlo
+  (B1). `analyze` y `teleconnect` funcionan igual.
 - **Guion de la demo 1:** con los datos reales (comentario en el issue #6), la lluvia de Piura **no tiene líneas** hacia
   Indonesia ni hacia el norte de Australia; solo `RH2M` da líneas de efecto opuesto, hacia el Pacífico norte tropical.
   El guion se ajusta a los datos: hay que decidirlo con B3 antes de construir la demo 1 (cambios ya pedidos en el
@@ -56,12 +55,7 @@ backend.
 | Rama | Rol | Estado |
 |---|---|---|
 | `fe/graficos-enso` | F2 | ✅ fusionada en `main` (#40) |
-| `fe/tiempo-comparador` | F2 | 🟡 reproducción lista (7 commits fuera de `main`) · **por avanzar:** abrir PR y fusionar |
-| `fe/distribucion` | F2 | ✅ `eas.json` ya en `main` · **por avanzar:** primer APK, web y versiones finales |
-| `fe/veredicto-feed` | F3 | ✅ tarjeta en `main` (#34, #35) · **por avanzar:** que se vea en `espacio.tsx`; el feed está recortado |
-| `fe/mapa-celda` | F1 | ✅ fusionada en `main` (#47) · **por avanzar:** rendimiento y capturas en un teléfono real |
-| `fe/lineas-mosaico` | F1 | 🟡 #13 hecho en la rama (sobre `main` `d4ad255`, con la reproducción de #51): líneas, lista accesible y mosaico · **por avanzar:** capturas en el teléfono, abrir PR y fusionar |
-| `fe/demos-glosario` | F3 | **por avanzar:** sin commits propios |
+
 
 ### Pendientes en GitHub
 
@@ -69,8 +63,8 @@ backend.
 - [x] Borrar las ramas `-v2` y `chore/base-frontend` ✅ (#37, #38)
 - [x] Cerrar el issue #1 ✅
 - [x] Asignar los issues #11 y #15 a F3 ✅
-- [ ] Asignar en GitHub los issues #10, #12 y #14 a F2 — **por avanzar**
-- [ ] Cerrar el issue #10 (código fusionado en #40) — **por avanzar** (F2)
+- [ ] Asignar en GitHub los issues #12 y #14 a F2 — **por avanzar**
+- [x] Cerrar el issue #10 (código fusionado en #40) ✅
 - [ ] ~~Quitar la firma de IA de los 8 commits de la base que ya están en `main`~~ ✂️ no se hace: exigiría reescribir
       `main`. Desde aquí ningún commit nuevo lleva firma de IA
 
@@ -92,7 +86,7 @@ backend.
 **F2**
 - [x] Revisar que el esqueleto compile en web (`expo export -p web` en verde) ✅
 - [x] `queryClient.ts` mínimo ✅ (#25)
-- [ ] Cuenta de Expo y `eas login` — **por avanzar**
+- [x] Cuenta de Expo y `eas login` ✅
 
 **F3**
 - [x] Logo oficial en `assets/marca/` (sin redibujar) y `LogoVeraScope` ✅ (#33) — **por avanzar:** mostrarlo en una
@@ -110,20 +104,20 @@ backend.
 ### S1 · Piezas base (horas 6–13)
 
 **F1 · `fe/mapa-celda` (#9)**
-- [x] Costas Natural Earth 110m en `assets/geo/tierra.json`; mapa centrado en el Pacífico (vista 90–330) 🟡 (`fe/mapa-celda`) — **por avanzar:** fusionar
-- [x] Polígonos con desplazamiento 0 y +360 (sin rayas); puntos con `lon360` 🟡 — **por avanzar:** fusionar
-- [x] Toque → celda cuantizada → rectángulo visible (≥ ~12 px), con la celda que devuelve la API 🟡 — **por avanzar:** fusionar
-- [x] Gestos, botones ＋/− y Restablecer vista; rueda del ratón en web 🟡 — **por avanzar:** fusionar
-- [x] Accesos directos a Piura, Borneo y norte de Australia 🟡 — **por avanzar:** fusionar
-- [x] Selector de variable (desde `/variables`) y ventana (< 10 años no se envía) 🟡 — **por avanzar:** fusionar
-- [x] Selector de índice con Niño 1+2 (aparece solo si `/variables` lo ofrece) 🟡 — **por avanzar:** fusionar
+- [x] Costas Natural Earth 110m en `assets/geo/tierra.json`; mapa centrado en el Pacífico (vista 90–330) ✅ (#47)
+- [x] Polígonos con desplazamiento 0 y +360 (sin rayas); puntos con `lon360` ✅ (#47)
+- [x] Toque → celda cuantizada → rectángulo visible (≥ ~12 px), con la celda que devuelve la API ✅ (#47)
+- [x] Gestos, botones ＋/− y Restablecer vista; rueda del ratón en web ✅ (#47)
+- [x] Accesos directos a Piura, Borneo y norte de Australia ✅ (#47)
+- [x] Selector de variable (desde `/variables`) y ventana (< 10 años no se envía) ✅ (#47)
+- [x] Selector de índice con Niño 1+2 (aparece solo si `/variables` lo ofrece) ✅ (#47)
 
 **F2 · `fe/distribucion` (#12) y `fe/graficos-enso` (#10)**
 - [x] `eas.json` con perfil `preview` (APK) y `expo.android.package` ✅ (#25)
 - [x] GraficoSerie con react-native-svg y d3 (los `null` son huecos) ✅ (#40)
-- [ ] `EXPO_PUBLIC_API_URL` con la URL HTTPS — **por avanzar** (falta la URL del backend)
-- [ ] Primer APK con `eas build -p android --profile preview` — **por avanzar**
-- [ ] Primera web publicada y su origen enviado al backend para `VERASCOPE_CORS` — **por avanzar**
+- [ ] `EXPO_PUBLIC_API_URL` con la URL HTTPS — **por avanzar** (se espera la URL fija de Render, #50; no se genera con el túnel temporal porque la URL queda grabada al compilar)
+- [ ] Primer APK con `eas build -p android --profile preview` — **por avanzar** (con la URL de Render)
+- [ ] Primera web publicada y su origen enviado al backend para `VERASCOPE_CORS` — **por avanzar** (con la URL de Render)
 
 **F3 · `fe/veredicto-feed` (#11), parte veredicto**
 - [x] Tarjeta: "Tendencia aparente" con el interruptor apagado e insignia de 4 estados con el interruptor encendido ✅
@@ -135,7 +129,7 @@ backend.
 - [x] `format.ts` es-PE con unidad ✅ (#25; ajuste en #35)
 
 **Criterio de cierre (hora 13):**
-- [x] Mapa con toque → celda, en la web 🟡 (`fe/mapa-celda`) — **por avanzar:** probarlo en el teléfono y fusionar
+- [x] Mapa con toque → celda, en la web ✅ (#47) — **por avanzar:** probarlo en el teléfono
 - [ ] Primer APK instalado o en cola — **por avanzar** (F2)
 
 ---
@@ -145,13 +139,12 @@ backend.
 **F1 · cierre de `fe/mapa-celda` (#9)**
 - [ ] `espacio.tsx` adaptable (teléfono con hoja inferior, tableta, web) — **por avanzar** (ya hay dos columnas en web
       ≥ 1024 y una columna en el teléfono; falta la hoja inferior)
-- [x] Montar `TarjetaVeredicto` en `espacio.tsx` en lugar de `InsigniaVeredicto` 🟡 (`fe/mapa-celda`) — **por avanzar:**
-      fusionar
+- [x] Montar `TarjetaVeredicto` en `espacio.tsx` en lugar de `InsigniaVeredicto` ✅ (#47)
 - [x] Usar `estadoDeError()` de `textosEstados.ts` en los errores de `espacio.tsx` y del selector (botón "Usar la celda
-      cercana") 🟡 — **por avanzar:** fusionar
+      cercana") ✅ (#47)
 - [ ] Rendimiento en un Android de gama baja — **por avanzar**
 - [ ] Colores de La Niña y de la línea de mismo efecto, con captura — **por avanzar**
-- [x] Probar contra el `analyze` real (el backend ya lo tiene, #30; datos en #43) 🟡 (en la web con Piura) — **por avanzar:** fusionar
+- [x] Probar contra el `analyze` real (el backend ya lo tiene, #30; datos en #43) ✅ (#47, en la web con Piura)
 
 **F2 · `fe/graficos-enso` (#10)** ✅ fusionado en `main` (#40)
 - [x] Panel **Causa** (índice con franjas de El Niño y trama de La Niña, referencias ±0.5) ✅ (#40)
@@ -165,40 +158,31 @@ backend.
 - [x] Abrir PR de `fe/graficos-enso` y fusionar en `main` ✅ (#40)
 
 **F3 · `fe/veredicto-feed` (#11), inicio y errores**
-- [ ] Inicio: frase de VeraScope, Investigar, Escanear, demos y "Usar demo sin conexión" — **por avanzar** (hoy: frase,
-      Investigar y Glosario, de la base)
-- [x] Textos de los estados de error (`power_lento`, `sin_datos_tierra`, red) ✅ (#33) — **por avanzar:** que
-      `espacio.tsx` los muestre (F1)
-- [x] Tarjeta conectada a `quitarElNino` del store ✅ (#34) — **por avanzar:** montarla en `espacio.tsx` (F1)
+- [ ] Inicio: frase de VeraScope, Investigar, Escanear, demos y "Usar demo sin conexión" — **por avanzar** (ya están el
+      logo, Investigar y Glosario, #52)
+- [x] Textos de los estados de error (`power_lento`, `sin_datos_tierra`, red) ✅ (#33; se muestran en `espacio.tsx`, #47)
+- [x] Tarjeta conectada a `quitarElNino` del store ✅ (#34; montada en `espacio.tsx`, #47)
 - [ ] ~~Feed de ScanMap con pestañas~~ ✂️ como mucho, lista simple si sobra tiempo (el backend #7 sigue abierto)
 
 **Criterio del hito 20:**
-- [x] Tocar el mapa lleva al veredicto 🟡 (`fe/mapa-celda`, probado en la web con datos reales) — **por avanzar:**
-      fusionar el #9 y probarlo en un teléfono real
-- [x] El interruptor cambia gráfico y veredicto sin red 🟡 (gráfico #40; tarjeta montada en `fe/mapa-celda`) —
-      **por avanzar:** fusionar el #9
+- [x] Tocar el mapa lleva al veredicto ✅ (#47, probado en la web con datos reales) — **por avanzar:** probarlo en un
+      teléfono real
+- [x] El interruptor cambia gráfico y veredicto sin red ✅ (gráfico #40; tarjeta montada #47)
 
 ---
 
 ### S3 · Diferenciadores I (horas 20–28)
 
 **F1 · `fe/lineas-mosaico` (#13)**
-- [x] Arco en `lon360` de la celda de ScanMap hacia el otro lado del Pacífico, continua y roja 🟡 (`fe/lineas-mosaico`).
-      Con datos reales: la celda de Piura (−6, −80) responde sin líneas (se muestra `mensaje_vacio`); la vecina
-      (−4, −82) tiene líneas opuestas hacia (4, 150), (4, 160) y Borneo (0, 118)
-- [x] Se enciende (opacidad 1, trazo grueso) en los meses de `meses_coincidencia`; 0.15 fuera y 0.8 sin `mesVisible` 🟡
-      (probado con la reproducción de #51, sin peticiones)
-- [x] Zona táctil de 24 px (por geometría, sin chocar con el toque de celda), `elegirDestino`, destino por defecto,
-      lista accesible con franja de detalle, `mensaje_vacio` y 503 `escaneo_en_curso` 🟡
-- [x] Líneas de mismo efecto (punteadas) 🟡 — estaban recortadas ✂️; salen en la misma respuesta. **Se quedan**
-      (decisión de F1, 15-nov)
 
-**F2 · `fe/tiempo-comparador` (#14), parte tiempo** 🟡 hecho en la rama
-- [x] Reproducir/Pausa y barra de tiempo accesible (adjustable, aumentar/disminuir, arrastre) 🟡
-- [x] ~30 s por tiempo transcurrido; cambia `mesVisible` solo al cambiar de mes y termina en `null` 🟡
-- [x] Prueba con temporizadores falsos, sin red 🟡
-- [ ] **Abrir PR de `fe/tiempo-comparador` y fusionar** — **por avanzar** (el #10 ya está en `main`, #40)
-- [ ] Avisar a F1 que `mesVisible` ya está animado — **por avanzar**
+
+**F2 · `fe/tiempo-comparador` (#14), parte tiempo** ✅ fusionado en `main` (#51)
+- [x] Reproducir/Pausa y barra de tiempo accesible (adjustable, aumentar/disminuir, arrastre) ✅ (#51)
+- [x] ~30 s por tiempo transcurrido; cambia `mesVisible` solo al cambiar de mes y termina en `null` ✅ (#51)
+- [x] Prueba con temporizadores falsos, sin red ✅ (#51)
+- [x] `ControlTiempo` montado en `espacio.tsx`, debajo del interruptor ✅ (#51)
+- [x] Abrir PR de `fe/tiempo-comparador` y fusionar ✅ (#51)
+- [x] Avisar a F1 que `mesVisible` ya está animado ✅
 
 **F3**
 - [ ] ~~Feed paginado con "Escaneo en curso"~~ ✂️
@@ -274,16 +258,14 @@ backend.
 
 | # | Qué | Rol | Depende de |
 |---|---|---|---|
-| 1 | Montar `TarjetaVeredicto` y los textos de error en `espacio.tsx` | F1 | — (la tarjeta ya está en `main`) |
+| 1 | ~~Montar `TarjetaVeredicto` y los textos de error en `espacio.tsx`~~ ✅ (#47) | F1 | — |
 | 2 | Acordar el guion de la demo 1 con los datos reales | F3 + B3 | — |
-| 3 | Mapa con toque → celda y acceso a Piura (#9) | F1 | Base (ya está) |
-| 4 | Fusionar `fe/tiempo-comparador` (#14) | F2 (aprueba F3) | — (#10 ya en `main`) |
-| 5 | Línea de Piura que se enciende al reproducir (#13) | F1 | 🟡 hecho en `fe/lineas-mosaico` (#9 y #14 ya en `main`) · por avanzar: PR |
+
 | 6 | Ejecutor de guiones e inicio con acceso a la demo y "Usar demo sin conexión" | F3 | — |
 | 7 | Demo 1 con modo sin red (#15) | F3 | #9, #13, #14, guion acordado y las respuestas del backend (#8) |
-| 8 | Cuenta de Expo, `eas login` y primer APK (#12) | F2 | — |
+| 8 | Primer APK y primera web (#12); la cuenta de Expo y `eas login` ya están ✅ | F2 | URL fija de Render (#50) |
 | 9 | APK y web finales en modo avión (#12) | F2 | Demo 1 y `assets/demo/` |
-| 10 | URL HTTPS de la API | Backend | — (sin ella, todo funciona con la demo guardada) |
+| 10 | URL HTTPS fija de la API (Render) | Backend | — (mientras tanto, túnel temporal de Cloudflare) |
 
 **Nunca se recorta:** análisis mensual con y sin El Niño, el interruptor, la línea de Piura hacia Indonesia y Australia,
 la reproducción en el tiempo y la demo 1.

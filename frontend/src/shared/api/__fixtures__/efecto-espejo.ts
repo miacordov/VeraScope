@@ -3,16 +3,16 @@ import type { DemoRespuesta } from '../tipos';
 
 const fixture: DemoRespuesta = {
   "id": "efecto-espejo",
-  "titulo": "El efecto espejo de El Niño (simulado)",
+  "titulo": "El efecto espejo de El Niño",
   "variable": "PRECTOTCORR",
   "celda": {
-    "lat": -5,
-    "lon": -80.5
+    "lat": -6,
+    "lon": -80
   },
   "pasos": [
     {
       "n": 1,
-      "texto": "Este es un ejemplo simulado de Piura; no son mediciones reales.",
+      "texto": "Piura, en la costa norte del Perú, recibe más lluvia durante El Niño.",
       "acciones": [
         {
           "tipo": "seleccionar_variable",
@@ -20,8 +20,8 @@ const fixture: DemoRespuesta = {
         },
         {
           "tipo": "seleccionar_celda",
-          "lat": -5,
-          "lon": -80.5
+          "lat": -6,
+          "lon": -80
         },
         {
           "tipo": "quitar_el_nino",
@@ -31,11 +31,11 @@ const fixture: DemoRespuesta = {
     },
     {
       "n": 2,
-      "texto": "En este ejemplo, la lluvia en Piura y la sequía en el norte de Australia ocurren a la vez; no significa que un lugar cause lo que sucede en el otro.",
+      "texto": "La lluvia en Piura y la sequía en el norte de Australia ocurren a la vez; ambas responden a El Niño, no significa que un lugar cause lo que sucede en el otro.",
       "acciones": [
         {
           "tipo": "ir_al_mes",
-          "fecha": "1990-01"
+          "fecha": "1998-01"
         },
         {
           "tipo": "reproducir"
@@ -44,15 +44,15 @@ const fixture: DemoRespuesta = {
     },
     {
       "n": 3,
-      "texto": "Observa el destino simulado y vuelve a comparar con Piura.",
+      "texto": "Observa el destino opuesto y compara con Piura.",
       "acciones": [
         {
           "tipo": "detener"
         },
         {
           "tipo": "ir_a_destino",
-          "lat": -18,
-          "lon": 142
+          "lat": -14,
+          "lon": 132
         }
       ]
     }
