@@ -8,7 +8,7 @@ import type { DefinicionIndice, DefinicionVariable } from '@/shared/api/tipos';
 import { estadoDeError, TEXTOS_ACCION } from '@/shared/components/textosEstados';
 import { useEstilos, useTema } from '@/shared/useTema';
 import { espacios, radios, TOQUE_MIN, type Colores } from '@/shared/tema';
-import { Boton, Tarjeta, Texto } from '@/shared/ui';
+import { Boton, EncabezadoPaso, Tarjeta, Texto } from '@/shared/ui';
 
 import { aniosElegidos, esVentanaCorta, moverAnio, TEXTO_VENTANA_CORTA } from './ventana';
 
@@ -47,9 +47,11 @@ export function SelectorVariable() {
 
   return (
     <Tarjeta>
-      <Texto variante="subtitulo" accessibilityRole="header">
-        Elige qué mirar
-      </Texto>
+      <EncabezadoPaso
+        paso={2}
+        titulo="Elige qué mirar"
+        ayuda="La variable del clima que quieres revisar. Puedes cambiarla cuando quieras: el lugar se mantiene."
+      />
       <View style={estilos.lista} accessibilityRole="radiogroup" accessibilityLabel="Variable">
         {variables.data.variables.map((v) => (
           <OpcionVariable
@@ -207,15 +209,15 @@ const crearEstilos = (colores: Colores) =>
       padding: espacios.m,
       gap: espacios.xs,
       borderRadius: radios.m,
-      borderWidth: 2,
+      borderWidth: 1,
       borderColor: colores.borde,
-      backgroundColor: colores.superficieFuerte,
+      backgroundColor: 'transparent',
     },
-    opcionElegida: { borderColor: colores.info },
+    opcionElegida: { borderColor: colores.texto, backgroundColor: colores.superficieFuerte },
     foco: { outlineStyle: 'solid', outlineWidth: 2, outlineColor: colores.foco },
     cabecera: { flexDirection: 'row', alignItems: 'center', gap: espacios.s },
     marca: { width: 16, height: 16, borderRadius: 8, borderWidth: 2, borderColor: colores.textoSuave },
-    marcaElegida: { borderColor: colores.info, backgroundColor: colores.info },
+    marcaElegida: { borderColor: colores.texto, borderWidth: 5 },
     bloque: { gap: espacios.s, paddingTop: espacios.s },
     fila: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: espacios.m },
     anio: { gap: espacios.xs },

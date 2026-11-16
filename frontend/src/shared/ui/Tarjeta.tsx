@@ -16,6 +16,6 @@ const crearEstilos = (colores: Colores) =>
       borderWidth: 1,
       borderRadius: radios.l,
       padding: espacios.l,
-      gap: espacios.s,
+      gap: espacios.m,
     },
   });
