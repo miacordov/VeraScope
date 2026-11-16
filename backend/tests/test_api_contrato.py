@@ -61,6 +61,7 @@ def test_salud_identifica_simulados_y_version(cliente):
     assert datos["simulado"] is True
     assert datos["ventana_fin"] == 2025
     assert datos["version_metodo"] == 3
+
     assert set(datos["escaneo"]) == {"estado", "celdas_listas", "celdas_total"}
 
 

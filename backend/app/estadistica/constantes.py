@@ -22,7 +22,9 @@ MAX_LINEAS_OPUESTAS = 3
 MAX_LINEAS_IGUALES = 2
 NEFF_MIN_PRUEBA_T = 10
 NEFF_PISO = 3
+
 VERSION_METODO = 3
+
 GRILLA_PASO = 2.0
 CELDA = 0.5
 # Costa norte del Perú donde se ofrece Niño 1+2 como índice complementario (B3, hora 20).
