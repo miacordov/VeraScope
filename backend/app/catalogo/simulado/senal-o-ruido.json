@@ -1,8 +1,0 @@
-{
-  "id": "senal-o-ruido", "titulo": "Señal o ruido", "variable": "T2M",
-  "celda": {"lat": -6.0, "lon": -80.0},
-  "pasos": [
-    {"n": 1, "texto": "En Piura, la temperatura sube. Compara primero solo diez años.", "acciones": [{"tipo": "seleccionar_variable", "variable": "T2M"}, {"tipo": "seleccionar_celda", "lat": -6.0, "lon": -80.0}, {"tipo": "fijar_ventana", "inicio": 1981, "fin": 1990}]},
-    {"n": 2, "texto": "Quita la parte asociada a El Niño. La tendencia restante no demuestra por sí sola una causa.", "acciones": [{"tipo": "quitar_el_nino", "valor": true}, {"tipo": "mostrar_periodos"}]}
-  ]
-}

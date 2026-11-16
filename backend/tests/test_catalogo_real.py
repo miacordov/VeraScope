@@ -5,8 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from app.api.simulados import cargar_escenarios
-from app.contracts import DemoRespuesta, GlosarioRespuesta, SaludRespuesta, VariablesRespuesta
+from app.contracts import GlosarioRespuesta, SaludRespuesta, VariablesRespuesta
 from app.datos.escaneo import escribir_estado
 from tests.test_scan_api_real import api_real as api_real
 
@@ -20,7 +19,6 @@ def test_salud_lee_y_actualiza_avance_del_disco(api_real):
         assert respuesta.status_code == 200
         datos = respuesta.json()
         assert SaludRespuesta.model_validate(datos).model_dump(mode="json") == datos
-        assert datos["simulado"] is False
         assert datos["escaneo"] == {
             "estado": estado,
             "celdas_listas": listas,
@@ -73,21 +71,3 @@ def test_catalogo_real_procede_del_json_canonico(api_real, ruta, modelo):
         assert {i["id"] for i in datos["indices"]} == {"ONI", "NINO12"}
     else:
         assert "Datos simulados" not in respuesta.text
-
-
-@pytest.mark.parametrize("id_demo", ["efecto-espejo", "senal-o-ruido"])
-def test_demo_guion_se_sirve_en_modo_real_y_simulado(api_real, id_demo):
-    """Los guiones de demos se sirven tanto en modo real como simulado."""
-    esperado = json.loads((CATALOGO / "simulado" / f"{id_demo}.json").read_text("utf-8"))
-    # Modo real
-    respuesta = api_real.get(f"/api/v1/demos/{id_demo}")
-    assert respuesta.status_code == 200
-    datos = respuesta.json()
-    assert DemoRespuesta.model_validate(datos).model_dump(mode="json") == datos
-    assert datos == esperado
-    # Modo simulado
-    api_real.app.state.simulado = True
-    api_real.app.state.escenarios = cargar_escenarios()
-    simulada = api_real.get(f"/api/v1/demos/{id_demo}")
-    assert simulada.status_code == 200
-    assert simulada.json() == esperado

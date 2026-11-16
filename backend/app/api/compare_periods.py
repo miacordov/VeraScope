@@ -1,8 +1,7 @@
 """Comparación descriptiva entre dos periodos de una misma celda (guía §11, cálculo C16).
 
-Con datos reales reutiliza `analyze` sobre la ventana por defecto (1981 → último año
-completo, índice ONI): las series, el rezago y los meses inusuales son los mismos que
-muestra la tarjeta. En modo simulado sirve el JSON de ejemplo de Piura.
+Reutiliza `analyze` sobre la ventana por defecto (1981 → último año completo, índice ONI):
+las series, el rezago y los meses inusuales son los mismos que muestra la tarjeta.
 """
 
 import numpy as np
@@ -11,7 +10,6 @@ from fastapi.responses import JSONResponse
 
 from app.api import router
 from app.api.analyze import analyze
-from app.api.simulados import escenario_para_celda
 from app.api.validacion import LatitudConsulta, LongitudConsulta, rechazar, validar_ventana
 from app.contracts import ComparePeriodsRespuesta, IndiceId, Variable
 from app.estadistica.constantes import ventana_fin
@@ -41,19 +39,6 @@ def compare_periods(
     """
     validar_ventana(p1_inicio, p1_fin)
     validar_ventana(p2_inicio, p2_fin)
-    if request.app.state.simulado:
-        return escenario_para_celda(
-            request,
-            "compare-periods",
-            variable,
-            lat,
-            lon,
-            p1_inicio=p1_inicio,
-            p1_fin=p1_fin,
-            p2_inicio=p2_inicio,
-            p2_fin=p2_fin,
-        )
-
     celda = analyze(request, variable, lat, lon, 1981, ventana_fin(), IndiceId.ONI)
     if isinstance(celda, JSONResponse):  # power_lento o power_error, tal cual
         return celda

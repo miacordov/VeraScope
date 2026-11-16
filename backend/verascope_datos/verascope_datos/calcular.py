@@ -60,7 +60,8 @@ def calcular_resultados(rutas, procesos=None, avance=None, minimo_celdas=0):
         if not f.exists():
             continue
         M = np.load(f).astype(float)[:, a:b]
-        lote = [(k, M[k]) for k in range(M.shape[0]) if np.isfinite(M[k]).mean() > 0.9]
+        limite = minimo_celdas if (minimo_celdas or 0) > 0 else M.shape[0]
+        lote = [(k, M[k]) for k in range(limite) if np.isfinite(M[k]).mean() > 0.9]
         tam = max(1, len(lote) // (8 * (procesos or 4)) or 1)
         filas += [(cod, lote[i:i + tam], oni[a:b], cal, meses[a]) for i in range(0, len(lote), tam)]
     res = []

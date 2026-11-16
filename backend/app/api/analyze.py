@@ -1,4 +1,4 @@
-"""Análisis mensual real con caché por celda y respaldo de escenarios simulados."""
+"""Análisis mensual real con caché por celda."""
 
 import math
 from datetime import date
@@ -7,7 +7,6 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 
 from app.api import router
-from app.api.simulados import escenario_para_celda
 from app.api.validacion import LatitudConsulta, LongitudConsulta, rechazar, validar_ventana
 from app.contracts import (
     AnalyzeRespuesta,
@@ -116,15 +115,9 @@ def analyze(
     """Analiza una celda mensual con y sin El Niño; reutiliza datos ya descargados.
 
     Ejemplo: PRECTOTCORR, Piura (-5, -80.5), 1981–1990, ONI.
-    En modo simulado solo se sirven las combinaciones con un JSON local.
     """
     validar_ventana(inicio, fin)
     estado = request.app.state
-    if estado.simulado:
-        return escenario_para_celda(
-            request, "analyze", variable, lat, lon, inicio=inicio, fin=fin, indice=indice
-        )
-
     lat_q, lon_q = celdas.celda(lat, lon)
     llave = celdas.lugar_celda(lat_q, lon_q)
     rejilla = celdas.rejilla()

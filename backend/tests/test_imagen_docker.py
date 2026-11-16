@@ -35,7 +35,7 @@ def contenedor():
     docker("build", "-t", etiqueta, str(BACKEND), timeout=600)
     try:
         try:
-            docker("run", "-d", "--name", nombre, "-e", "VERASCOPE_SIMULADO=1", etiqueta)
+            docker("run", "-d", "--name", nombre, etiqueta)
             yield etiqueta, nombre
         finally:
             subprocess.run(["docker", "rm", "-f", nombre], capture_output=True)

@@ -90,14 +90,11 @@ ruff check app tests
 
 Ambos comandos deben terminar correctamente.
 
-## 5. Primera prueba con datos simulados
-
-Usá el modo simulado para comprobar el despliegue sin depender de NASA POWER ni de archivos preparados.
+## 5. Iniciar el backend
 
 En una primera terminal, dentro de `backend/` y con el entorno virtual activo:
 
 ```powershell
-$env:VERASCOPE_SIMULADO="1"
 $env:VERASCOPE_CORS="http://localhost:8081"
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
@@ -163,7 +160,6 @@ Dentro de `backend/`, con el entorno virtual activo:
 ```powershell
 verascope-datos indices
 python -m jobs.precalentar
-$env:VERASCOPE_SIMULADO="0"
 $env:VERASCOPE_DATOS="$PWD\data"
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
@@ -213,7 +209,7 @@ Reiniciá FastAPI con `VERASCOPE_CORS` configurado con el origen exacto de la we
 
 ### Faltan índices o datos reales
 
-Ejecutá el preparador antes de iniciar el modo real. Para comprobar únicamente el despliegue, usá `VERASCOPE_SIMULADO=1`.
+Ejecutá el preparador antes de iniciar el backend.
 
 ## Referencias oficiales
 

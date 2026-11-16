@@ -28,7 +28,6 @@ def sin_red(monkeypatch):
 @pytest.fixture
 def cliente(monkeypatch, tmp_path, sin_red):
     # La configuración debe fijarse antes de importar o arrancar la aplicación.
-    monkeypatch.setenv("VERASCOPE_SIMULADO", "1")
     monkeypatch.setenv("VERASCOPE_FIN", "2025")
     monkeypatch.setenv("VERASCOPE_DATOS", str(tmp_path))
     monkeypatch.setenv("VERASCOPE_CORS", "https://web.example,https://otra.example")
