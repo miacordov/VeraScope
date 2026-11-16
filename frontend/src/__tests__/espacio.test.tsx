@@ -11,7 +11,7 @@ import Espacio from '../../app/espacio';
 import { crearQueryClient } from '../estado/queryClient';
 import { useEstado } from '../estado/store';
 import { altoDelMapa } from '../features/map/tamano';
-import { analyze, variables } from '../shared/api/__fixtures__';
+import { analyze, layer, teleconnect, variables } from '../shared/api/__fixtures__';
 import type { SaludRespuesta } from '../shared/api/tipos';
 import { BandaSimulado } from '../shared/components/BandaSimulado';
 import { TEXTOS_ACCION, TEXTOS_ERROR } from '../shared/components/textosEstados';
@@ -33,7 +33,15 @@ let errorAnalyze: { status: number; error: { codigo: string; mensaje: string; ce
 let errorVariables: { status: number; error: { codigo: string; mensaje: string; celda_cercana: null } } | 'red' | null =
   null;
 
+/** Error de `teleconnect` (p. ej. 503 `escaneo_en_curso`), o `null`. */
+let errorTeleconnect: { status: number; error: { codigo: string; mensaje: string; celda_cercana: null } } | null =
+  null;
+
 const fetchSimulado = jest.fn((url: string) => {
+  if (errorTeleconnect && url.includes('/teleconnect')) {
+    const { status, error } = errorTeleconnect;
+    return Promise.resolve({ ok: false, status, json: () => Promise.resolve({ error }) });
+  }
   if (errorVariables && url.includes('/variables')) {
     if (errorVariables === 'red') return Promise.reject(new TypeError('Network request failed'));
     const { status, error } = errorVariables;
@@ -49,7 +57,11 @@ const fetchSimulado = jest.fn((url: string) => {
       ? analyze
       : url.includes('/variables')
         ? variables
-        : null;
+        : url.includes('/teleconnect')
+          ? teleconnect
+          : url.includes('/scan/layer')
+            ? layer
+            : null;
   return Promise.resolve({ ok: cuerpo !== null, status: cuerpo ? 200 : 404, json: () => Promise.resolve(cuerpo) });
 });
 
@@ -74,6 +86,7 @@ beforeEach(() => {
   fetchSimulado.mockClear();
   errorAnalyze = null;
   errorVariables = null;
+  errorTeleconnect = null;
   global.fetch = fetchSimulado as unknown as typeof fetch;
   useEstado.getState().reiniciar();
 });
@@ -103,9 +116,13 @@ describe('espacio de trabajo con la API simulada', () => {
     expect(screen.getByText(lineaFuente(analyze))).toBeOnTheScreen();
     expect(screen.getByText('análisis individual')).toBeOnTheScreen();
 
-    expect(llamadasA('/analyze')).toBe(1);
-    const [url] = fetchSimulado.mock.calls.find(([u]: [string]) => u.includes('/analyze'))!;
-    expect(url).toContain('variable=PRECTOTCORR&lat=-5&lon=-80.5&inicio=1981&fin=1990&indice=ONI');
+    // Una llamada para la celda elegida; la otra es el `analyze` del destino que pide el panel de F2 (§8).
+    const deLaCelda = fetchSimulado.mock.calls.filter(
+      ([u]: [string]) => u.includes('/analyze') && u.includes('lat=-5&lon=-80.5'),
+    );
+    expect(deLaCelda).toHaveLength(1);
+    expect(deLaCelda[0]![0]).toContain('variable=PRECTOTCORR&lat=-5&lon=-80.5&inicio=1981&fin=1990&indice=ONI');
+    expect(llamadasA('/analyze')).toBeLessThanOrEqual(2);
   });
 
   it('el interruptor de El Niño no hace peticiones', async () => {
@@ -254,3 +271,62 @@ describe('mapa y selector (fe/mapa-celda, #9)', () => {
   });
 });
 
+describe('líneas causa → consecuencia y mosaico (fe/lineas-mosaico, #13)', () => {
+  const linea = teleconnect.lineas[0]!;
+
+  it('elegir una celda pide teleconnect una vez y elige la primera línea opuesta', async () => {
+    await montar();
+    await fireEvent.press(await screen.findByRole('button', { name: /Ver el ejemplo simulado/ }));
+
+    expect(await screen.findByRole('button', { name: /^Efecto opuesto/ })).toBeOnTheScreen();
+    expect(useEstado.getState().destino).toEqual({ lat: linea.lat, lon: linea.lon });
+    expect(await screen.findByTestId('franja-linea')).toBeOnTheScreen();
+
+    expect(llamadasA('/teleconnect')).toBe(1);
+    const [url] = fetchSimulado.mock.calls.find(([u]: [string]) => u.includes('/teleconnect'))!;
+    expect(url).toContain('variable=PRECTOTCORR&lat=-5&lon=-80.5');
+    expect(llamadasA('/scan/layer')).toBe(0);
+  });
+
+  it('volver a la misma celda no repite teleconnect y vuelve a elegir el destino', async () => {
+    await montar();
+    await fireEvent.press(await screen.findByRole('button', { name: /Ver el ejemplo simulado/ }));
+    await screen.findByTestId('franja-linea');
+    const celda = useEstado.getState().celda;
+
+    await act(() => useEstado.getState().seleccionarCelda({ lat: 10, lon: 10 }));
+    await act(() => useEstado.getState().seleccionarCelda(celda));
+    expect(await screen.findByTestId('franja-linea')).toBeOnTheScreen();
+    expect(useEstado.getState().destino).toEqual({ lat: linea.lat, lon: linea.lon });
+    const deEstaCelda = fetchSimulado.mock.calls.filter(
+      ([u]: [string]) => u.includes('/teleconnect') && u.includes('lat=-5&'),
+    );
+    expect(deEstaCelda).toHaveLength(1);
+  });
+
+  it('503 escaneo_en_curso muestra su título y mensaje, sin botón, y el análisis sigue', async () => {
+    errorTeleconnect = {
+      status: 503,
+      error: { codigo: 'escaneo_en_curso', mensaje: 'El escaneo sigue en curso.', celda_cercana: null },
+    };
+    await montar();
+    await fireEvent.press(await screen.findByRole('button', { name: /Ver el ejemplo simulado/ }));
+
+    expect(await screen.findByText(TEXTOS_ERROR.escaneo_en_curso.titulo)).toBeOnTheScreen();
+    expect(screen.getByText('El escaneo sigue en curso.')).toBeOnTheScreen();
+    expect(await screen.findByText('Tendencia aparente')).toBeOnTheScreen();
+    expect(useEstado.getState().destino).toBeNull();
+  });
+
+  it('el mosaico solo se pide al pulsar el botón', async () => {
+    await montar();
+    await screen.findByText('Datos simulados');
+    expect(llamadasA('/scan/layer')).toBe(0);
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Mostrar el mosaico de ScanMap' }));
+    expect(await screen.findByLabelText('Leyenda del mosaico de ScanMap')).toBeOnTheScreen();
+    expect(llamadasA('/scan/layer')).toBe(1);
+    expect(useEstado.getState().mosaicoVisible).toBe(true);
+    expect(screen.getByRole('button', { name: 'Ocultar el mosaico de ScanMap' })).toBeOnTheScreen();
+  });
+});
