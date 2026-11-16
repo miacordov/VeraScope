@@ -7,6 +7,7 @@ import { InterruptorElNino } from '@/features/enso-toggle/InterruptorElNino';
 import { MapaPacifico } from '@/features/map/MapaPacifico';
 import { altoDelMapa } from '@/features/map/tamano';
 import { PanelSeries } from '@/features/series-charts/PanelSeries';
+import { ControlTiempo } from '@/features/time-comparator/ControlTiempo';
 import { SelectorVariable } from '@/features/variable-picker/SelectorVariable';
 import { TarjetaVeredicto } from '@/features/verdict-card';
 import { esErrorApi } from '@/shared/api/cliente';
@@ -89,9 +90,10 @@ export default function Espacio() {
           <>
             {/* Hueco de F3 (#11): tarjeta de veredicto; sigue al interruptor sin pedir datos. */}
             <TarjetaVeredicto analisis={analisis.data} />
-            {/* Hueco de F2 (#10): interruptor y panel Causa · Consecuencia · Realidad. */}
+            {/* Hueco de F2 (#10 y #14): interruptor, reproducción en el tiempo y panel Causa · Consecuencia · Realidad. */}
             <Tarjeta>
               <InterruptorElNino rezagoMeses={analisis.data.vinculo_el_nino.rezago_meses} />
+              <ControlTiempo fechas={analisis.data.fechas} />
             </Tarjeta>
             <PanelSeries analisis={analisis.data} />
           </>
