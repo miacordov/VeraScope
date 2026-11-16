@@ -1,0 +1,10 @@
+# Despliegue web de la app (Netlify). Expo exporta una sola página; las rutas las resuelve `frontend/public/_redirects`.
+[build]
+  base = "frontend"
+  command = "npm ci && npx expo export -p web"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+  # API pública en Render (no es un secreto). Sin esta variable la app apunta a http://localhost:8000.
+  EXPO_PUBLIC_API_URL = "https://verascope-7v33.onrender.com"
