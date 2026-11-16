@@ -109,6 +109,6 @@
   "veredicto": {"estado": "sin_tendencia", "origen": "individual"},
   "vinculo_el_nino": {"rezago_meses": 0, "r": 0.0, "p": 1.0, "n_efectivo": 120.0, "significativo": false, "indicativo": true},
   "colinealidad": 0.0,
-  "avisos": [{"codigo": "potencia_baja", "texto": "Datos simulados: escenario de lluvia en Piura, 1981–1990 con ONI, para desarrollar la interfaz. No son datos descargados ni resultados reales. Una ventana de menos de 20 años tiene poca potencia."}],
+  "avisos": [{"codigo": "potencia_baja", "texto": "Una ventana de menos de 20 años tiene poca potencia estadística."}],
   "meses_inusuales": [], "prueba_t": null, "cambio_brusco": null
 }
