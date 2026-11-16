@@ -20,7 +20,7 @@ import { EJEMPLO_SIMULADO } from '@/shared/ejemploSimulado';
 import { celda as textoCelda } from '@/shared/format';
 import { useEstilos, useTema } from '@/shared/useTema';
 import { cortes, espacios, type Colores } from '@/shared/tema';
-import { Boton, Tarjeta, Texto } from '@/shared/ui';
+import { Boton, EncabezadoPaso, Tarjeta, Texto } from '@/shared/ui';
 
 /**
  * Espacio de trabajo (F1). Mapa del Pacífico y selector de variable y ventana (`fe/mapa-celda`, #9); elegir una celda
@@ -71,9 +71,11 @@ export default function Espacio() {
       contentContainerStyle={[estilos.contenido, ancha && estilos.contenidoAncho]}>
       <View style={ancha ? estilos.columnaMapa : undefined}>
         <Tarjeta>
-          <Texto variante="subtitulo" accessibilityRole="header">
-            Elige un lugar
-          </Texto>
+          <EncabezadoPaso
+            paso={1}
+            titulo="Elige un lugar"
+            ayuda="Toca el mapa o usa un atajo. VeraScope revisa 45 años de datos de la NASA en ese punto (celda de 0.5°, unos 55 km)."
+          />
           <MapaPacifico
             celda={celdaDibujada}
             alto={altoMapa}
@@ -129,7 +131,15 @@ export default function Espacio() {
 
         {salud.isError ? <ErrorConReintento error={salud.error} reintentar={() => salud.refetch()} /> : null}
 
-        {parametros === null ? null : analisis.isPending ? (
+        {parametros === null ? (
+          <Tarjeta>
+            <EncabezadoPaso
+              paso={3}
+              titulo="Mira el veredicto"
+              ayuda="Cuando elijas un lugar, aquí verás si el cambio es una tendencia real o si se explica por El Niño, con el gráfico de los datos."
+            />
+          </Tarjeta>
+        ) : analisis.isPending ? (
           <Tarjeta accessibilityLabel="Cargando el análisis de la celda" accessibilityRole="progressbar">
             <ActivityIndicator color={colores.texto} />
             <View style={estilos.esqueleto} />

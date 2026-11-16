@@ -50,48 +50,52 @@ export type Colores = {
   mapaTierra: string;
 };
 
-/** Modo claro (paleta VeraScope, 15 nov 2026). */
+/**
+ * Modo claro: neutros cálidos (escala "zinc"), bordes finos y el color reservado para los datos.
+ * El botón principal es tinta sobre papel, como en la referencia "Dark Minimalist"; contraste AA comprobado en
+ * `shared/__tests__/tema.test.tsx`.
+ */
 const claro: Colores = {
-  fondo: '#F7F7F5', // Space White
-  superficie: '#FFFFFF', // Pure White
-  superficieFuerte: '#E6E8EB', // Atmosphere Gray
-  borde: '#E6E8EB', // Atmosphere Gray
-  texto: '#0B0D12', // Obsidian
-  textoSuave: '#8B929A', // Orbit Gray
-  institucional: '#102B42', // Ocean Deep
-  info: '#38A9E0', // Signal Blue
-  accion: '#F5A62D', // Discovery Amber
-  textoSobreAccion: '#0B0D12', // Obsidian
-  nino: '#E3483F', // ENSO Red
-  lluvia: '#38A9E0', // Signal Blue
-  sequia: '#F5A62D', // Discovery Amber
-  nina: '#8B929A', // Orbit Gray
-  foco: '#0B0D12', // Obsidian
-  aviso: '#FFFFFF', // Pure White
-  mapaOceano: '#FFFFFF', // Pure White
-  mapaTierra: '#E6E8EB', // Atmosphere Gray
+  fondo: '#FAFAF9', // Stone 50
+  superficie: '#FFFFFF', // White
+  superficieFuerte: '#F4F4F5', // Zinc 100
+  borde: '#E4E4E7', // Zinc 200
+  texto: '#18181B', // Zinc 900
+  textoSuave: '#5F5F68', // Zinc 600 (AA sobre Zinc 100)
+  institucional: '#18181B', // Zinc 900
+  info: '#0369A1', // Sky 700
+  accion: '#18181B', // Zinc 900
+  textoSobreAccion: '#FAFAFA', // Zinc 50
+  nino: '#DC2626', // ENSO Red
+  lluvia: '#0284C7', // Sky 600
+  sequia: '#D97706', // Amber 600
+  nina: '#71717A', // Zinc 500
+  foco: '#18181B', // Zinc 900
+  aviso: '#FFFBEB', // Amber 50
+  mapaOceano: '#EEF2F6', // Mist
+  mapaTierra: '#D4D4D8', // Zinc 300
 };
 
-/** Modo oscuro (paleta VeraScope, 15 nov 2026). */
+/** Modo oscuro: grafito neutro en lugar de azul; el azul queda solo para el océano del mapa y los datos. */
 const oscuro: Colores = {
-  fondo: '#0B0D12', // Obsidian
-  superficie: '#111820', // Deep Surface
-  superficieFuerte: '#17364F', // Ocean Panel
-  borde: '#17364F', // Ocean Panel
-  texto: '#F5F7F8', // Star White
-  textoSuave: '#AAB3BC', // Atmospheric Gray
-  institucional: '#F5F7F8', // Star White
-  info: '#4AB7E8', // Signal Blue Light
-  accion: '#FFB23D', // Discovery Amber
-  textoSobreAccion: '#0B0D12', // Obsidian
-  nino: '#F0524A', // ENSO Red Light
-  lluvia: '#4AB7E8', // Signal Blue Light
-  sequia: '#FFB23D', // Discovery Amber
-  nina: '#AAB3BC', // Atmospheric Gray
-  foco: '#F5F7F8', // Star White
-  aviso: '#111820', // Deep Surface
-  mapaOceano: '#17364F', // Ocean Panel
-  mapaTierra: '#111820', // Deep Surface
+  fondo: '#09090B', // Zinc 950
+  superficie: '#111113', // Graphite
+  superficieFuerte: '#1C1C1F', // Zinc 900+
+  borde: '#27272A', // Zinc 800
+  texto: '#FAFAFA', // Zinc 50
+  textoSuave: '#A1A1AA', // Zinc 400
+  institucional: '#FAFAFA', // Zinc 50
+  info: '#7DD3FC', // Sky 300
+  accion: '#FAFAFA', // Zinc 50
+  textoSobreAccion: '#09090B', // Zinc 950
+  nino: '#F87171', // ENSO Red Light
+  lluvia: '#38BDF8', // Sky 400
+  sequia: '#FBBF24', // Amber 400
+  nina: '#A1A1AA', // Zinc 400
+  foco: '#FAFAFA', // Zinc 50
+  aviso: '#1C1917', // Stone 900
+  mapaOceano: '#0F1722', // Night Ocean
+  mapaTierra: '#2A2D33', // Basalt
 };
 
 export type Modo = 'claro' | 'oscuro';
@@ -107,7 +111,7 @@ export const colores: Colores = paletas.oscuro;
 
 export const espacios = { xs: 4, s: 8, m: 12, l: 16, xl: 24, xxl: 32 } as const;
 
-export const radios = { s: 6, m: 12, l: 18 } as const;
+export const radios = { s: 6, m: 10, l: 14 } as const;
 
 /** Familias de Inter cargadas en `app/_layout.tsx` con @expo-google-fonts/inter. */
 export const fuentes = {
