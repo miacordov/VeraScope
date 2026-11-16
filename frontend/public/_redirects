@@ -1,0 +1,2 @@
+# Expo exporta la web como una sola página (app.json: web.output = "single"): toda ruta sirve index.html.
+/*    /index.html   200
