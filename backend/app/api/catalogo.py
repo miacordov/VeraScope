@@ -1,12 +1,13 @@
-"""Catálogos públicos, guiones y estado del servicio simulado."""
+"""Catálogos públicos, guiones simulados y estado del servicio."""
 
 from typing import Literal
 
-from fastapi import Request
+from fastapi import HTTPException, Request
 
 from app.api import router
 from app.api.simulados import escenario
 from app.contracts import DemoRespuesta, GlosarioRespuesta, SaludRespuesta, VariablesRespuesta
+from app.datos.escaneo import leer_estado
 from app.estadistica.constantes import VERSION_METODO, ventana_fin
 
 
@@ -17,24 +18,38 @@ def salud(request: Request):
         simulado=simulado,
         ventana_fin=ventana_fin(),
         version_metodo=VERSION_METODO,
-        escaneo={
-            "estado": "completo" if simulado else "en_curso",
-            "celdas_listas": 2 if simulado else 0,
-            "celdas_total": 2 if simulado else 4235,
-        },
+        escaneo=(
+            {"estado": "completo", "celdas_listas": 2, "celdas_total": 2}
+            if simulado
+            else leer_estado(request.app.state.datos)
+        ),
     )
 
 
 @router.get("/variables", response_model=VariablesRespuesta)
 def variables(request: Request):
-    return escenario(request, "variables")
+    if request.app.state.simulado:
+        return escenario(request, "variables")
+    return request.app.state.catalogo_variables.model_copy(deep=True)
 
 
 @router.get("/glosario", response_model=GlosarioRespuesta)
 def glosario(request: Request):
-    return escenario(request, "glosario")
+    if request.app.state.simulado:
+        return escenario(request, "glosario")
+    return request.app.state.catalogo_glosario.model_copy(deep=True)
 
 
 @router.get("/demos/{id}", response_model=DemoRespuesta)
 def demo(request: Request, id: Literal["efecto-espejo", "senal-o-ruido"]):
-    return escenario(request, id)
+    if request.app.state.simulado:
+        return escenario(request, id)
+    raise HTTPException(
+        status_code=503,
+        detail={
+            "codigo": "escaneo_en_curso",
+            "mensaje": "El guion de la demo real aún no está disponible. "
+            "Vuelve a intentarlo después de preparar los datos.",
+            "celda_cercana": None,
+        },
+    )
