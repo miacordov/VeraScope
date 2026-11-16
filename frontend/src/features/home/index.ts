@@ -1,0 +1,1 @@
+export { GloboPacifico } from './GloboPacifico';

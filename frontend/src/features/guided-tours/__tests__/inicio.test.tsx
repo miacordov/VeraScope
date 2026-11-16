@@ -16,10 +16,12 @@ beforeEach(() => {
 });
 
 describe('Inicio', () => {
-  it('muestra el logo, la frase y los accesos, sin Escanear (feed recortado)', async () => {
+  it('muestra el logo, el globo, el titular y los accesos, sin Escanear (feed recortado)', async () => {
     await render(<Inicio />);
     expect(screen.getByLabelText('Logo de VeraScope')).toBeOnTheScreen();
-    expect(screen.getByText(/tendencia real o solo El Niño/)).toBeOnTheScreen();
+    expect(screen.getByLabelText(/La Tierra vista desde el Pacífico/)).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: '¿Cambió de verdad, o es El Niño?' })).toBeOnTheScreen();
+    expect(screen.getByText('Tendencias en datos de la NASA, sin el ruido de El Niño.')).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: /Investigar/ })).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: /Ver la demo guiada/ })).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Glosario' })).toBeOnTheScreen();
@@ -39,6 +41,14 @@ describe('Inicio', () => {
     await fireEvent.press(screen.getByRole('button', { name: /Ver la demo guiada/ }));
     expect(useEstado.getState().demo).toEqual({ id: 'efecto-espejo', paso: PASO_PENDIENTE });
     expect(mockNavegar).toHaveBeenCalledWith('/espacio');
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it('Explorar va al espacio de trabajo sin empezar la demo ni pedir datos', async () => {
+    await render(<Inicio />);
+    await fireEvent.press(screen.getByRole('button', { name: /Explorar/ }));
+    expect(mockNavegar).toHaveBeenCalledWith('/espacio');
+    expect(useEstado.getState().demo).toBeNull();
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
