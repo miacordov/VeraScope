@@ -35,7 +35,7 @@ def exportar_demos(rutas):
         doc = {"lugar": l.nombre, "lat": config.cuantizar(l.lat), "lon": config.cuantizar(l.lon),
                "inicio": meses[0], "fin": meses[-1], "variables": datos}
         f = rutas.demos / f"{l.id}.json"
-        f.write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")))
+        f.write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
         hechos.append((l.id, len(datos), f.stat().st_size))
     cas.cerrar()
     return hechos
@@ -57,7 +57,7 @@ def empaquetar(rutas):
                   "ventana": [config.meses()[0], config.meses()[-1]],
                   "archivos": {str(p.relative_to(rutas.base)): _sha(p) for p in piezas}}
     mf = rutas.base / "manifiesto.json"
-    mf.write_text(json.dumps(manifiesto, indent=2, ensure_ascii=False))
+    mf.write_text(json.dumps(manifiesto, indent=2, ensure_ascii=False), encoding="utf-8")
     nombre = rutas.paquetes / f"verascope-datos-{dt.date.today():%Y%m%d}.tar.gz"
     with tarfile.open(nombre, "w:gz") as tar:
         for p in piezas + [mf]:
@@ -93,7 +93,7 @@ def instalar(paquete: Path, rutas):
                 if m.name.startswith("/") or ".." in Path(m.name).parts:
                     raise RuntimeError(f"Ruta no permitida en el paquete: {m.name}")
             tar.extractall(temporal, filter="data")
-        mf = json.loads((temporal / "manifiesto.json").read_text())
+        mf = json.loads((temporal / "manifiesto.json").read_text(encoding="utf-8"))
         malos = [n for n, h in mf["archivos"].items() if _sha(temporal / n) != h]
         if malos:
             raise RuntimeError(f"Archivos dañados en el paquete: {malos}")

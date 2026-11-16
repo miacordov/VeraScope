@@ -1,13 +1,16 @@
 """`instalar` no debe dañar el casillero si la API lo tiene abierto, ni aplicarle un `-wal` viejo."""
 import hashlib
 import io
+import os
 import sqlite3
+import sys
 import tarfile
 
 import numpy as np
 import pytest
 
 from verascope_datos import config
+from verascope_datos import paquete as modulo_paquete
 from verascope_datos.almacen import Casillero
 from verascope_datos.paquete import empaquetar, instalar
 
@@ -50,6 +53,7 @@ def _api_con_cambios_sin_volcar(ruta):
     return con
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Windows no deja reemplazar un archivo abierto")
 def test_instalar_con_la_api_abierta_no_dana_el_casillero(paquete, tmp_path):
     destino = config.rutas(tmp_path / "destino")
     instalar(paquete, destino)
@@ -60,6 +64,37 @@ def test_instalar_con_la_api_abierta_no_dana_el_casillero(paquete, tmp_path):
 
     assert _integridad(destino.casillero) == "ok"
     assert _sha(destino.casillero) == manifiesto["archivos"]["casillero.sqlite"]
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="solo Windows bloquea el archivo abierto")
+def test_instalar_con_la_api_abierta_en_windows_se_niega_sin_danar(paquete, tmp_path):
+    destino = config.rutas(tmp_path / "destino")
+    instalar(paquete, destino)
+    api = _api_con_cambios_sin_volcar(destino.casillero)
+
+    with pytest.raises(RuntimeError, match="está en uso"):
+        instalar(paquete, destino)
+    api.close()
+
+    assert _integridad(destino.casillero) == "ok"
+    assert not list(destino.base.glob(".instalando-*"))
+
+
+def test_instalar_avisa_si_no_puede_reemplazar_un_archivo_en_uso(paquete, tmp_path, monkeypatch):
+    """Lo que pasa en Windows con la API abierta, simulado en cualquier sistema."""
+    destino = config.rutas(tmp_path / "destino")
+    instalar(paquete, destino)
+    antes = _sha(destino.casillero)
+
+    def reemplazo_bloqueado(origen, destino_):
+        raise PermissionError(13, "El proceso no tiene acceso al archivo", os.fspath(destino_))
+
+    monkeypatch.setattr(modulo_paquete.os, "replace", reemplazo_bloqueado)
+    with pytest.raises(RuntimeError, match="está en uso"):
+        instalar(paquete, destino)
+
+    assert _sha(destino.casillero) == antes  # lo instalado sigue intacto
+    assert not list(destino.base.glob(".instalando-*"))
 
 
 def test_instalar_descarta_un_wal_viejo_de_una_api_cortada(paquete, tmp_path):
