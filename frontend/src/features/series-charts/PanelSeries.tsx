@@ -11,7 +11,8 @@ import { useEstado } from '@/estado/store';
 import { useAnalyze, useSalud } from '@/shared/api/consultas';
 import type { AnalyzeRespuesta } from '@/shared/api/tipos';
 import { periodo, celda as textoCelda } from '@/shared/format';
-import { colores, espacios } from '@/shared/tema';
+import { useEstilos, useTema } from '@/shared/useTema';
+import { espacios, type Colores } from '@/shared/tema';
 import { Tarjeta, Texto } from '@/shared/ui';
 
 import { GraficoSerie, NOMBRE_FASE, type PuntoMarcado } from './GraficoSerie';
@@ -21,6 +22,7 @@ import { ProveedorLectura } from './lectura';
 const REFERENCIAS_INDICE = [0.5, -0.5] as const;
 
 export function PanelSeries({ analisis }: { analisis: AnalyzeRespuesta }) {
+  const { colores } = useTema();
   const { quitarElNino, mesVisible, destino, variable, ventana, indice } = useEstado(
     useShallow((e) => ({
       quitarElNino: e.quitarElNino,
@@ -98,7 +100,7 @@ export function PanelSeries({ analisis }: { analisis: AnalyzeRespuesta }) {
           fechas={analisis.fechas}
           series={[
             { id: 'realidad', valores: serieRealidad, color: colores.texto },
-            { id: 'recta', valores: tendencia.recta, color: colores.nino, grosor: 2.5, punteada: true, recortar: false },
+            { id: 'recta', valores: tendencia.recta, color: colores.info, grosor: 2.5, punteada: true, recortar: false },
           ]}
           puntos={puntos}
           mesVisible={mesVisible}
@@ -121,6 +123,8 @@ export function PanelSeries({ analisis }: { analisis: AnalyzeRespuesta }) {
 }
 
 function Leyenda() {
+  const { colores } = useTema();
+  const estilos = useEstilos(crearEstilos);
   return (
     <View style={estilos.leyenda} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
       <View style={[estilos.muestra, { backgroundColor: colores.nino }]} />
@@ -135,8 +139,9 @@ function Leyenda() {
   );
 }
 
-const estilos = StyleSheet.create({
-  leyenda: { flexDirection: 'row', alignItems: 'center', gap: espacios.s },
-  muestra: { width: 12, height: 12, borderRadius: 2, opacity: 0.6 },
-  muestraNina: { borderWidth: 1, borderColor: colores.nina, borderStyle: 'dashed' },
-});
+const crearEstilos = (colores: Colores) =>
+  StyleSheet.create({
+    leyenda: { flexDirection: 'row', alignItems: 'center', gap: espacios.s },
+    muestra: { width: 12, height: 12, borderRadius: 2, opacity: 0.6 },
+    muestraNina: { borderWidth: 1, borderColor: colores.nina, borderStyle: 'dashed' },
+  });

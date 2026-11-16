@@ -1,7 +1,8 @@
 import { StyleSheet, View } from 'react-native';
 
 import type { AnalyzeRespuesta } from '@/shared/api/tipos';
-import { colores, espacios, radios } from '@/shared/tema';
+import { useEstilos } from '@/shared/useTema';
+import { espacios, radios, type Colores } from '@/shared/tema';
 import { Texto } from '@/shared/ui';
 
 import { TEXTOS_VEREDICTO } from './textosVeredicto';
@@ -11,6 +12,7 @@ import { TEXTOS_VEREDICTO } from './textosVeredicto';
  * "sensible a El Niño", §13). La tarjeta completa (tendencia aparente, pendiente, IC, avisos) es de F3.
  */
 export function InsigniaVeredicto({ veredicto }: { veredicto: AnalyzeRespuesta['veredicto'] }) {
+  const estilos = useEstilos(crearEstilos);
   const textos = TEXTOS_VEREDICTO[veredicto.estado];
   const esNino = veredicto.estado === 'sensible_a_el_nino';
   return (
@@ -39,16 +41,17 @@ export function InsigniaVeredicto({ veredicto }: { veredicto: AnalyzeRespuesta['
   );
 }
 
-const estilos = StyleSheet.create({
-  contenedor: { gap: espacios.s },
-  fila: { flexDirection: 'row', alignItems: 'center', gap: espacios.s },
-  simboloNino: { color: colores.nino },
-  chip: {
-    alignSelf: 'flex-start',
-    borderColor: colores.borde,
-    borderWidth: 1,
-    borderRadius: radios.s,
-    paddingHorizontal: espacios.s,
-    paddingVertical: espacios.xs,
-  },
-});
+const crearEstilos = (colores: Colores) =>
+  StyleSheet.create({
+    contenedor: { gap: espacios.s },
+    fila: { flexDirection: 'row', alignItems: 'center', gap: espacios.s },
+    simboloNino: { color: colores.nino },
+    chip: {
+      alignSelf: 'flex-start',
+      borderColor: colores.borde,
+      borderWidth: 1,
+      borderRadius: radios.s,
+      paddingHorizontal: espacios.s,
+      paddingVertical: espacios.xs,
+    },
+  });

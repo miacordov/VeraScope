@@ -3,7 +3,8 @@ import { ActivityIndicator, FlatList, StyleSheet } from 'react-native';
 import { Creditos } from '@/features/glossary';
 import { useGlosario } from '@/shared/api/consultas';
 import { estadoDeError } from '@/shared/components/textosEstados';
-import { colores, espacios } from '@/shared/tema';
+import { espacios, type Colores } from '@/shared/tema';
+import { useEstilos, useTema } from '@/shared/useTema';
 import { Boton, Tarjeta, Texto } from '@/shared/ui';
 
 /**
@@ -11,6 +12,8 @@ import { Boton, Tarjeta, Texto } from '@/shared/ui';
  * aunque el glosario no cargue (no dependen de la red).
  */
 export default function Glosario() {
+  const { colores } = useTema();
+  const estilos = useEstilos(crearEstilos);
   const glosario = useGlosario();
 
   const cabecera = glosario.isPending ? (
@@ -51,7 +54,8 @@ function ErrorGlosario({ error, reintentar }: { error: unknown; reintentar: () =
   );
 }
 
-const estilos = StyleSheet.create({
-  fondo: { flex: 1, backgroundColor: colores.fondo },
-  contenido: { padding: espacios.l, gap: espacios.m, maxWidth: 720, width: '100%', alignSelf: 'center' },
-});
+const crearEstilos = (colores: Colores) =>
+  StyleSheet.create({
+    fondo: { flex: 1, backgroundColor: colores.fondo },
+    contenido: { padding: espacios.l, gap: espacios.m, maxWidth: 720, width: '100%', alignSelf: 'center' },
+  });

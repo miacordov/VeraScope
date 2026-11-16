@@ -16,7 +16,10 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { ProveedorConsultas } from '@/estado/ProveedorConsultas';
 import { BandaDemo } from '@/features/guided-tours';
 import { BandaSimulado } from '@/shared/components/BandaSimulado';
-import { colores, fuentes } from '@/shared/tema';
+import { BotonModo } from '@/shared/components/BotonModo';
+import { ProveedorTema } from '@/shared/ProveedorTema';
+import { useEstilos, useTema } from '@/shared/useTema';
+import { fuentes, type Colores } from '@/shared/tema';
 
 // La pantalla de arranque se mantiene hasta que carga Inter (va dentro de la app, no se descarga).
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -37,10 +40,21 @@ export default function Raiz() {
   if (!listo) return null;
 
   return (
+    <ProveedorTema>
+      <Contenido />
+    </ProveedorTema>
+  );
+}
+
+function Contenido() {
+  const { modo, colores } = useTema();
+  const estilos = useEstilos(crearEstilos);
+
+  return (
     <GestureHandlerRootView style={estilos.raiz}>
       <SafeAreaProvider>
         <ProveedorConsultas>
-          <StatusBar style="light" />
+          <StatusBar style={modo === 'oscuro' ? 'light' : 'dark'} />
           <SafeAreaView style={estilos.raiz} edges={['top', 'left', 'right']}>
             <BandaSimulado />
             {/* Demo guiada (F3, #15): solo aparece mientras hay una demo en curso. */}
@@ -48,9 +62,10 @@ export default function Raiz() {
             <Stack
               screenOptions={{
                 headerStyle: { backgroundColor: colores.fondo },
-                headerTintColor: colores.texto,
+                headerTintColor: colores.institucional,
                 headerTitleStyle: { fontFamily: fuentes.seminegrita },
                 headerShadowVisible: false,
+                headerRight: () => <BotonModo />,
                 contentStyle: { backgroundColor: colores.fondo },
               }}>
               <Stack.Screen name="index" options={{ title: 'VeraScope', headerShown: false }} />
@@ -64,6 +79,7 @@ export default function Raiz() {
   );
 }
 
-const estilos = StyleSheet.create({
-  raiz: { flex: 1, backgroundColor: colores.fondo },
-});
+const crearEstilos = (colores: Colores) =>
+  StyleSheet.create({
+    raiz: { flex: 1, backgroundColor: colores.fondo },
+  });

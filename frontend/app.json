@@ -6,7 +6,7 @@
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "verascope",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "backgroundColor": "#0E0F11",
     "ios": {
       "icon": "./assets/expo.icon",

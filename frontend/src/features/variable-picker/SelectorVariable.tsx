@@ -6,7 +6,8 @@ import { ANIO_INICIO_REGISTRO, useEstado } from '@/estado/store';
 import { useSalud, useVariables } from '@/shared/api/consultas';
 import type { DefinicionIndice, DefinicionVariable } from '@/shared/api/tipos';
 import { estadoDeError, TEXTOS_ACCION } from '@/shared/components/textosEstados';
-import { colores, espacios, radios, TOQUE_MIN } from '@/shared/tema';
+import { useEstilos, useTema } from '@/shared/useTema';
+import { espacios, radios, TOQUE_MIN, type Colores } from '@/shared/tema';
 import { Boton, Tarjeta, Texto } from '@/shared/ui';
 
 import { aniosElegidos, esVentanaCorta, moverAnio, TEXTO_VENTANA_CORTA } from './ventana';
@@ -16,6 +17,8 @@ import { aniosElegidos, esVentanaCorta, moverAnio, TEXTO_VENTANA_CORTA } from '.
  * Todo cambia el store con sus acciones; los datos del catálogo vienen tal cual de la API.
  */
 export function SelectorVariable() {
+  const { colores } = useTema();
+  const estilos = useEstilos(crearEstilos);
   const variables = useVariables();
   const salud = useSalud();
   const { variable, indice } = useEstado(useShallow((e) => ({ variable: e.variable, indice: e.indice })));
@@ -74,6 +77,7 @@ function OpcionVariable({
   elegida: boolean;
   onPress: () => void;
 }) {
+  const estilos = useEstilos(crearEstilos);
   const [enfocada, setEnfocada] = useState(false);
   return (
     <Pressable
@@ -101,6 +105,7 @@ function OpcionVariable({
 }
 
 function SelectorVentana({ ventanaFin }: { ventanaFin: number }) {
+  const estilos = useEstilos(crearEstilos);
   const ventana = useEstado((e) => e.ventana);
   const { inicio, fin } = aniosElegidos(ventana, ventanaFin);
   const corta = esVentanaCorta(ventana, ventanaFin);
@@ -137,6 +142,7 @@ function SelectorVentana({ ventanaFin }: { ventanaFin: number }) {
 }
 
 function Anio({ titulo, valor, mover }: { titulo: string; valor: number; mover: (paso: number) => void }) {
+  const estilos = useEstilos(crearEstilos);
   return (
     <View
       style={estilos.anio}
@@ -161,6 +167,7 @@ function Anio({ titulo, valor, mover }: { titulo: string; valor: number; mover: 
 }
 
 function SelectorIndice({ indices, indice }: { indices: readonly DefinicionIndice[]; indice: string }) {
+  const estilos = useEstilos(crearEstilos);
   // Niño 1+2 solo aparece si el backend lo ofrece en `/variables`.
   if (indices.length < 2) return null;
   return (
@@ -192,23 +199,24 @@ function SelectorIndice({ indices, indice }: { indices: readonly DefinicionIndic
   );
 }
 
-const estilos = StyleSheet.create({
-  lista: { gap: espacios.s },
-  opcion: {
-    minHeight: TOQUE_MIN,
-    padding: espacios.m,
-    gap: espacios.xs,
-    borderRadius: radios.m,
-    borderWidth: 2,
-    borderColor: colores.borde,
-    backgroundColor: colores.superficieFuerte,
-  },
-  opcionElegida: { borderColor: colores.texto },
-  foco: { outlineStyle: 'solid', outlineWidth: 2, outlineColor: colores.foco },
-  cabecera: { flexDirection: 'row', alignItems: 'center', gap: espacios.s },
-  marca: { width: 16, height: 16, borderRadius: 8, borderWidth: 2, borderColor: colores.textoSuave },
-  marcaElegida: { borderColor: colores.texto, backgroundColor: colores.texto },
-  bloque: { gap: espacios.s, paddingTop: espacios.s },
-  fila: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: espacios.m },
-  anio: { gap: espacios.xs },
-});
+const crearEstilos = (colores: Colores) =>
+  StyleSheet.create({
+    lista: { gap: espacios.s },
+    opcion: {
+      minHeight: TOQUE_MIN,
+      padding: espacios.m,
+      gap: espacios.xs,
+      borderRadius: radios.m,
+      borderWidth: 2,
+      borderColor: colores.borde,
+      backgroundColor: colores.superficieFuerte,
+    },
+    opcionElegida: { borderColor: colores.info },
+    foco: { outlineStyle: 'solid', outlineWidth: 2, outlineColor: colores.foco },
+    cabecera: { flexDirection: 'row', alignItems: 'center', gap: espacios.s },
+    marca: { width: 16, height: 16, borderRadius: 8, borderWidth: 2, borderColor: colores.textoSuave },
+    marcaElegida: { borderColor: colores.info, backgroundColor: colores.info },
+    bloque: { gap: espacios.s, paddingTop: espacios.s },
+    fila: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: espacios.m },
+    anio: { gap: espacios.xs },
+  });

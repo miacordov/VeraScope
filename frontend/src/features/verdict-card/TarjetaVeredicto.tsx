@@ -5,8 +5,9 @@ import { useEstado } from '@/estado/store';
 import type { AnalyzeRespuesta } from '@/shared/api/tipos';
 import { EtiquetaFuente } from '@/shared/components/EtiquetaFuente';
 import { InsigniaVeredicto } from '@/shared/components/InsigniaVeredicto';
-import { colores, espacios, radios } from '@/shared/tema';
+import { espacios, radios, type Colores } from '@/shared/tema';
 import { Boton, Tarjeta, Texto } from '@/shared/ui';
+import { useEstilos } from '@/shared/useTema';
 
 import {
   anuncio,
@@ -34,6 +35,7 @@ export function TarjetaVeredicto({
   analisis: AnalyzeRespuesta;
   alVerGlosario?: () => void;
 }) {
+  const estilos = useEstilos(crearEstilos);
   const quitarElNino = useEstado((e) => e.quitarElNino);
   const tendencia = quitarElNino ? analisis.tendencia_sin_el_nino : analisis.tendencia_original;
   const { unidad } = analisis;
@@ -102,6 +104,7 @@ export function TarjetaVeredicto({
 }
 
 function TendenciaAparente({ analisis }: { analisis: AnalyzeRespuesta }) {
+  const estilos = useEstilos(crearEstilos);
   const { simbolo, texto } = tendenciaAparente(analisis.tendencia_original);
   return (
     <View style={estilos.bloque} accessible accessibilityRole="summary" accessibilityLabel={`Tendencia aparente: ${texto}`}>
@@ -128,6 +131,7 @@ function DireccionSinElNino({ texto }: { texto: string | null }) {
 }
 
 function Fila({ etiqueta, valor }: { etiqueta: string; valor: string }) {
+  const estilos = useEstilos(crearEstilos);
   return (
     <View style={estilos.filaDato} accessible accessibilityLabel={`${etiqueta}: ${valor}`}>
       <Texto variante="pequeno" suave>
@@ -140,24 +144,25 @@ function Fila({ etiqueta, valor }: { etiqueta: string; valor: string }) {
   );
 }
 
-const estilos = StyleSheet.create({
-  bloque: { gap: espacios.s },
-  fila: { flexDirection: 'row', alignItems: 'center', gap: espacios.s },
-  filas: { gap: espacios.s, paddingTop: espacios.xs },
-  filaDato: { gap: 2 },
-  aviso: {
-    borderLeftColor: colores.sequia,
-    borderLeftWidth: 3,
-    backgroundColor: colores.superficieFuerte,
-    borderRadius: radios.s,
-    padding: espacios.s,
-  },
-  chip: {
-    alignSelf: 'flex-start',
-    borderColor: colores.borde,
-    borderWidth: 1,
-    borderRadius: radios.s,
-    paddingHorizontal: espacios.s,
-    paddingVertical: espacios.xs,
-  },
-});
+const crearEstilos = (colores: Colores) =>
+  StyleSheet.create({
+    bloque: { gap: espacios.s },
+    fila: { flexDirection: 'row', alignItems: 'center', gap: espacios.s },
+    filas: { gap: espacios.s, paddingTop: espacios.xs },
+    filaDato: { gap: 2 },
+    aviso: {
+      borderLeftColor: colores.sequia,
+      borderLeftWidth: 3,
+      backgroundColor: colores.superficieFuerte,
+      borderRadius: radios.s,
+      padding: espacios.s,
+    },
+    chip: {
+      alignSelf: 'flex-start',
+      borderColor: colores.borde,
+      borderWidth: 1,
+      borderRadius: radios.s,
+      paddingHorizontal: espacios.s,
+      paddingVertical: espacios.xs,
+    },
+  });

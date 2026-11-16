@@ -15,7 +15,8 @@ import {
 import { useShallow } from 'zustand/react/shallow';
 
 import { useEstado } from '@/estado/store';
-import { colores, espacios, radios, TOQUE_MIN } from '@/shared/tema';
+import { useEstilos } from '@/shared/useTema';
+import { espacios, radios, TOQUE_MIN, type Colores } from '@/shared/tema';
 import { Boton, Texto } from '@/shared/ui';
 
 import { useReproduccion } from './useReproduccion';
@@ -23,6 +24,7 @@ import { useReproduccion } from './useReproduccion';
 type Props = { fechas: readonly string[] };
 
 export function ControlTiempo({ fechas }: Props) {
+  const estilos = useEstilos(crearEstilos);
   useReproduccion(fechas);
   const { mesVisible, reproduciendo } = useEstado(
     useShallow((e) => ({ mesVisible: e.mesVisible, reproduciendo: e.reproduciendo })),
@@ -96,25 +98,26 @@ export function ControlTiempo({ fechas }: Props) {
   );
 }
 
-const estilos = StyleSheet.create({
-  contenedor: { gap: espacios.s },
-  fila: { flexDirection: 'row', alignItems: 'center', gap: espacios.m, flexWrap: 'wrap' },
-  barra: {
-    minHeight: TOQUE_MIN,
-    justifyContent: 'center',
-    borderRadius: radios.s,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  foco: { borderColor: colores.foco },
-  riel: { height: 6, borderRadius: 3, backgroundColor: colores.superficieFuerte, overflow: 'hidden' },
-  relleno: { height: 6, backgroundColor: colores.texto },
-  perilla: {
-    position: 'absolute',
-    width: 18,
-    height: 18,
-    marginLeft: -9,
-    borderRadius: 9,
-    backgroundColor: colores.texto,
-  },
-});
+const crearEstilos = (colores: Colores) =>
+  StyleSheet.create({
+    contenedor: { gap: espacios.s },
+    fila: { flexDirection: 'row', alignItems: 'center', gap: espacios.m, flexWrap: 'wrap' },
+    barra: {
+      minHeight: TOQUE_MIN,
+      justifyContent: 'center',
+      borderRadius: radios.s,
+      borderWidth: 2,
+      borderColor: 'transparent',
+    },
+    foco: { borderColor: colores.foco },
+    riel: { height: 6, borderRadius: 3, backgroundColor: colores.superficieFuerte, overflow: 'hidden' },
+    relleno: { height: 6, backgroundColor: colores.info },
+    perilla: {
+      position: 'absolute',
+      width: 18,
+      height: 18,
+      marginLeft: -9,
+      borderRadius: 9,
+      backgroundColor: colores.info,
+    },
+  });

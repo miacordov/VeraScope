@@ -18,7 +18,8 @@ import { useAnalyze, useLayer, useSalud, useTeleconnect } from '@/shared/api/con
 import { estadoDeError, TEXTOS_ACCION } from '@/shared/components/textosEstados';
 import { EJEMPLO_SIMULADO } from '@/shared/ejemploSimulado';
 import { celda as textoCelda } from '@/shared/format';
-import { colores, cortes, espacios } from '@/shared/tema';
+import { useEstilos, useTema } from '@/shared/useTema';
+import { cortes, espacios, type Colores } from '@/shared/tema';
 import { Boton, Tarjeta, Texto } from '@/shared/ui';
 
 /**
@@ -29,6 +30,8 @@ import { Boton, Tarjeta, Texto } from '@/shared/ui';
  * Las features de F2 y F3 entran por su hueco.
  */
 export default function Espacio() {
+  const { colores } = useTema();
+  const estilos = useEstilos(crearEstilos);
   const salud = useSalud();
   const seleccion = useEstado(
     useShallow((e) => ({ variable: e.variable, celda: e.celda, ventana: e.ventana, indice: e.indice })),
@@ -175,13 +178,14 @@ function ErrorConReintento({ error, reintentar }: { error: unknown; reintentar: 
   );
 }
 
-const estilos = StyleSheet.create({
-  fondo: { flex: 1, backgroundColor: colores.fondo },
-  contenido: { padding: espacios.l, gap: espacios.l, maxWidth: 960, width: '100%', alignSelf: 'center' },
-  contenidoAncho: { maxWidth: 1440, flexDirection: 'row', alignItems: 'flex-start' },
-  columna: { gap: espacios.l },
-  columnaMapa: { flex: 3, gap: espacios.l },
-  columnaPanel: { flex: 2, gap: espacios.l },
-  esqueleto: { height: 16, borderRadius: 4, backgroundColor: colores.superficieFuerte },
-  esqueletoCorto: { width: '60%' },
-});
+const crearEstilos = (colores: Colores) =>
+  StyleSheet.create({
+    fondo: { flex: 1, backgroundColor: colores.fondo },
+    contenido: { padding: espacios.l, gap: espacios.l, maxWidth: 960, width: '100%', alignSelf: 'center' },
+    contenidoAncho: { maxWidth: 1440, flexDirection: 'row', alignItems: 'flex-start' },
+    columna: { gap: espacios.l },
+    columnaMapa: { flex: 3, gap: espacios.l },
+    columnaPanel: { flex: 2, gap: espacios.l },
+    esqueleto: { height: 16, borderRadius: 4, backgroundColor: colores.superficieFuerte },
+    esqueletoCorto: { width: '60%' },
+  });
