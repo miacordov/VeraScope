@@ -5,10 +5,9 @@ lee solo los bloques de la región pedida. Requiere una cuenta gratuita de NASA 
 (variables EARTHDATA_USERNAME y EARTHDATA_PASSWORD, o un archivo ~/.netrc).
 """
 import numpy as np
-import pandas as pd
 import xarray as xr
 
-from .region import promedio_caja
+from .region import anio_mes, promedio_caja
 
 IMERG = {"short_name": "GPM_3IMERGM", "version": "07", "grupo": "Grid"}
 GLDAS = {"short_name": "GLDAS_NOAH025_M", "version": "2.1", "grupo": None}
@@ -43,8 +42,7 @@ def buscar_y_abrir(producto, anio_inicio, anio_fin, lugares):
 
 
 def _mes(ds):
-    t = pd.to_datetime(np.asarray(ds["time"].values).ravel()[0])
-    return f"{t.year}-{t.month:02d}"
+    return anio_mes(np.asarray(ds["time"].values).ravel()[0])
 
 
 def _abrir(f, grupo):

@@ -1,7 +1,16 @@
 """Promedio de un campo satelital sobre la celda de 0.5° de un lugar, ponderado por el coseno de la latitud."""
 import numpy as np
+import pandas as pd
 
 from .. import config
+
+
+def anio_mes(fecha):
+    """Fecha de un NetCDF -> "AAAA-MM". Acepta numpy/pandas y fechas de cftime (GPM y AppEEARS usan calendario juliano)."""
+    if hasattr(fecha, "calendar"):                     # cftime: no se puede pasar a pandas.Timestamp
+        return f"{fecha.year}-{fecha.month:02d}"
+    t = pd.Timestamp(fecha)
+    return f"{t.year}-{t.month:02d}"
 
 
 def caja(lugar, mitad=None):

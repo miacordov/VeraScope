@@ -259,7 +259,7 @@ Es la herramienta **local** (con panel visual) que descarga y arma `data/`: índ
 - Para desplegar los datos: `verascope-datos empaquetar` → release de GitHub o carpeta compartida → en el servidor, `verascope-datos instalar … --datos /data`.
 - Los datos de satélite (V8–V12) y el CO₂ (V13) **no entran al flujo en vivo ni al selector de variables**: solo alimentan fichas informativas de la demo 1 y el contraste entre fuentes (propuestas P9).
 - **Cómo opera (para no romperlo):** el panel es un servidor de la biblioteca estándar que escucha **solo en `127.0.0.1`**, exige la cabecera `X-Token` y revisa el `Host`. **No lo expongas a la red, no le quites esas comprobaciones y no lo metas en la imagen de la API.** Cada paso corre en un **proceso aparte** (se detiene con SIGINT sin dejar archivos a medias) y es **reanudable**: el casillero (SQLite en modo WAL) guarda cada serie al llegar, y al volver a correr sigue donde se quedó y reintenta solo lo que falló. El paquete `.tar.gz` (~50 MB) guarda la suma **SHA-256** de cada archivo y `instalar` la comprueba. Las credenciales de Earthdata (`EARTHDATA_USERNAME`, `EARTHDATA_PASSWORD`, solo para V8–V12) viven en memoria mientras el panel está abierto y **nunca** se guardan en el repositorio.
-- **Pendiente de verificar con los servicios reales** (las 10 pruebas usan archivos simulados con el formato de NASA y NOAA; desde donde se escribió no había acceso a sus servidores): la escorrentía de GLDAS (V10, `Qs_acc + Qsb_acc` × 8, acumulados de 3 h) y el nombre de la capa de NDVI en AppEEARS (V12, `CMG_0.05_Deg_Monthly_NDVI`, de MOD13C2.061). Revísalo en la **primera corrida real** y deja la decisión escrita.
+- **Pendiente de verificar con los servicios reales** (las 10 pruebas usan archivos simulados con el formato de NASA y NOAA; desde donde se escribió no había acceso a sus servidores): la escorrentía de GLDAS (V10, `Qs_acc + Qsb_acc` × 8, acumulados de 3 h) y el nombre de la capa de NDVI en AppEEARS (V12: AppEEARS no ofrece MOD13C2; se usa MOD13A3.061, capa `_1_km_monthly_NDVI`, verificado en la primera corrida real). Revísalo en la **primera corrida real** y deja la decisión escrita.
 
 **Las 13 variables del preparador (`variables.py`):**
 
@@ -269,7 +269,7 @@ Es la herramienta **local** (con panel visual) que descarga y arma `data/`: índ
 | V6, V7 | `ONI`, `NINO12` | Índice | NOAA CPC | 1950, 1982 |
 | V8 | `IMERG` (lluvia satelital, mm/día; llega en mm/h, × 24) | Precalculada (solo 3 lugares de las demos) | NASA GES DISC · GPM_3IMERGM v07 | 1998 |
 | V9–V11 | `GLDAS_EVAP` (× 86 400), `GLDAS_ESCORRENTIA` (× 8, **por verificar**), `GLDAS_SUELO` (mm) | Precalculada (idem) | NASA GES DISC · GLDAS_NOAH025_M v2.1 | 2000 |
-| V12 | `NDVI` (factor 0.0001) | Precalculada (idem) | NASA LP DAAC · MOD13C2 v061 vía AppEEARS | 2000 |
+| V12 | `NDVI` (factor 0.0001) | Precalculada (idem) | NASA LP DAAC · MOD13A3 v061 (1 km) vía AppEEARS | 2000 |
 | V13 | `CO2` (ppm) | Contexto (franja aparte; no se correlaciona con nada) | NOAA GML | 1958 |
 
 **Diferencias conocidas entre el `motor.py` del preparador y los informes (B3 las resuelve al moverlo a `estadistica/`):**

@@ -76,6 +76,11 @@ class PowerFalso:
                                              "GWETROOT": dic(suelo, oceano), "GWETTOP": dic(suelo, oceano)}}}
 
 
+# Como los archivos reales: GPM y AppEEARS fechan con calendario juliano (xarray devuelve fechas de cftime).
+JULIANO_GPM = {"time": {"units": "seconds since 1980-01-06 00:00:00 UTC", "calendar": "julian"}}
+JULIANO_APPEEARS = {"time": {"units": "seconds since 2000-01-01 00:00:00+00:00", "calendar": "julian"}}
+
+
 def _rejilla_local(paso, cajas):
     return np.unique(np.concatenate([np.arange(a, b, paso) + paso / 2 for a, b in cajas])).round(4)
 
@@ -96,7 +101,7 @@ def archivos_satelite(carpeta: Path, anios=(2018, 2019)):
             ds = xr.Dataset({"precipitation": (("time", "lon", "lat"), pr, {"units": "mm/hr"})},
                             coords={"time": t, "lon": lon_i, "lat": lat_i})
             ds.to_netcdf(carpeta / "imerg" / f"3B-MO.MS.MRG.3IMERG.{y}{m:02d}01-S000000-E235959.{m:02d}.V07B.HDF5",
-                         engine="h5netcdf", group="Grid")
+                         engine="h5netcdf", group="Grid", encoding=JULIANO_GPM)
             LA, LO = np.meshgrid(lat_g, lon_g, indexing="ij")
             r = resp(LA, LO)
             gl = xr.Dataset({"Evap_tavg": (("time", "lat", "lon"), ((2 + 0.3 * r * e) / 86400.0)[None].astype("float32")),
@@ -111,5 +116,6 @@ def archivos_satelite(carpeta: Path, anios=(2018, 2019)):
         meses = config.meses(2000); t = pd.to_datetime([f"{m}-01" for m in meses])
         base = np.array([0.6 - 0.05 * respuesta(l.lat, l.lon) * ONI_DE[m] for m in meses])
         v = (np.clip(base, -0.2, 1) * 10000)[:, None, None] * np.ones((1, la.size, lo.size))
-        xr.Dataset({"CMG_0_05_Deg_Monthly_NDVI": (("time", "lat", "lon"), v.astype("int16"))},
-                   coords={"time": t, "lat": la, "lon": lo}).to_netcdf(carpeta / "ndvi" / f"{l.id}.nc", engine="h5netcdf")
+        xr.Dataset({"_1_km_monthly_NDVI": (("time", "lat", "lon"), v.astype("int16"))},
+                   coords={"time": t, "lat": la, "lon": lo}).to_netcdf(carpeta / "ndvi" / f"{l.id}.nc", engine="h5netcdf",
+                                                         encoding=JULIANO_APPEEARS)

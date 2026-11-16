@@ -217,7 +217,7 @@ def cmd_satelites(a, r):
                     carpeta = r.crudo / f"ndvi_{l.id}"; carpeta.mkdir(exist_ok=True)
                     for f in cli.descargar(tid, carpeta):
                         mapa[l.id] = appeears.leer_ndvi(f, l)
-            _guardar_mapa(cas, "NDVI", mapa, meses, "adimensional", "MOD13C2 v061")
+            _guardar_mapa(cas, "NDVI", mapa, meses, "adimensional", "MOD13A3 v061")
         except Exception as e:
             cas.fallo("ndvi", "demo", e)
             con.print(f"[red]✘ ndvi: {e}[/]")
