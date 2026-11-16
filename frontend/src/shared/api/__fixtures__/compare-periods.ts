@@ -24,7 +24,7 @@ const fixture: ComparePeriodsRespuesta = {
   },
   "delta_original": 0.3,
   "delta_sin_el_nino": 0.05,
-  "nota": "Datos simulados. Comparación descriptiva: la significancia la da la tendencia."
+  "nota": "Comparación descriptiva: la significancia la da la tendencia."
 };
 
 export default fixture;

@@ -10,6 +10,17 @@ import { TEXTOS_ERROR } from '@/shared/components/textosEstados';
 import { iniciarDemo } from '../acciones';
 import { BandaDemo } from '../BandaDemo';
 
+// Celda y destino de la demo 1, leídos del guion: si el guion cambia de celda, las pruebas lo siguen.
+const lugarDelGuion = (tipo: 'seleccionar_celda' | 'ir_a_destino') => {
+  const accion = efectoEspejo.pasos.flatMap((paso) => paso.acciones).find((a) => a.tipo === tipo) as
+    | { lat: number; lon: number }
+    | undefined;
+  if (!accion) throw new Error(`El guion de la demo 1 no tiene la acción ${tipo}`);
+  return { lat: accion.lat, lon: accion.lon };
+};
+const PIURA = lugarDelGuion('seleccionar_celda');
+const DESTINO = lugarDelGuion('ir_a_destino');
+
 /** Error que debe devolver `/demos` en una prueba, o `null`. */
 let errorDemo: { status: number; error: { codigo: string; mensaje: string; celda_cercana: null } } | null = null;
 
@@ -63,7 +74,7 @@ describe('BandaDemo', () => {
 
     expect(await screen.findByText(efectoEspejo.pasos[0].texto)).toBeOnTheScreen();
     expect(screen.getByText(`Demo · ${efectoEspejo.titulo} · paso 1 de 3`)).toBeOnTheScreen();
-    expect(estado().celda).toEqual({ lat: -5, lon: -80.5 });
+    expect(estado().celda).toEqual(PIURA);
     expect(estado().demo).toEqual({ id: 'efecto-espejo', paso: 0 });
     expect(screen.getByRole('button', { name: 'Paso anterior' })).toBeDisabled();
     expect(llamadasA('/demos/')).toBe(1);
@@ -82,7 +93,7 @@ describe('BandaDemo', () => {
 
     await fireEvent.press(screen.getByRole('button', { name: 'Paso siguiente' }));
     expect(screen.getByText(efectoEspejo.pasos[2].texto)).toBeOnTheScreen();
-    expect(estado().destino).toEqual({ lat: -18, lon: 142 });
+    expect(estado().destino).toEqual(DESTINO);
     expect(screen.getByRole('button', { name: 'Paso siguiente' })).toBeDisabled();
 
     await fireEvent.press(screen.getByRole('button', { name: 'Paso anterior' }));

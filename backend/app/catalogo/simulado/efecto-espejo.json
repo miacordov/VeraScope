@@ -1,9 +1,9 @@
 {
-  "id": "efecto-espejo", "titulo": "El efecto espejo de El Niño (simulado)", "variable": "PRECTOTCORR",
-  "celda": {"lat": -5.0, "lon": -80.5},
+  "id": "efecto-espejo", "titulo": "El efecto espejo de El Niño", "variable": "PRECTOTCORR",
+  "celda": {"lat": -6.0, "lon": -80.0},
   "pasos": [
-    {"n": 1, "texto": "Este es un ejemplo simulado de Piura; no son mediciones reales.", "acciones": [{"tipo": "seleccionar_variable", "variable": "PRECTOTCORR"}, {"tipo": "seleccionar_celda", "lat": -5.0, "lon": -80.5}, {"tipo": "quitar_el_nino", "valor": false}]},
-    {"n": 2, "texto": "En este ejemplo, la lluvia en Piura y la sequía en el norte de Australia ocurren a la vez; no significa que un lugar cause lo que sucede en el otro.", "acciones": [{"tipo": "ir_al_mes", "fecha": "1990-01"}, {"tipo": "reproducir"}]},
-    {"n": 3, "texto": "Observa el destino simulado y vuelve a comparar con Piura.", "acciones": [{"tipo": "detener"}, {"tipo": "ir_a_destino", "lat": -18.0, "lon": 142.0}]}
+    {"n": 1, "texto": "Piura, en la costa norte del Perú, recibe más lluvia durante El Niño.", "acciones": [{"tipo": "seleccionar_variable", "variable": "PRECTOTCORR"}, {"tipo": "seleccionar_celda", "lat": -6.0, "lon": -80.0}, {"tipo": "quitar_el_nino", "valor": false}]},
+    {"n": 2, "texto": "La lluvia en Piura y la sequía en el norte de Australia ocurren a la vez; ambas responden a El Niño, no significa que un lugar cause lo que sucede en el otro.", "acciones": [{"tipo": "ir_al_mes", "fecha": "1998-01"}, {"tipo": "reproducir"}]},
+    {"n": 3, "texto": "Observa el destino opuesto y compara con Piura.", "acciones": [{"tipo": "detener"}, {"tipo": "ir_a_destino", "lat": -14.0, "lon": 132.0}]}
   ]
 }

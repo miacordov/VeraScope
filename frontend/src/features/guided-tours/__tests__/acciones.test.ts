@@ -4,6 +4,20 @@ import type { DemoRespuesta } from '@/shared/api/tipos';
 
 import { iniciarDemo, irAlPaso, PASO_PENDIENTE, salirDeDemo } from '../acciones';
 
+// Celda y destino de la demo 1, leídos del guion: si el guion cambia de celda, las pruebas lo siguen.
+const lugarDelGuion = (tipo: 'seleccionar_celda' | 'ir_a_destino') => {
+  const accion = efectoEspejo.pasos.flatMap((paso) => paso.acciones).find((a) => a.tipo === tipo) as
+    | { lat: number; lon: number }
+    | undefined;
+  if (!accion) throw new Error(`El guion de la demo 1 no tiene la acción ${tipo}`);
+  return { lat: accion.lat, lon: accion.lon };
+};
+const PIURA = lugarDelGuion('seleccionar_celda');
+const DESTINO = lugarDelGuion('ir_a_destino');
+const MES_DEL_PASO_2 = (
+  efectoEspejo.pasos[1].acciones.find((a) => a.tipo === 'ir_al_mes') as { fecha: string } | undefined
+)?.fecha;
+
 const estado = () => useEstado.getState();
 
 beforeEach(() => {
@@ -15,18 +29,18 @@ describe('ejecutor de guiones (demo 1 sobre el guion de ejemplo)', () => {
   it('cada paso deja el estado esperado', () => {
     irAlPaso(efectoEspejo, 0);
     expect(estado().variable).toBe('PRECTOTCORR');
-    expect(estado().celda).toEqual({ lat: -5, lon: -80.5 });
+    expect(estado().celda).toEqual(PIURA);
     expect(estado().quitarElNino).toBe(false);
     expect(estado().demo).toEqual({ id: 'efecto-espejo', paso: 0 });
 
     irAlPaso(efectoEspejo, 1);
-    expect(estado().mesVisible).toBe('1990-01');
+    expect(estado().mesVisible).toBe(MES_DEL_PASO_2);
     expect(estado().reproduciendo).toBe(true);
-    expect(estado().celda).toEqual({ lat: -5, lon: -80.5 });
+    expect(estado().celda).toEqual(PIURA);
 
     irAlPaso(efectoEspejo, 2);
     expect(estado().reproduciendo).toBe(false);
-    expect(estado().destino).toEqual({ lat: -18, lon: 142 });
+    expect(estado().destino).toEqual(DESTINO);
     expect(estado().demo).toEqual({ id: 'efecto-espejo', paso: 2 });
   });
 

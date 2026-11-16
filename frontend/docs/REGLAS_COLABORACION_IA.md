@@ -9,7 +9,7 @@ que use cada una (Claude Code, Copilot, Cursor, ChatGPT…). Tienen dos objetivo
 >
 > **Orden de prioridad:** *Informe técnico v2* > [`frontend/CLAUDE.md`](../CLAUDE.md) > `AGENTS.md` > este archivo.
 > Este archivo no cambia ninguna regla técnica de la guía: solo agrega cómo colaborar sin pisarse y sin marcas de
-> IA. El reparto de tareas y el horario están en [`SPRINT_FRONTEND.md`](SPRINT_FRONTEND.md).
+> IA. El reparto de tareas y el avance por sprint están en [`AVANCE_FRONTEND_POR_SPRINT.md`](AVANCE_FRONTEND_POR_SPRINT.md).
 >
 > **Estado al 15 de noviembre:** la base del frontend (F1) ya está en `main`, con **Expo SDK 58** fijo. Las ramas
 > `chore/base-frontend`, `fe/graficos-enso-v2`, `fe/tiempo-comparador-v2` y `fe/distribucion-v2` **se borraron y no se
@@ -279,7 +279,7 @@ ayudado una IA.
 
 ```
 Soy F<1|2|3> del frontend de VeraScope. Antes de nada lee frontend/docs/REGLAS_COLABORACION_IA.md,
-frontend/docs/SPRINT_FRONTEND.md y frontend/CLAUDE.md, y respétalos (SDK 58 fijo).
+frontend/docs/AVANCE_FRONTEND_POR_SPRINT.md y frontend/CLAUDE.md, y respétalos (SDK 58 fijo).
 Rama e issue: <rama> (#N). Tarea: <describe la tarea>.
 1) Confirma mi zona y lista los archivos exactos que vas a tocar.
 2) Si necesitas tocar un archivo compartido, de otra zona o de backend, detente y dímelo.

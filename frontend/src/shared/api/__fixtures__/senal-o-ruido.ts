@@ -3,7 +3,7 @@ import type { DemoRespuesta } from '../tipos';
 
 const fixture: DemoRespuesta = {
   "id": "senal-o-ruido",
-  "titulo": "Señal o ruido (simulado)",
+  "titulo": "Señal o ruido",
   "variable": "T2M",
   "celda": {
     "lat": -6,
@@ -12,7 +12,7 @@ const fixture: DemoRespuesta = {
   "pasos": [
     {
       "n": 1,
-      "texto": "Recorrido de desarrollo con datos simulados: esta celda no es la selección definitiva de la demo real. Compara primero diez años.",
+      "texto": "En Piura, la temperatura sube. Compara primero solo diez años.",
       "acciones": [
         {
           "tipo": "seleccionar_variable",

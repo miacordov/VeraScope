@@ -15,6 +15,17 @@ import Espacio from '../../../../app/espacio';
 import Inicio from '../../../../app/index';
 import { BandaDemo } from '..';
 
+// Celda y destino de la demo 1, leídos del guion: si el guion cambia de celda, las pruebas lo siguen.
+const lugarDelGuion = (tipo: 'seleccionar_celda' | 'ir_a_destino') => {
+  const accion = efectoEspejo.pasos.flatMap((paso) => paso.acciones).find((a) => a.tipo === tipo) as
+    | { lat: number; lon: number }
+    | undefined;
+  if (!accion) throw new Error(`El guion de la demo 1 no tiene la acción ${tipo}`);
+  return { lat: accion.lat, lon: accion.lon };
+};
+const PIURA = lugarDelGuion('seleccionar_celda');
+const DESTINO = lugarDelGuion('ir_a_destino');
+
 /**
  * Flujo completo de F3 con las pantallas reales: Inicio → "Ver la demo" → espacio de trabajo con la banda de la
  * demo, sobre las respuestas de ejemplo (sin red). Comprueba que el ejecutor mueve el espacio de F1 y la tarjeta
@@ -108,7 +119,7 @@ describe('demo 1 de punta a punta (respuestas de ejemplo)', () => {
     expect(estado().reproduciendo).toBe(true);
     await fireEvent.press(screen.getByRole('button', { name: 'Paso siguiente' }));
     expect(screen.getByText(efectoEspejo.pasos[2].texto)).toBeOnTheScreen();
-    expect(estado().destino).toEqual({ lat: -18, lon: 142 });
+    expect(estado().destino).toEqual(DESTINO);
 
     // Quitar El Niño durante la demo: la tarjeta pasa al veredicto de 4 estados sin red.
     await act(() => estado().alternarElNino());
@@ -124,11 +135,11 @@ describe('demo 1 de punta a punta (respuestas de ejemplo)', () => {
     expect(llamadasA('/demos/')).toBe(1);
     // Ir y volver entre pasos no repite el analyze de Piura (staleTime infinito). El único analyze extra es el del
     // destino del paso 3, que el panel de Consecuencia pide a propósito (guía del frontend §6, regla 1).
-    expect(llamadasDe('/analyze', 'lat=-5&lon=-80.5')).toBe(analyzeAntes);
-    expect(llamadasDe('/analyze', 'lat=-18&lon=142')).toBe(1);
+    expect(llamadasDe('/analyze', `lat=${PIURA.lat}&lon=${PIURA.lon}`)).toBe(analyzeAntes);
+    expect(llamadasDe('/analyze', `lat=${DESTINO.lat}&lon=${DESTINO.lon}`)).toBe(1);
     expect(llamadasA('/analyze')).toBe(analyzeAntes + 1);
     // Si el espacio pide las líneas de la celda (teleconnect, en paralelo con analyze, §6), tampoco se repiten.
-    expect(llamadasDe('/teleconnect', 'lat=-5&lon=-80.5')).toBeLessThanOrEqual(1);
+    expect(llamadasDe('/teleconnect', `lat=${PIURA.lat}&lon=${PIURA.lon}`)).toBeLessThanOrEqual(1);
   });
 
   it('Salir cierra la banda y deja el espacio vacío, listo para investigar', async () => {

@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from app.api.simulados import cargar_escenarios
-from app.contracts import ErrorRespuesta, GlosarioRespuesta, SaludRespuesta, VariablesRespuesta
+from app.contracts import DemoRespuesta, GlosarioRespuesta, SaludRespuesta, VariablesRespuesta
 from app.datos.escaneo import escribir_estado
 from tests.test_scan_api_real import api_real as api_real
 
@@ -76,22 +76,18 @@ def test_catalogo_real_procede_del_json_canonico(api_real, ruta, modelo):
 
 
 @pytest.mark.parametrize("id_demo", ["efecto-espejo", "senal-o-ruido"])
-def test_demo_real_no_inventa_guion_y_simulada_sigue_disponible(api_real, id_demo):
+def test_demo_guion_se_sirve_en_modo_real_y_simulado(api_real, id_demo):
+    """Los guiones de demos se sirven tanto en modo real como simulado."""
+    esperado = json.loads((CATALOGO / "simulado" / f"{id_demo}.json").read_text("utf-8"))
+    # Modo real
     respuesta = api_real.get(f"/api/v1/demos/{id_demo}")
-    assert respuesta.status_code == 503
-    assert respuesta.json() == {
-        "error": {
-            "codigo": "escaneo_en_curso",
-            "mensaje": "El guion de la demo real aún no está disponible. "
-            "Vuelve a intentarlo después de preparar los datos.",
-            "celda_cercana": None,
-        }
-    }
-    ErrorRespuesta.model_validate(respuesta.json())
+    assert respuesta.status_code == 200
+    datos = respuesta.json()
+    assert DemoRespuesta.model_validate(datos).model_dump(mode="json") == datos
+    assert datos == esperado
+    # Modo simulado
     api_real.app.state.simulado = True
     api_real.app.state.escenarios = cargar_escenarios()
     simulada = api_real.get(f"/api/v1/demos/{id_demo}")
     assert simulada.status_code == 200
-    assert simulada.json() == json.loads(
-        (CATALOGO / "simulado" / f"{id_demo}.json").read_text("utf-8")
-    )
+    assert simulada.json() == esperado
