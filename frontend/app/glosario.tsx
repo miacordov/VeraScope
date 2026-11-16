@@ -1,11 +1,14 @@
 import { ActivityIndicator, FlatList, StyleSheet } from 'react-native';
 
 import { useGlosario } from '@/shared/api/consultas';
-import { colores, espacios } from '@/shared/tema';
+import { useEstilos, useTema } from '@/shared/useTema';
+import { espacios, type Colores } from '@/shared/tema';
 import { Boton, Tarjeta, Texto } from '@/shared/ui';
 
 /** Glosario MÍNIMO del esqueleto: lista los términos de `/glosario`. La página completa es de F3. */
 export default function Glosario() {
+  const { colores } = useTema();
+  const estilos = useEstilos(crearEstilos);
   const glosario = useGlosario();
 
   if (glosario.isPending) {
@@ -37,8 +40,9 @@ export default function Glosario() {
   );
 }
 
-const estilos = StyleSheet.create({
-  fondo: { flex: 1, backgroundColor: colores.fondo },
-  contenido: { padding: espacios.l, gap: espacios.m, maxWidth: 720, width: '100%', alignSelf: 'center' },
-  error: { margin: espacios.l },
-});
+const crearEstilos = (colores: Colores) =>
+  StyleSheet.create({
+    fondo: { flex: 1, backgroundColor: colores.fondo },
+    contenido: { padding: espacios.l, gap: espacios.m, maxWidth: 720, width: '100%', alignSelf: 'center' },
+    error: { margin: espacios.l },
+  });

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, type PressableProps } from 'react-native';
 
-import { colores, espacios, radios, TOQUE_MIN } from '@/shared/tema';
+import { useEstilos } from '@/shared/useTema';
+import { espacios, radios, TOQUE_MIN, type Colores } from '@/shared/tema';
 
 import { Texto } from './Texto';
 
@@ -14,6 +15,7 @@ type Props = Omit<PressableProps, 'children'> & {
 
 /** Botón con rol, etiqueta, estado, zona táctil ≥ 44 × 44 y foco visible en web. */
 export function Boton({ texto, variante = 'principal', etiqueta, disabled, style, ...resto }: Props) {
+  const estilos = useEstilos(crearEstilos);
   const [enfocado, setEnfocado] = useState(false);
   return (
     <Pressable
@@ -39,22 +41,23 @@ export function Boton({ texto, variante = 'principal', etiqueta, disabled, style
   );
 }
 
-const estilos = StyleSheet.create({
-  base: {
-    minHeight: TOQUE_MIN,
-    minWidth: TOQUE_MIN,
-    paddingHorizontal: espacios.l,
-    paddingVertical: espacios.s,
-    borderRadius: radios.m,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  principal: { backgroundColor: colores.texto },
-  secundario: { backgroundColor: colores.superficieFuerte, borderColor: colores.borde },
-  textoPrincipal: { color: colores.fondo },
-  presionado: { opacity: 0.8 },
-  foco: { borderColor: colores.foco, outlineStyle: 'solid', outlineWidth: 2, outlineColor: colores.foco },
-  deshabilitado: { opacity: 0.45 },
-});
+const crearEstilos = (colores: Colores) =>
+  StyleSheet.create({
+    base: {
+      minHeight: TOQUE_MIN,
+      minWidth: TOQUE_MIN,
+      paddingHorizontal: espacios.l,
+      paddingVertical: espacios.s,
+      borderRadius: radios.m,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 2,
+      borderColor: 'transparent',
+    },
+    principal: { backgroundColor: colores.accion },
+    secundario: { backgroundColor: colores.superficieFuerte, borderColor: colores.borde },
+    textoPrincipal: { color: colores.textoSobreAccion },
+    presionado: { opacity: 0.8 },
+    foco: { borderColor: colores.foco, outlineStyle: 'solid', outlineWidth: 2, outlineColor: colores.foco },
+    deshabilitado: { opacity: 0.45 },
+  });

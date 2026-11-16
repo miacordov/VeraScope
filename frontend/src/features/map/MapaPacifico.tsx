@@ -10,7 +10,8 @@ import {
 import Svg, { Line, Path, Rect } from 'react-native-svg';
 
 import { cuantizarCelda, type Coordenadas } from '@/shared/geo';
-import { colores, espacios, radios } from '@/shared/tema';
+import { useEstilos, useTema } from '@/shared/useTema';
+import { espacios, radios, type Colores } from '@/shared/tema';
 import { Boton, Texto } from '@/shared/ui';
 
 import { BORDE_CELDA, rectanguloCelda } from './celda';
@@ -51,6 +52,8 @@ type Props = {
  * nítido. Siempre hay botones ＋ / −, "Restablecer vista" y "Lugares" (sin gestos).
  */
 export function MapaPacifico({ celda, onElegirCelda, alto }: Props) {
+  const { colores } = useTema();
+  const estilos = useEstilos(crearEstilos);
   const [ancho, setAncho] = useState(0);
   const tamano: Tamano = useMemo(() => ({ ancho, alto }), [ancho, alto]);
   const [vistaPropia, setVista] = useState<Vista | null>(null);
@@ -167,14 +170,15 @@ export function MapaPacifico({ celda, onElegirCelda, alto }: Props) {
                     y1={l.y1}
                     x2={l.x2}
                     y2={l.y2}
-                    stroke={colores.borde}
+                    stroke={colores.textoSuave}
+                    strokeOpacity={0.35}
                     strokeWidth={l.ecuador ? 1.5 : 1}
                     strokeDasharray={l.ecuador ? undefined : '2 4'}
                   />
                 ))}
                 <Path
                   d={costas}
-                  fill={colores.superficieFuerte}
+                  fill={colores.mapaTierra}
                   stroke={colores.textoSuave}
                   strokeWidth={0.75}
                   testID="mapa-costas"
@@ -186,7 +190,7 @@ export function MapaPacifico({ celda, onElegirCelda, alto }: Props) {
                     width={rect.ancho}
                     height={rect.alto}
                     fill="none"
-                    stroke={colores.texto}
+                    stroke={colores.info}
                     strokeWidth={BORDE_CELDA}
                     testID="mapa-celda"
                   />
@@ -233,15 +237,16 @@ export function MapaPacifico({ celda, onElegirCelda, alto }: Props) {
   );
 }
 
-const estilos = StyleSheet.create({
-  contenedor: { gap: espacios.s },
-  lienzo: {
-    width: '100%',
-    overflow: 'hidden',
-    borderRadius: radios.m,
-    backgroundColor: colores.fondo,
-    borderWidth: 1,
-    borderColor: colores.borde,
-  },
-  controles: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: espacios.s },
-});
+const crearEstilos = (colores: Colores) =>
+  StyleSheet.create({
+    contenedor: { gap: espacios.s },
+    lienzo: {
+      width: '100%',
+      overflow: 'hidden',
+      borderRadius: radios.m,
+      backgroundColor: colores.mapaOceano,
+      borderWidth: 1,
+      borderColor: colores.borde,
+    },
+    controles: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: espacios.s },
+  });

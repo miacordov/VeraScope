@@ -1,8 +1,10 @@
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
+import { BotonModo } from '@/shared/components/BotonModo';
 import { LogoVeraScope } from '@/shared/components/LogoVeraScope';
-import { colores, espacios } from '@/shared/tema';
+import { useEstilos } from '@/shared/useTema';
+import { espacios, type Colores } from '@/shared/tema';
 import { Boton, Texto } from '@/shared/ui';
 
 /**
@@ -11,10 +13,14 @@ import { Boton, Texto } from '@/shared/ui';
  * backend, #8, y el cliente con fuente `empaquetada`).
  */
 export default function Inicio() {
+  const estilos = useEstilos(crearEstilos);
   const router = useRouter();
 
   return (
     <ScrollView style={estilos.fondo} contentContainerStyle={estilos.contenido}>
+      <View style={estilos.barra}>
+        <BotonModo />
+      </View>
       <View style={estilos.bloque}>
         <View style={estilos.marca}>
           <LogoVeraScope tamano={56} />
@@ -36,10 +42,12 @@ export default function Inicio() {
   );
 }
 
-const estilos = StyleSheet.create({
-  fondo: { flex: 1, backgroundColor: colores.fondo },
-  contenido: { padding: espacios.xl, gap: espacios.xl, maxWidth: 720, width: '100%', alignSelf: 'center' },
-  bloque: { gap: espacios.s, paddingTop: espacios.xxl },
-  marca: { flexDirection: 'row', alignItems: 'center', gap: espacios.m },
-  botones: { gap: espacios.m },
-});
+const crearEstilos = (colores: Colores) =>
+  StyleSheet.create({
+    fondo: { flex: 1, backgroundColor: colores.fondo },
+    contenido: { padding: espacios.xl, gap: espacios.xl, maxWidth: 720, width: '100%', alignSelf: 'center' },
+    barra: { alignItems: 'flex-end' },
+    bloque: { gap: espacios.s },
+    marca: { flexDirection: 'row', alignItems: 'center', gap: espacios.m },
+    botones: { gap: espacios.m },
+  });

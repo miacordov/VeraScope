@@ -7,7 +7,8 @@ import { useState } from 'react';
 import { AccessibilityInfo, Pressable, StyleSheet, View } from 'react-native';
 
 import { useEstado } from '@/estado/store';
-import { colores, espacios, radios, TOQUE_MIN } from '@/shared/tema';
+import { useEstilos } from '@/shared/useTema';
+import { espacios, radios, TOQUE_MIN, type Colores } from '@/shared/tema';
 import { Texto } from '@/shared/ui';
 
 type Props = {
@@ -23,6 +24,7 @@ export function textoRezago(rezagoMeses: number): string {
 }
 
 export function InterruptorElNino({ rezagoMeses }: Props) {
+  const estilos = useEstilos(crearEstilos);
   const activo = useEstado((e) => e.quitarElNino);
   const alternar = useEstado((e) => e.alternarElNino);
   const [enfocado, setEnfocado] = useState(false);
@@ -60,32 +62,33 @@ export function InterruptorElNino({ rezagoMeses }: Props) {
   );
 }
 
-const estilos = StyleSheet.create({
-  contenedor: { gap: espacios.xs },
-  fila: {
-    minHeight: TOQUE_MIN,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: espacios.m,
-    paddingHorizontal: espacios.s,
-    borderRadius: radios.m,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  presionado: { opacity: 0.8 },
-  foco: { borderColor: colores.foco },
-  riel: {
-    width: 48,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: colores.superficieFuerte,
-    borderWidth: 1,
-    borderColor: colores.borde,
-    justifyContent: 'center',
-    paddingHorizontal: 3,
-  },
-  rielActivo: { backgroundColor: colores.nino, borderColor: colores.nino },
-  perilla: { width: 20, height: 20, borderRadius: 10, backgroundColor: colores.textoSuave },
-  perillaActiva: { backgroundColor: colores.texto, alignSelf: 'flex-end' },
-  estado: { minWidth: 20 },
-});
+const crearEstilos = (colores: Colores) =>
+  StyleSheet.create({
+    contenedor: { gap: espacios.xs },
+    fila: {
+      minHeight: TOQUE_MIN,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: espacios.m,
+      paddingHorizontal: espacios.s,
+      borderRadius: radios.m,
+      borderWidth: 2,
+      borderColor: 'transparent',
+    },
+    presionado: { opacity: 0.8 },
+    foco: { borderColor: colores.foco },
+    riel: {
+      width: 48,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: colores.superficieFuerte,
+      borderWidth: 1,
+      borderColor: colores.borde,
+      justifyContent: 'center',
+      paddingHorizontal: 3,
+    },
+    rielActivo: { backgroundColor: colores.info, borderColor: colores.info },
+    perilla: { width: 20, height: 20, borderRadius: 10, backgroundColor: colores.textoSuave },
+    perillaActiva: { backgroundColor: colores.texto, alignSelf: 'flex-end' },
+    estado: { minWidth: 20 },
+  });

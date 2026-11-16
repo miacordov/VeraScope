@@ -11,7 +11,8 @@ import Svg, { Circle, Defs, G, Line, Path, Pattern, Rect, Text as SvgText } from
 
 import type { Fase } from '@/shared/api/tipos';
 import { numero } from '@/shared/format';
-import { colores, espacios, fuentes } from '@/shared/tema';
+import { useEstilos, useTema } from '@/shared/useTema';
+import { espacios, fuentes, type Colores } from '@/shared/tema';
 import { Texto } from '@/shared/ui';
 
 import { useLectura } from './lectura';
@@ -81,6 +82,8 @@ export function GraficoSerie({
   resumen,
   alto = 150,
 }: Props) {
+  const { colores } = useTema();
+  const estilos = useEstilos(crearEstilos);
   const [ancho, setAncho] = useState(0);
   const { indice: lectura, fijarIndice } = useLectura();
   const n = fechas.length;
@@ -248,8 +251,9 @@ export function GraficoSerie({
   );
 }
 
-const estilos = StyleSheet.create({
-  contenedor: { gap: espacios.xs },
-  cabecera: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  franja: { minHeight: 16 },
-});
+const crearEstilos = (colores: Colores) =>
+  StyleSheet.create({
+    contenedor: { gap: espacios.xs },
+    cabecera: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
+    franja: { minHeight: 16 },
+  });

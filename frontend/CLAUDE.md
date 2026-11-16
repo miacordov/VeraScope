@@ -164,7 +164,9 @@ frontend/
     │   ├── api/                  # cliente y tipos (los tipos se GENERAN, no se escriben a mano)
     │   ├── geo.ts                # lon360, lonNormal, cuantización: UN solo lugar
     │   ├── format.ts             # formato de números (es-PE), siempre con unidad
-    │   ├── tema.ts               # tokens: colores, tipografía, espacios
+    │   ├── tema.ts               # tokens: paletas clara y oscura, tipografía, espacios
+    │   ├── useTema.ts            # useTema() y useEstilos(): colores del modo actual
+    │   ├── ProveedorTema.tsx     # modo claro/oscuro (sigue al sistema; guarda la elección)
     │   ├── components/           # insignia de veredicto, etiqueta de fuente
     │   └── ui/                   # botones, tarjetas, alertas, hoja inferior
     └── features/
@@ -309,7 +311,7 @@ El backend genera las respuestas completas de las demos (`analyze` con ventana p
 
 **`glossary` (F3).** **Página** (`app/glosario.tsx`) con el vocabulario (de `/glosario`); los términos de la tarjeta de veredicto **enlazan** a ella. Los *tooltips* en todos los paneles se recortan si falta tiempo.
 
-**Pantallas (`app/`).** *Inicio* (qué es VeraScope en una frase, acceso a las dos demos, botones **Investigar** y **Escanear**, y "Usar demo sin conexión"; frase sugerida: "Descubre si un cambio en el clima es una tendencia real o solo El Niño"), *Espacio de trabajo* (mapa centrado en el Pacífico, tarjeta de veredicto, feed de ScanMap y panel Causa · Consecuencia · Realidad con el control de tiempo) y *Glosario*. En el teléfono, el feed es una lista a pantalla completa con pestañas; en web, una columna junto al mapa. Barra de estado clara sobre fondo oscuro (`expo-status-bar` en modo `light`) y **áreas seguras** (`react-native-safe-area-context`, que viene con la plantilla de Expo Router).
+**Pantallas (`app/`).** *Inicio* (qué es VeraScope en una frase, acceso a las dos demos, botones **Investigar** y **Escanear**, y "Usar demo sin conexión"; frase sugerida: "Descubre si un cambio en el clima es una tendencia real o solo El Niño"), *Espacio de trabajo* (mapa centrado en el Pacífico, tarjeta de veredicto, feed de ScanMap y panel Causa · Consecuencia · Realidad con el control de tiempo) y *Glosario*. En el teléfono, el feed es una lista a pantalla completa con pestañas; en web, una columna junto al mapa. Barra de estado que sigue el modo (`expo-status-bar`: `light` en modo oscuro, `dark` en modo claro) y **áreas seguras** (`react-native-safe-area-context`, que viene con la plantilla de Expo Router).
 
 Recorrido de **Investigar** (3 pasos): **1. Variable** → **2. Lugar y ventana** (toque en el mapa) → **3. Veredicto**. Los dos caminos (Investigar y Escanear) terminan en **la misma vista de detalle**.
 
@@ -362,24 +364,51 @@ Dos recorridos precargados que se entienden en **menos de tres minutos**. **Cada
 
 ## 13. Lenguaje visual, textos y accesibilidad
 
-### Dirección visual elegida (reemplaza al "fondo claro" del informe técnico v1)
+### Dirección visual elegida (paleta VeraScope, 15 nov 2026; reemplaza al tema solo oscuro anterior)
 
-Interfaz **oscura**, sobria y viva a la vez: un fondo grafito, texto claro y **muy pocos colores, cada uno con un significado fijo**. El azul se reserva para el **planeta** (la marca); no lo uses como color de interfaz. Logo y hoja de marca: `VeraScope-logo-mision.zip` y `VeraScope-hoja-de-marca-mision.png` (pídelos al humano; no redibujes el logo).
+Interfaz sobria con **modo claro y modo oscuro**, que el usuario cambia con el botón de sol/luna (`shared/components/BotonModo.tsx`, en el encabezado y en el Inicio). Mientras no elija, la app sigue el modo del teléfono o del navegador (`app.json` → `userInterfaceStyle: "automatic"`); lo que elige se guarda en AsyncStorage (`verascope.modo`). **Muy pocos colores, cada uno con un significado fijo, igual en los dos modos.** Logo y hoja de marca: `VeraScope-logo-mision.zip` y `VeraScope-hoja-de-marca-mision.png` (pídelos al humano; no redibujes el logo).
 
-Los colores viven en **`src/shared/tema.ts`** (un objeto de tokens; **no hay Tailwind**). Los componentes importan el token, nunca el valor suelto.
+Los colores viven en **`src/shared/tema.ts`** (`paletas.claro` y `paletas.oscuro`, con los mismos tokens; **no hay Tailwind**). Los componentes **nunca** importan un color suelto: leen el modo con `useTema()` y arman sus estilos con `useEstilos(crearEstilos)` (`src/shared/useTema.ts`), donde `const crearEstilos = (colores: Colores) => StyleSheet.create({...})` se declara fuera del componente. El proveedor (`src/shared/ProveedorTema.tsx`) solo se monta en `app/_layout.tsx`; sin proveedor (pruebas) se usa el modo oscuro. El modo **no va al store**.
 
-| Token (`tema.colores.*`) | Valor | Significa |
+**Significado de los colores (regla fundamental: el rojo no significa "importante", significa "preocupante")**
+
+| Color | Significa | Se usa en |
 |---|---|---|
-| `fondo` | `#0E0F11` | Fondo grafito |
-| `texto` | `#F2F2F0` | Texto principal |
-| `nino` | `#E04A3A` | **El Niño** (franjas, línea de efecto opuesto, interruptor activo) |
-| `lluvia` | `#4FC3F7` | **Lluvia / más agua** (valores de variables; no es La Niña) |
-| `sequia` | `#F2A93B` | **Sequía / menos agua** (valores de variables) |
+| Azul (`info`, `lluvia`) | Ciencia, información y datos | Gráficos, indicadores, enlaces, selección (celda elegida, opción elegida, interruptor y barra de tiempo activos), recta de tendencia, lluvia |
+| Ámbar (`accion`, `sequia`) | Acción, exploración y descubrimiento | Botones principales ("Investigar", "Escanear"), sequía, borde de la banda "Datos simulados" |
+| Rojo (`nino`) | Gravedad, preocupación y riesgo | **Solo** El Niño (franjas, línea de efecto opuesto, *sensible a El Niño*) y alertas críticas. Ningún otro token puede valer rojo (hay prueba) |
+| Blanco | Claridad y legibilidad | Fondos, superficies y texto |
+| Gris y negro | Estructura y jerarquía | Fondos, bordes, texto secundario, La Niña (gris con trama) |
+
+**Tokens (`Colores`)**
+
+| Token | Modo claro | Modo oscuro | Uso |
+|---|---|---|---|
+| `fondo` | Space White `#F7F7F5` | Obsidian `#0B0D12` | Fondo principal |
+| `superficie` | Pure White `#FFFFFF` | Deep Surface `#111820` | Tarjetas, paneles, ventanas |
+| `superficieFuerte` | Atmosphere Gray `#E6E8EB` | Ocean Panel `#17364F` | Fondos secundarios (botón secundario, rieles, esqueletos) |
+| `borde` | Atmosphere Gray `#E6E8EB` | Ocean Panel `#17364F` | Bordes y divisores |
+| `texto` | Obsidian `#0B0D12` | Star White `#F5F7F8` | Texto principal y títulos |
+| `textoSuave` | Orbit Gray `#8B929A` | Atmospheric Gray `#AAB3BC` | Texto secundario y etiquetas |
+| `institucional` | Ocean Deep `#102B42` | Star White `#F5F7F8` | Encabezados, navegación e iconos |
+| `info` | Signal Blue `#38A9E0` | Signal Blue Light `#4AB7E8` | Datos, enlaces, selección, estados activos |
+| `accion` | Discovery Amber `#F5A62D` | Discovery Amber `#FFB23D` | Botones principales |
+| `textoSobreAccion` | Obsidian `#0B0D12` | Obsidian `#0B0D12` | Texto sobre `accion` |
+| `nino` | ENSO Red `#E3483F` | ENSO Red Light `#F0524A` | El Niño y alertas críticas |
+| `lluvia` | Signal Blue `#38A9E0` | Signal Blue Light `#4AB7E8` | Lluvia / más agua (no es La Niña) |
+| `sequia` | Discovery Amber `#F5A62D` | Discovery Amber `#FFB23D` | Sequía / menos agua |
+| `nina` | Orbit Gray `#8B929A` | Atmospheric Gray `#AAB3BC` | La Niña (siempre con trama y etiqueta) |
+| `foco` | Obsidian `#0B0D12` | Star White `#F5F7F8` | Contorno de foco (teclado en web) |
+| `aviso` | Pure White `#FFFFFF` | Deep Surface `#111820` | Fondo de la banda "Datos simulados" |
+| `mapaOceano` | Pure White `#FFFFFF` | Ocean Panel `#17364F` | Océano del mapa |
+| `mapaTierra` | Atmosphere Gray `#E6E8EB` | Deep Surface `#111820` | Tierra del mapa |
+
+- **Contraste en modo claro (pendiente de decidir):** `textoSuave` (Orbit Gray) sobre `fondo` da 2.9:1 y `info` (Signal Blue) sobre `fondo` da 2.5:1, por debajo del mínimo de accesibilidad (4.5:1 para texto, 3:1 para líneas y controles). En modo oscuro todo pasa de 5:1. Si se oscurecen, se cambia el valor en `tema.ts`, no en cada componente.
 
 - **Tipografía:** **Inter**, con **`@expo-google-fonts/inter` y `expo-font`**, incluida en la app (no se descarga). Mantén la pantalla de arranque (`expo-splash-screen`) hasta que cargue la fuente. Números y tablas con **`fontVariant: ['tabular-nums']`**. Texto base ≥ 16; escala tipográfica corta y consistente; etiquetas en minúsculas normales (**sin MAYÚSCULAS SOSTENIDAS**).
 - **Una sola cosa memorable:** la línea que se enciende cruzando el Pacífico. El resto de la interfaz es discreta; no agregues adornos, degradados decorativos ni animaciones que no respondan a una acción del usuario.
-- **Decisiones de diseño que siguen abiertas** (propónlas en el PR con captura de pantalla; las aprueba otra persona del frontend y se anotan aquí): color de **La Niña** (el informe v1 decía azul, pero el azul es del planeta: hasta decidir, usa un gris azulado apagado **con trama de rayas y etiqueta "La Niña"**, nunca azul saturado); color de la línea de **mismo efecto** (mientras tanto, **punteada en `texto`**); paleta de la **temperatura** en el mosaico (escala propia en ámbar, dejando el rojo solo para El Niño); colores de la insignia de veredicto (por ahora neutros, con el rojo solo para *sensible a El Niño*).
-- **Proyector y teléfono al sol:** ensaya la interfaz **en un proyector o pantalla grande y en un teléfono real a plena luz** antes de la hora 36. Si el tema oscuro se ve lavado, sube el contraste (más negro de fondo, texto más blanco) en los tokens, no en cada componente.
+- **Decisiones de diseño que siguen abiertas** (propónlas en el PR con captura de pantalla; las aprueba otra persona del frontend y se anotan aquí): color de la línea de **mismo efecto** (mientras tanto, **punteada en `texto`**); paleta de la **temperatura** en el mosaico (escala propia en ámbar, dejando el rojo solo para El Niño); colores de la insignia de veredicto (por ahora neutros, con el rojo solo para *sensible a El Niño*). **La Niña** queda en gris (`nina`) **con trama de rayas y etiqueta "La Niña"**, nunca azul saturado ni rojo.
+- **Proyector y teléfono al sol:** ensaya la interfaz **en los dos modos, en un proyector o pantalla grande y en un teléfono real a plena luz** antes de la hora 36. Si un modo se ve lavado, sube el contraste en los tokens de `tema.ts`, no en cada componente.
 - **Unidades:** en React Native el tamaño es independiente de la densidad de la pantalla (no se escribe `px`); usa los espacios y tamaños del tema en vez de números sueltos.
 
 ### Textos (todo en español, sencillo, sin jerga)
@@ -398,7 +427,7 @@ Los colores viven en **`src/shared/tema.ts`** (un objeto de tokens; **no hay Tai
 - **Lectores de pantalla (VoiceOver y TalkBack) y web:** todo control lleva `accessibilityRole`, `accessibilityLabel` en español y, si corresponde, `accessibilityState` (`checked`, `selected`, `disabled`); también puedes usar sus equivalentes `role` y `aria-*`, que React Native for Web traduce al navegador. El interruptor se anuncia como interruptor con su estado. **El cambio de veredicto y el estado del escaneo se anuncian** (`accessibilityLiveRegion="polite"` en Android y `AccessibilityInfo.announceForAccessibility`).
 - **Zonas táctiles de al menos 44 × 44** (usa `hitSlop` si el dibujo es más pequeño). Texto base ≥ 16; etiquetas de gráficos ≥ 12.
 - **Teclado en web:** interruptor, control de tiempo, pestañas, tarjetas del feed, pasos de las demos y lista de líneas se usan con teclado, con **foco visible** siempre.
-- **Contraste** suficiente (texto normal ≥ 4.5:1) sobre el grafito.
+- **Contraste** suficiente (texto normal ≥ 4.5:1; líneas y controles ≥ 3:1) sobre el fondo **de cada modo**.
 - **Reducir movimiento:** consulta `AccessibilityInfo.isReduceMotionEnabled()` (en web, `prefers-reduced-motion`): sin transiciones decorativas. La reproducción del tiempo es una acción del usuario y sigue funcionando.
 - **Los gráficos y el mapa tienen alternativa en texto** (resumen de cada gráfico, lista de líneas, botones de zoom).
 - Unidades **siempre visibles**.
@@ -463,7 +492,7 @@ Las pruebas usan **respuestas de ejemplo** (`src/shared/api/__fixtures__/`, copi
 - [ ] Sin dependencias nuevas sin aviso; `npx expo install --check` en verde.
 - [ ] Revisado por otra persona del frontend. Este archivo actualizado si cambió una regla o un comando.
 
-**Comprobaciones tempranas (horas 0–6):** que la app abra en **Expo Go en un teléfono real** con el SDK 58 · que el mapa con longitudes 0–360 dibuje la línea de Piura a Indonesia **cruzando el Pacífico** (con datos de ejemplo) y sin rayas en las costas · que los tipos se generen desde `/openapi.json` · que la tipografía y el mapa funcionen **sin internet** · que el tema oscuro se lea en un proyector y en un teléfono · que `salud.simulado` active la banda "Datos simulados" · que la web exporte (`npx expo export -p web`). **Antes de la hora 14:** rendimiento del mosaico en un teléfono modesto, primer APK con EAS Build y la web desplegada.
+**Comprobaciones tempranas (horas 0–6):** que la app abra en **Expo Go en un teléfono real** con el SDK 58 · que el mapa con longitudes 0–360 dibuje la línea de Piura a Indonesia **cruzando el Pacífico** (con datos de ejemplo) y sin rayas en las costas · que los tipos se generen desde `/openapi.json` · que la tipografía y el mapa funcionen **sin internet** · que los dos modos (claro y oscuro) se lean en un proyector y en un teléfono · que `salud.simulado` active la banda "Datos simulados" · que la web exporte (`npx expo export -p web`). **Antes de la hora 14:** rendimiento del mosaico en un teléfono modesto, primer APK con EAS Build y la web desplegada.
 
 ## 17. Contrato de la API (`/api/v1`)
 
@@ -680,7 +709,7 @@ Los archivos de contratos y el estado global son **compartidos**: los edita su d
 
 ### Decisiones posteriores a los informes
 
-- **Diseño del frontend:** la dirección visual elegida después del informe (fondo grafito oscuro, rojo para El Niño, cian para lluvia, ámbar para sequía, tipografía Inter) **reemplaza** el "fondo claro" y el azul para La Niña mencionados en el informe técnico. Detalle en la sección de lenguaje visual del frontend.
+- **Diseño del frontend:** la paleta VeraScope (15 nov 2026: modo claro y oscuro a elección del usuario; azul = datos, ámbar = acción, rojo = solo lo preocupante y El Niño; tipografía Inter) **reemplaza** al tema solo oscuro anterior y al azul para La Niña del informe técnico. Detalle en la sección de lenguaje visual del frontend.
 - **App móvil y web (informe técnico v2):** el frontend es **una sola base de código con Expo** para iOS, Android y web. Si el humano prefiere **una web aparte con React** (compartiendo tipos, cliente y estado), es una decisión pendiente (tabla de abajo); mientras no se cambie, manda esta.
 - **Fin de la ventana:** los informes hablan de 1981–2023 (516 meses, 43 años) porque estaban escritos con ese último año. **No lo fijes en el código**: la ventana termina en el último año completo de MERRA-2 (`VERASCOPE_FIN`, por defecto año actual − 1) y se confirma en las horas 0–6. Los "516 meses" y los "43 años" de los textos son ejemplos que cambian.
 - **El prototipo (`verascope-codigo.zip`)** usa nombres viejos en inglés (`/series`, `/feed`, `raw`, `clean`, `p_adj`…). Sirve para ver ideas, **no para copiar nombres**: manda este contrato.

@@ -1,6 +1,7 @@
 import { StyleSheet, Text, type TextProps } from 'react-native';
 
-import { colores, tipografia } from '@/shared/tema';
+import { useEstilos } from '@/shared/useTema';
+import { tipografia, type Colores } from '@/shared/tema';
 
 export type VarianteTexto = keyof typeof tipografia;
 
@@ -12,6 +13,7 @@ export function Texto({
   style,
   ...resto
 }: TextProps & { variante?: VarianteTexto; suave?: boolean; numerico?: boolean }) {
+  const estilos = useEstilos(crearEstilos);
   return (
     <Text
       style={[
@@ -26,8 +28,9 @@ export function Texto({
   );
 }
 
-const estilos = StyleSheet.create({
-  base: { color: colores.texto },
-  suave: { color: colores.textoSuave },
-  numerico: { fontVariant: ['tabular-nums'] },
-});
+const crearEstilos = (colores: Colores) =>
+  StyleSheet.create({
+    base: { color: colores.texto },
+    suave: { color: colores.textoSuave },
+    numerico: { fontVariant: ['tabular-nums'] },
+  });
