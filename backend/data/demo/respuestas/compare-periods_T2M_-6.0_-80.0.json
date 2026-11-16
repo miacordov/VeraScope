@@ -1,0 +1,25 @@
+{
+  "p1": {
+    "anios": [
+      1981,
+      2001
+    ],
+    "media_original": -0.13772489285714287,
+    "media_sin_el_nino": -0.1369227103174603,
+    "meses_inusuales": 16,
+    "meses_inusuales_en_el_nino": 15
+  },
+  "p2": {
+    "anios": [
+      2003,
+      2025
+    ],
+    "media_original": 0.10533411594202899,
+    "media_sin_el_nino": 0.1192023731884058,
+    "meses_inusuales": 12,
+    "meses_inusuales_en_el_nino": 9
+  },
+  "delta_original": 0.24305900879917186,
+  "delta_sin_el_nino": 0.2561250835058661,
+  "nota": "Comparación descriptiva: la significancia la da la tendencia."
+}

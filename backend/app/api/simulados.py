@@ -39,6 +39,12 @@ def cargar_catalogos():
     }
 
 
+def cargar_guion_demo(demo_id: str) -> DemoRespuesta:
+    """Carga un guion de demo; se sirve tanto en modo real como simulado."""
+    carpeta = Path(__file__).resolve().parents[1] / "catalogo" / "simulado"
+    return DemoRespuesta.model_validate_json((carpeta / f"{demo_id}.json").read_text("utf-8"))
+
+
 def cargar_escenarios(catalogos=None):
     """Valida los escenarios y reutiliza los catálogos canónicos del arranque."""
     catalogos = cargar_catalogos() if catalogos is None else catalogos

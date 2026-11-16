@@ -14,19 +14,19 @@ const fixture: FeedRespuesta = {
   "tarjetas": [
     {
       "id": "PRECTOTCORR-0",
-      "titular": "Ejemplo simulado: la lluvia sube en Piura aun quitando El Niño",
+      "titular": "La lluvia en Piura no muestra tendencia significativa",
       "variable": "PRECTOTCORR",
       "unidad": "mm/día",
       "celda": {
-        "lat": -5,
-        "lon": -80.5
+        "lat": -6,
+        "lon": -80
       },
-      "veredicto": "cambio_robusto",
-      "pendiente_decada": 0.25,
-      "ic_bajo": 0.2,
-      "ic_alto": 0.3,
-      "p_ajustado": 0.000001,
-      "efecto": 1.1,
+      "veredicto": "sin_tendencia",
+      "pendiente_decada": -0.008,
+      "ic_bajo": -0.05,
+      "ic_alto": 0.03,
+      "p_ajustado": 0.72,
+      "efecto": -0.01,
       "pareja": null
     }
   ]

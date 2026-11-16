@@ -1043,7 +1043,7 @@ const fixture: AnalyzeRespuesta = {
   "avisos": [
     {
       "codigo": "potencia_baja",
-      "texto": "Datos simulados: escenario de lluvia en Piura, 1981–1990 con ONI, para desarrollar la interfaz. No son datos descargados ni resultados reales. Una ventana de menos de 20 años tiene poca potencia."
+      "texto": "Una ventana de menos de 20 años tiene poca potencia estadística."
     }
   ],
   "meses_inusuales": [],
