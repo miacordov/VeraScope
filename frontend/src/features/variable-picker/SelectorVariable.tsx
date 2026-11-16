@@ -8,7 +8,7 @@ import type { DefinicionIndice, DefinicionVariable } from '@/shared/api/tipos';
 import { estadoDeError, TEXTOS_ACCION } from '@/shared/components/textosEstados';
 import { useEstilos, useTema } from '@/shared/useTema';
 import { espacios, radios, TOQUE_MIN, type Colores } from '@/shared/tema';
-import { Boton, Tarjeta, Texto } from '@/shared/ui';
+import { Boton, Desplegable, EncabezadoPaso, Tarjeta, Texto } from '@/shared/ui';
 
 import { aniosElegidos, esVentanaCorta, moverAnio, TEXTO_VENTANA_CORTA } from './ventana';
 
@@ -21,7 +21,9 @@ export function SelectorVariable() {
   const estilos = useEstilos(crearEstilos);
   const variables = useVariables();
   const salud = useSalud();
-  const { variable, indice } = useEstado(useShallow((e) => ({ variable: e.variable, indice: e.indice })));
+  const { variable, indice, ventana } = useEstado(
+    useShallow((e) => ({ variable: e.variable, indice: e.indice, ventana: e.ventana })),
+  );
 
   if (variables.isPending) {
     return (
@@ -45,11 +47,12 @@ export function SelectorVariable() {
     );
   }
 
+  const elegida = variables.data.variables.find((v) => v.id === variable);
+  const nombreIndice = variables.data.indices.find((i) => i.id === indice)?.nombre ?? indice;
+
   return (
     <Tarjeta>
-      <Texto variante="subtitulo" accessibilityRole="header">
-        Elige qué mirar
-      </Texto>
+      <EncabezadoPaso numero={1} titulo="Elige qué mirar" />
       <View style={estilos.lista} accessibilityRole="radiogroup" accessibilityLabel="Variable">
         {variables.data.variables.map((v) => (
           <OpcionVariable
@@ -60,11 +63,45 @@ export function SelectorVariable() {
           />
         ))}
       </View>
+      {/* Solo se describe la variable elegida: las demás guardan su definición en la etiqueta accesible. */}
+      {elegida ? (
+        <View style={estilos.descripcion}>
+          <Texto variante="pequeno">{elegida.definicion}</Texto>
+          <Texto variante="etiqueta" suave>
+            {elegida.unidad} · {elegida.fuente}
+          </Texto>
+        </View>
+      ) : null}
 
-      {salud.data ? <SelectorVentana ventanaFin={salud.data.ventana_fin} /> : null}
-
-      <SelectorIndice indices={variables.data.indices} indice={indice} />
+      {salud.data ? (
+        <>
+          <AvisoVentanaCorta ventanaFin={salud.data.ventana_fin} />
+          <Desplegable
+            titulo="Ajustes: años e índice"
+            tituloAbierto="Ocultar ajustes"
+            resumen={`${resumenVentana(ventana, salud.data.ventana_fin)} · ${nombreIndice}`}>
+            <SelectorVentana ventanaFin={salud.data.ventana_fin} />
+            <SelectorIndice indices={variables.data.indices} indice={indice} />
+          </Desplegable>
+        </>
+      ) : null}
     </Tarjeta>
+  );
+}
+
+function resumenVentana(ventana: Parameters<typeof aniosElegidos>[0], ventanaFin: number): string {
+  const { inicio, fin } = aniosElegidos(ventana, ventanaFin);
+  return `Años ${inicio}–${fin}`;
+}
+
+/** El aviso de ventana corta se ve aunque los ajustes estén cerrados: explica por qué no hay resultado. */
+function AvisoVentanaCorta({ ventanaFin }: { ventanaFin: number }) {
+  const ventana = useEstado((e) => e.ventana);
+  if (!esVentanaCorta(ventana, ventanaFin)) return null;
+  return (
+    <Texto variante="cuerpoFuerte" accessibilityRole="alert">
+      {TEXTO_VENTANA_CORTA}
+    </Texto>
   );
 }
 
@@ -88,18 +125,9 @@ function OpcionVariable({
       onFocus={() => setEnfocada(true)}
       onBlur={() => setEnfocada(false)}
       style={[estilos.opcion, elegida && estilos.opcionElegida, enfocada && estilos.foco]}>
-      <View style={estilos.cabecera}>
-        {/* La marca de "elegida" es forma + texto, no solo color. */}
-        <View style={[estilos.marca, elegida && estilos.marcaElegida]} />
-        <Texto variante="cuerpoFuerte">{definicion.nombre}</Texto>
-      </View>
-      <Texto variante="pequeno" suave>
-        {definicion.definicion}
-      </Texto>
-      <Texto variante="etiqueta" suave>
-        {definicion.unidad} · {definicion.fuente}
-        {elegida ? ' · elegida' : ''}
-      </Texto>
+      {/* La marca de "elegida" es forma + texto, no solo color. */}
+      <View style={[estilos.marca, elegida && estilos.marcaElegida]} />
+      <Texto variante="cuerpoFuerte">{definicion.nombre}</Texto>
     </Pressable>
   );
 }
@@ -108,7 +136,6 @@ function SelectorVentana({ ventanaFin }: { ventanaFin: number }) {
   const estilos = useEstilos(crearEstilos);
   const ventana = useEstado((e) => e.ventana);
   const { inicio, fin } = aniosElegidos(ventana, ventanaFin);
-  const corta = esVentanaCorta(ventana, ventanaFin);
   const mover = (extremo: 'inicio' | 'fin', paso: number) =>
     useEstado.getState().fijarVentana(moverAnio(ventana, ventanaFin, extremo, paso));
 
@@ -132,11 +159,6 @@ function SelectorVentana({ ventanaFin }: { ventanaFin: number }) {
           Todo el registro, de {ANIO_INICIO_REGISTRO} a {ventanaFin}.
         </Texto>
       )}
-      {corta ? (
-        <Texto variante="cuerpoFuerte" accessibilityRole="alert">
-          {TEXTO_VENTANA_CORTA}
-        </Texto>
-      ) : null}
     </View>
   );
 }
@@ -201,19 +223,21 @@ function SelectorIndice({ indices, indice }: { indices: readonly DefinicionIndic
 
 const crearEstilos = (colores: Colores) =>
   StyleSheet.create({
-    lista: { gap: espacios.s },
+    lista: { flexDirection: 'row', flexWrap: 'wrap', gap: espacios.s },
     opcion: {
       minHeight: TOQUE_MIN,
-      padding: espacios.m,
-      gap: espacios.xs,
-      borderRadius: radios.m,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: espacios.m,
+      gap: espacios.s,
+      borderRadius: radios.l,
       borderWidth: 2,
       borderColor: colores.borde,
       backgroundColor: colores.superficieFuerte,
     },
     opcionElegida: { borderColor: colores.info },
     foco: { outlineStyle: 'solid', outlineWidth: 2, outlineColor: colores.foco },
-    cabecera: { flexDirection: 'row', alignItems: 'center', gap: espacios.s },
+    descripcion: { gap: 2 },
     marca: { width: 16, height: 16, borderRadius: 8, borderWidth: 2, borderColor: colores.textoSuave },
     marcaElegida: { borderColor: colores.info, backgroundColor: colores.info },
     bloque: { gap: espacios.s, paddingTop: espacios.s },

@@ -13,7 +13,7 @@ import type { AnalyzeRespuesta } from '@/shared/api/tipos';
 import { periodo, celda as textoCelda } from '@/shared/format';
 import { useEstilos, useTema } from '@/shared/useTema';
 import { espacios, type Colores } from '@/shared/tema';
-import { Tarjeta, Texto } from '@/shared/ui';
+import { Desplegable, Tarjeta, Texto } from '@/shared/ui';
 
 import { GraficoSerie, NOMBRE_FASE, type PuntoMarcado } from './GraficoSerie';
 import { ProveedorLectura } from './lectura';
@@ -56,7 +56,11 @@ export function PanelSeries({ analisis }: { analisis: AnalyzeRespuesta }) {
         <Texto variante="subtitulo" accessibilityRole="header">
           Causa · Consecuencia · Realidad
         </Texto>
+        <Texto variante="pequeno" suave>
+          Tres gráficos con el mismo eje de tiempo. Toca o pasa el cursor sobre uno para leer un mes.
+        </Texto>
 
+        <Pregunta texto="¿Cuándo hubo El Niño y La Niña?" />
         <GraficoSerie
           titulo="Causa"
           unidad={analisis.indice.id}
@@ -69,6 +73,7 @@ export function PanelSeries({ analisis }: { analisis: AnalyzeRespuesta }) {
         />
         <Leyenda />
 
+        <Pregunta texto={`¿Qué pasó con la ${analisis.nombre.toLowerCase()} en el lugar?`} />
         <GraficoSerie
           titulo="Consecuencia"
           unidad="anomalía estandarizada (z)"
@@ -94,6 +99,7 @@ export function PanelSeries({ analisis }: { analisis: AnalyzeRespuesta }) {
               : 'Elige una línea en el mapa para comparar con el otro lado del Pacífico.'}
         </Texto>
 
+        <Pregunta texto="¿Queda una tendencia de fondo?" />
         <GraficoSerie
           titulo={`Realidad (${nombreSerie})`}
           unidad={analisis.unidad}
@@ -109,9 +115,11 @@ export function PanelSeries({ analisis }: { analisis: AnalyzeRespuesta }) {
           }`}
         />
         {puntos.length > 0 ? (
-          <Texto variante="etiqueta" suave>
-            Meses inusuales: {puntos.map((p) => `${p.fecha} (${p.etiqueta})`).join(', ')}
-          </Texto>
+          <Desplegable titulo={`Ver meses inusuales (${puntos.length})`} tituloAbierto="Ocultar meses inusuales">
+            <Texto variante="etiqueta" suave>
+              Meses inusuales: {puntos.map((p) => `${p.fecha} (${p.etiqueta})`).join(', ')}
+            </Texto>
+          </Desplegable>
         ) : null}
 
         <Texto variante="etiqueta" suave>
@@ -119,6 +127,16 @@ export function PanelSeries({ analisis }: { analisis: AnalyzeRespuesta }) {
         </Texto>
       </Tarjeta>
     </ProveedorLectura>
+  );
+}
+
+/** Pregunta en lenguaje sencillo que responde cada gráfico (separa visualmente los tres). */
+function Pregunta({ texto }: { texto: string }) {
+  const estilos = useEstilos(crearEstilos);
+  return (
+    <View style={estilos.pregunta}>
+      <Texto variante="cuerpoFuerte">{texto}</Texto>
+    </View>
   );
 }
 
@@ -142,6 +160,7 @@ function Leyenda() {
 const crearEstilos = (colores: Colores) =>
   StyleSheet.create({
     leyenda: { flexDirection: 'row', alignItems: 'center', gap: espacios.s },
+    pregunta: { borderTopColor: colores.borde, borderTopWidth: 1, paddingTop: espacios.m, marginTop: espacios.s },
     muestra: { width: 12, height: 12, borderRadius: 2, opacity: 0.6 },
     muestraNina: { borderWidth: 1, borderColor: colores.nina, borderStyle: 'dashed' },
   });

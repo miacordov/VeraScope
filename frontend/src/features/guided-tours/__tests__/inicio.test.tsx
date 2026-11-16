@@ -7,7 +7,10 @@ import { PASO_PENDIENTE } from '../acciones';
 
 // Jest solo deja usar dentro de `jest.mock` variables cuyo nombre empieza con `mock`.
 const mockNavegar = jest.fn();
-jest.mock('expo-router', () => ({ useRouter: () => ({ navigate: mockNavegar, push: mockNavegar }) }));
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ navigate: mockNavegar, push: mockNavegar }),
+  useIsFocused: () => true,
+}));
 
 beforeEach(() => {
   mockNavegar.mockClear();

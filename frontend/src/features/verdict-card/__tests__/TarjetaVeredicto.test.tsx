@@ -36,6 +36,8 @@ const sensible = variante({
 });
 
 const alternar = () => act(() => useEstado.getState().alternarElNino());
+/** El p-valor y el vínculo con El Niño están en el desplegable "Ver detalles". */
+const verDetalles = () => fireEvent.press(screen.getByRole('button', { name: 'Ver detalles' }));
 
 beforeEach(() => {
   useEstado.getState().reiniciar();
@@ -53,6 +55,7 @@ describe('TarjetaVeredicto', () => {
     expect(screen.getByText('0.31 mm/día por década')).toBeOnTheScreen();
     expect(screen.getByText('entre 0.10 y 0.52 mm/día')).toBeOnTheScreen();
     expect(screen.getByText('12.5 % por década')).toBeOnTheScreen();
+    await verDetalles();
     expect(screen.getByText('p = 0.004')).toBeOnTheScreen();
     expect(screen.queryByText('Sensible a El Niño')).toBeNull();
   });
@@ -63,6 +66,7 @@ describe('TarjetaVeredicto', () => {
     expect(screen.getByText('Sensible a El Niño')).toBeOnTheScreen();
     expect(screen.getByText(TEXTOS_VEREDICTO.sensible_a_el_nino.explicacion)).toBeOnTheScreen();
     expect(screen.getByText('0.02 mm/día por década')).toBeOnTheScreen();
+    await verDetalles();
     expect(screen.getByText('p = 0.710')).toBeOnTheScreen();
     // La tendencia sin El Niño no es significativa: no se dice dirección ni se inventa el cambio %.
     expect(screen.queryByText(/Sin El Niño, la tendencia/)).toBeNull();
@@ -94,17 +98,20 @@ describe('TarjetaVeredicto', () => {
 
   it('el vínculo con El Niño se marca como indicativo y sin redacción causal', async () => {
     await render(<TarjetaVeredicto analisis={sensible} />);
+    await verDetalles();
     expect(screen.getByText('Sigue al índice de El Niño con 3 meses de retraso (r = 0.62) · indicativo')).toBeOnTheScreen();
   });
 
   it('sin vínculo significativo no afirma que siga al índice', async () => {
     await render(<TarjetaVeredicto analisis={analyze} />);
+    await verDetalles();
     expect(screen.getByText('No se ve un vínculo claro con El Niño (r = 0.00)')).toBeOnTheScreen();
   });
 
   it('con origen "escaneo" muestra el p ajustado y lo dice', async () => {
     const escaneo = variante({ original: { p: 0.03, p_ajustado: 0.04 }, veredicto: { origen: 'escaneo' } });
     await render(<TarjetaVeredicto analisis={escaneo} />);
+    await verDetalles();
     expect(screen.getByText('p = 0.040 (corregido por muchas pruebas)')).toBeOnTheScreen();
     expect(screen.queryByText('análisis individual')).toBeNull();
   });
@@ -164,6 +171,21 @@ describe('TarjetaVeredicto', () => {
     await render(<TarjetaVeredicto analisis={sensible} alVerGlosario={alVerGlosario} />);
     await fireEvent.press(screen.getByRole('button', { name: /Abrir el glosario/ }));
     expect(alVerGlosario).toHaveBeenCalledTimes(1);
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+});
+
+describe('TarjetaVeredicto: lo esencial primero', () => {
+  it('muestra la pendiente con su intervalo sin abrir nada y guarda el p-valor en "Ver detalles"', async () => {
+    await render(<TarjetaVeredicto analisis={sensible} />);
+    expect(screen.getByText('0.31 mm/día por década')).toBeOnTheScreen();
+    expect(screen.getByText('entre 0.10 y 0.52 mm/día')).toBeOnTheScreen();
+    expect(screen.queryByText('p = 0.004')).toBeNull();
+    const boton = screen.getByRole('button', { name: 'Ver detalles' });
+    expect(boton).toBeCollapsed();
+    await fireEvent.press(boton);
+    expect(screen.getByText('p = 0.004')).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Ocultar detalles' })).toBeExpanded();
     expect(global.fetch).not.toHaveBeenCalled();
   });
 });

@@ -33,7 +33,10 @@ const DESTINO = lugarDelGuion('ir_a_destino');
  */
 
 const mockNavegar = jest.fn();
-jest.mock('expo-router', () => ({ useRouter: () => ({ navigate: mockNavegar, push: mockNavegar }) }));
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ navigate: mockNavegar, push: mockNavegar }),
+  useIsFocused: () => true,
+}));
 
 const salud: SaludRespuesta = {
   simulado: true,
