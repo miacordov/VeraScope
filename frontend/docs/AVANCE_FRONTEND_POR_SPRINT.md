@@ -190,8 +190,8 @@ backend.
       (probado con la reproducción de #51, sin peticiones)
 - [x] Zona táctil de 24 px (por geometría, sin chocar con el toque de celda), `elegirDestino`, destino por defecto,
       lista accesible con franja de detalle, `mensaje_vacio` y 503 `escaneo_en_curso` 🟡
-- [x] Líneas de mismo efecto (punteadas) 🟡 — estaban recortadas ✂️; salen en la misma respuesta. **Por confirmar con el
-      equipo** si se quedan
+- [x] Líneas de mismo efecto (punteadas) 🟡 — estaban recortadas ✂️; salen en la misma respuesta. **Se quedan**
+      (decisión de F1, 15-nov)
 
 **F2 · `fe/tiempo-comparador` (#14), parte tiempo** 🟡 hecho en la rama
 - [x] Reproducir/Pausa y barra de tiempo accesible (adjustable, aumentar/disminuir, arrastre) 🟡
@@ -215,7 +215,7 @@ backend.
 
 **F1**
 - [x] Mosaico de ScanMap 🟡 — estaba recortado ✂️; el backend ya lo sirve con datos reales (4235 celdas en 7 trazados,
-      tras el botón "Mostrar el mosaico de ScanMap"). **Por confirmar con el equipo** si se queda y su paleta (§13)
+      tras el botón "Mostrar el mosaico de ScanMap"). **Se queda** (decisión de F1, 15-nov); su paleta (§13) se aprueba con captura en el PR
 - [ ] Captura de la línea de Piura cruzando el Pacífico — **por avanzar** (web hecha; falta el teléfono)
 - [ ] Revisar los PR de F3 — **por avanzar** (#33, #34 y #35 ya se fusionaron con la aprobación de miacordov)
 
