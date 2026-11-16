@@ -58,5 +58,4 @@ const crearEstilos = (colores: Colores) =>
   StyleSheet.create({
     fondo: { flex: 1, backgroundColor: colores.fondo },
     contenido: { padding: espacios.l, gap: espacios.m, maxWidth: 720, width: '100%', alignSelf: 'center' },
-    error: { margin: espacios.l },
   });
