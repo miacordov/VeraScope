@@ -40,6 +40,17 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d2a657f6-aa27-4cb8-a0ce-de66869d70ce"
+      },
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      }
+    },
+    "owner": "yoisabel"
   }
 }
