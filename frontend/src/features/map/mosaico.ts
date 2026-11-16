@@ -5,7 +5,7 @@
  * mira su signo para elegir el grupo.
  */
 import type { EstadoVeredicto, LayerRespuesta, Variable } from '@/shared/api/tipos';
-import { colores } from '@/shared/tema';
+import { paletas, type Colores } from '@/shared/tema';
 
 import { aPantalla, lonParaDibujo, type Tamano, type Vista } from './proyeccion';
 
@@ -71,8 +71,13 @@ const VARIABLES_DE_AGUA: ReadonlySet<Variable> = new Set(['PRECTOTCORR', 'GWETRO
 /**
  * Color y opacidad de un grupo. Propuesta pendiente de aprobación (§13): el rojo queda solo para El Niño; la
  * opacidad (por grupo, no por celda) separa la fuerza del veredicto, y la leyenda lo dice en texto.
+ * `colores`: los del modo actual (`useTema().colores`); por defecto, los del modo oscuro.
  */
-export function estiloMosaico(clase: ClaseMosaico, variable: Variable): { color: string; opacidad: number } {
+export function estiloMosaico(
+  clase: ClaseMosaico,
+  variable: Variable,
+  colores: Colores = paletas.oscuro,
+): { color: string; opacidad: number } {
   if (clase === 'sin_hallazgo') return { color: colores.textoSuave, opacidad: 0.12 };
   const sube = clase.endsWith('_sube');
   const color = VARIABLES_DE_AGUA.has(variable)

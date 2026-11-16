@@ -100,8 +100,9 @@ export const paletas: Record<Modo, Colores> = { claro, oscuro };
 
 /**
  * @deprecated usar `useTema().colores` o `useEstilos(crearEstilos)` (`shared/useTema.ts`), que siguen el modo claro
- * u oscuro. Queda solo para el código de ramas abiertas (PR #59 y #60), siempre en modo oscuro; se borra cuando nadie
- * lo use (REGLAS_COLABORACION_IA.md §3).
+ * u oscuro. Ya no lo usa ningún componente: solo `mosaico.test.ts` y `lineas.test.ts`, que comparan con la paleta
+ * oscura (el valor por defecto de `estiloMosaico` y `estiloLinea`). Se borra cuando nadie lo use
+ * (REGLAS_COLABORACION_IA.md §3).
  */
 export const colores: Colores = paletas.oscuro;
 

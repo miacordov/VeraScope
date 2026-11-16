@@ -4,7 +4,8 @@ import { AccessibilityInfo, StyleSheet, View } from 'react-native';
 import { useEstado } from '@/estado/store';
 import type { DemoId } from '@/shared/api/tipos';
 import { estadoDeError } from '@/shared/components/textosEstados';
-import { colores, espacios } from '@/shared/tema';
+import { useEstilos } from '@/shared/useTema';
+import { espacios, type Colores } from '@/shared/tema';
 import { Boton, Texto } from '@/shared/ui';
 
 import { irAlPaso, PASO_PENDIENTE, salirDeDemo } from './acciones';
@@ -19,6 +20,7 @@ const esDemoId = (id: string): id is DemoId => (DEMOS as readonly string[]).incl
  * del guion y los controles Anterior / Siguiente / Salir. Cambiar de paso no pide datos: el guion ya llegó.
  */
 export function BandaDemo() {
+  const estilos = useEstilos(crearEstilos);
   const demo = useEstado((e) => e.demo);
   const id = demo && esDemoId(demo.id) ? demo.id : null;
   const guion = useDemo(id);
@@ -99,18 +101,19 @@ export function BandaDemo() {
   );
 }
 
-const estilos = StyleSheet.create({
-  banda: {
-    backgroundColor: colores.superficieFuerte,
-    borderBottomColor: colores.borde,
-    borderBottomWidth: 1,
-    paddingHorizontal: espacios.l,
-    paddingVertical: espacios.m,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: espacios.m,
-  },
-  textos: { flexGrow: 1, flexShrink: 1, flexBasis: 280, gap: espacios.xs },
-  botones: { flexDirection: 'row', flexWrap: 'wrap', gap: espacios.s },
-});
+const crearEstilos = (colores: Colores) =>
+  StyleSheet.create({
+    banda: {
+      backgroundColor: colores.superficieFuerte,
+      borderBottomColor: colores.borde,
+      borderBottomWidth: 1,
+      paddingHorizontal: espacios.l,
+      paddingVertical: espacios.m,
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      gap: espacios.m,
+    },
+    textos: { flexGrow: 1, flexShrink: 1, flexBasis: 280, gap: espacios.xs },
+    botones: { flexDirection: 'row', flexWrap: 'wrap', gap: espacios.s },
+  });

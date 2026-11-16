@@ -20,14 +20,14 @@ import { EJEMPLO_SIMULADO } from '@/shared/ejemploSimulado';
 import { celda as textoCelda } from '@/shared/format';
 import { useEstilos, useTema } from '@/shared/useTema';
 import { cortes, espacios, type Colores } from '@/shared/tema';
-import { Boton, Tarjeta, Texto } from '@/shared/ui';
+import { Boton, EncabezadoPaso, Tarjeta, Texto } from '@/shared/ui';
 
 /**
  * Espacio de trabajo (F1). Mapa del Pacífico y selector de variable y ventana (`fe/mapa-celda`, #9); elegir una celda
  * pide `analyze` y `teleconnect` en paralelo (§6, regla 1) y muestra la tarjeta de veredicto (F3). Las líneas
- * causa → consecuencia y el mosaico de ScanMap (`fe/lineas-mosaico`, #13) van en la columna del mapa. En pantallas
- * anchas (≥ 1024) el mapa va al lado del panel.
- * Las features de F2 y F3 entran por su hueco.
+ * causa → consecuencia y el mosaico de ScanMap (`fe/lineas-mosaico`, #13) van en la columna del mapa.
+ * Sigue los tres pasos de Investigar (§10): 1 variable, 2 lugar, 3 resultado. En pantallas anchas (≥ 1024) los
+ * pasos 1 y 2 van a la izquierda y el resultado a la derecha. Las features de F2 y F3 entran por su hueco.
  */
 export default function Espacio() {
   const { colores } = useTema();
@@ -69,11 +69,15 @@ export default function Espacio() {
     <ScrollView
       style={estilos.fondo}
       contentContainerStyle={[estilos.contenido, ancha && estilos.contenidoAncho]}>
-      <View style={ancha ? estilos.columnaMapa : undefined}>
+      <View style={ancha ? estilos.columnaMapa : estilos.columna}>
+        <SelectorVariable />
+
         <Tarjeta>
-          <Texto variante="subtitulo" accessibilityRole="header">
-            Elige un lugar
-          </Texto>
+          <EncabezadoPaso
+            numero={2}
+            titulo="Elige un lugar"
+            ayuda="Arrastra para moverte y pellizca o usa ＋ / − para acercarte."
+          />
           <MapaPacifico
             celda={celdaDibujada}
             alto={altoMapa}
@@ -125,11 +129,21 @@ export default function Espacio() {
       </View>
 
       <View style={ancha ? estilos.columnaPanel : estilos.columna}>
-        <SelectorVariable />
+        <View style={estilos.encabezadoResultado}>
+          <EncabezadoPaso numero={3} titulo="Lee el resultado" />
+        </View>
 
         {salud.isError ? <ErrorConReintento error={salud.error} reintentar={() => salud.refetch()} /> : null}
 
-        {parametros === null ? null : analisis.isPending ? (
+        {parametros === null ? (
+          <Tarjeta>
+            <Texto suave>
+              {seleccion.celda
+                ? 'Revisa los ajustes de años para ver el resultado.'
+                : 'Cuando elijas un lugar en el mapa, aquí verás si hay una tendencia y qué parte explica El Niño.'}
+            </Texto>
+          </Tarjeta>
+        ) : analisis.isPending ? (
           <Tarjeta accessibilityLabel="Cargando el análisis de la celda" accessibilityRole="progressbar">
             <ActivityIndicator color={colores.texto} />
             <View style={estilos.esqueleto} />
@@ -188,4 +202,5 @@ const crearEstilos = (colores: Colores) =>
     columnaPanel: { flex: 2, gap: espacios.l },
     esqueleto: { height: 16, borderRadius: 4, backgroundColor: colores.superficieFuerte },
     esqueletoCorto: { width: '60%' },
+    encabezadoResultado: { paddingHorizontal: espacios.xs },
   });

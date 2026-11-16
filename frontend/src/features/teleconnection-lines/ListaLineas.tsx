@@ -16,7 +16,8 @@ import {
 } from '@/shared/components/textosEstados';
 import { celda as textoCelda } from '@/shared/format';
 import { mismaCelda, type Coordenadas } from '@/shared/geo';
-import { colores, espacios, radios, TOQUE_MIN } from '@/shared/tema';
+import { useEstilos, useTema } from '@/shared/useTema';
+import { espacios, radios, TOQUE_MIN, type Colores } from '@/shared/tema';
 import { Boton, Tarjeta, Texto } from '@/shared/ui';
 
 import { detalleLinea, etiquetaLinea, FRASE_LINEAS, LEYENDA_LINEAS, NOMBRE_TIPO, textoLinea } from './textos';
@@ -30,6 +31,7 @@ type Props = {
 };
 
 export function ListaLineas({ respuesta, cargando, error, destino, reintentar }: Props) {
+  const { colores } = useTema();
   return (
     <Tarjeta>
       <Texto variante="cuerpoFuerte" accessibilityRole="header">
@@ -49,6 +51,7 @@ export function ListaLineas({ respuesta, cargando, error, destino, reintentar }:
 }
 
 function ErrorLineas({ error, reintentar }: { error: unknown; reintentar: () => void }) {
+  const estilos = useEstilos(crearEstilos);
   // El mensaje del servidor va tal cual (§11); 503 `escaneo_en_curso` no lleva botón: hay que esperar al escaneo.
   const { titulo, mensaje, accion } = estadoDeError(error);
   const actuar = () => {
@@ -67,6 +70,7 @@ function ErrorLineas({ error, reintentar }: { error: unknown; reintentar: () => 
 }
 
 function Contenido({ respuesta, destino }: { respuesta: TeleconnectRespuesta; destino: Coordenadas | null }) {
+  const estilos = useEstilos(crearEstilos);
   const { origen, lineas, mensaje_vacio } = respuesta;
   const elegida = lineas.find((l) => mismaCelda(destino, l)) ?? null;
 
@@ -117,6 +121,7 @@ function Contenido({ respuesta, destino }: { respuesta: TeleconnectRespuesta; de
 }
 
 function OpcionLinea({ linea, elegida, onPress }: { linea: Linea; elegida: boolean; onPress: () => void }) {
+  const estilos = useEstilos(crearEstilos);
   const [enfocada, setEnfocada] = useState(false);
   return (
     <Pressable
@@ -142,33 +147,34 @@ function OpcionLinea({ linea, elegida, onPress }: { linea: Linea; elegida: boole
   );
 }
 
-const estilos = StyleSheet.create({
-  bloque: { gap: espacios.s },
-  lista: { gap: espacios.s },
-  opcion: {
-    minHeight: TOQUE_MIN,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: espacios.m,
-    padding: espacios.m,
-    borderRadius: radios.m,
-    borderWidth: 2,
-    borderColor: colores.borde,
-    backgroundColor: colores.superficieFuerte,
-  },
-  opcionElegida: { borderColor: colores.texto },
-  foco: { outlineStyle: 'solid', outlineWidth: 2, outlineColor: colores.foco },
-  textoOpcion: { flex: 1, gap: espacios.xs },
-  marca: { width: 28, height: 0, borderTopWidth: 3 },
-  marcaOpuesto: { borderColor: colores.nino, borderStyle: 'solid' },
-  marcaMismo: { borderColor: colores.texto, borderStyle: 'dashed' },
-  franja: {
-    gap: espacios.xs,
-    padding: espacios.m,
-    borderRadius: radios.m,
-    borderLeftWidth: 4,
-    borderLeftColor: colores.nino,
-    backgroundColor: colores.superficieFuerte,
-  },
-  franjaMismo: { borderLeftColor: colores.texto },
-});
+const crearEstilos = (colores: Colores) =>
+  StyleSheet.create({
+    bloque: { gap: espacios.s },
+    lista: { gap: espacios.s },
+    opcion: {
+      minHeight: TOQUE_MIN,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: espacios.m,
+      padding: espacios.m,
+      borderRadius: radios.m,
+      borderWidth: 2,
+      borderColor: colores.borde,
+      backgroundColor: colores.superficieFuerte,
+    },
+    opcionElegida: { borderColor: colores.info },
+    foco: { outlineStyle: 'solid', outlineWidth: 2, outlineColor: colores.foco },
+    textoOpcion: { flex: 1, gap: espacios.xs },
+    marca: { width: 28, height: 0, borderTopWidth: 3 },
+    marcaOpuesto: { borderColor: colores.nino, borderStyle: 'solid' },
+    marcaMismo: { borderColor: colores.texto, borderStyle: 'dashed' },
+    franja: {
+      gap: espacios.xs,
+      padding: espacios.m,
+      borderRadius: radios.m,
+      borderLeftWidth: 4,
+      borderLeftColor: colores.nino,
+      backgroundColor: colores.superficieFuerte,
+    },
+    franjaMismo: { borderLeftColor: colores.texto },
+  });

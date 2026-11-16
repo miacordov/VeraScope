@@ -179,9 +179,9 @@ export function MapaPacifico({ celda, onElegirCelda, alto, teleconexion = null, 
   const capasMosaico = useMemo(
     () =>
       datosMosaico && variableMosaico && ancho > 0
-        ? gruposMosaico(datosMosaico, vista, tamano).map((g) => ({ ...g, ...estiloMosaico(g.clase, variableMosaico) }))
+        ? gruposMosaico(datosMosaico, vista, tamano).map((g) => ({ ...g, ...estiloMosaico(g.clase, variableMosaico, colores) }))
         : [],
-    [datosMosaico, variableMosaico, vista, tamano, ancho],
+    [datosMosaico, variableMosaico, vista, tamano, ancho, colores],
   );
 
   const rect = celda && ancho > 0 ? rectanguloCelda(vista, tamano, celda) : null;

@@ -6,7 +6,8 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import type { LayerRespuesta, Variable } from '@/shared/api/tipos';
 import { estadoDeError, TEXTOS_ACCION } from '@/shared/components/textosEstados';
-import { colores, espacios } from '@/shared/tema';
+import { useEstilos, useTema } from '@/shared/useTema';
+import { espacios, type Colores } from '@/shared/tema';
 import { Boton, Texto } from '@/shared/ui';
 
 import { CLASES_MOSAICO, estiloMosaico, nombreClase } from './mosaico';
@@ -22,6 +23,8 @@ type Props = {
 };
 
 export function ControlMosaico({ visible, onAlternar, variable, datos, cargando, error, reintentar }: Props) {
+  const { colores } = useTema();
+  const estilos = useEstilos(crearEstilos);
   return (
     <View style={estilos.bloque}>
       <Boton
@@ -44,6 +47,7 @@ export function ControlMosaico({ visible, onAlternar, variable, datos, cargando,
 }
 
 function ErrorMosaico({ error, reintentar }: { error: unknown; reintentar: () => void }) {
+  const estilos = useEstilos(crearEstilos);
   const { titulo, mensaje, accion } = estadoDeError(error);
   return (
     <View accessibilityRole="alert" style={estilos.bloque}>
@@ -57,6 +61,8 @@ function ErrorMosaico({ error, reintentar }: { error: unknown; reintentar: () =>
 }
 
 function Leyenda({ variable }: { variable: Variable }) {
+  const { colores } = useTema();
+  const estilos = useEstilos(crearEstilos);
   return (
     <View style={estilos.bloque} accessibilityLabel="Leyenda del mosaico de ScanMap">
       <Texto variante="etiqueta" suave>
@@ -64,7 +70,7 @@ function Leyenda({ variable }: { variable: Variable }) {
       </Texto>
       <View style={estilos.leyenda}>
         {CLASES_MOSAICO.map((clase) => {
-          const { color, opacidad } = estiloMosaico(clase, variable);
+          const { color, opacidad } = estiloMosaico(clase, variable, colores);
           return (
             <View key={clase} style={estilos.item}>
               <View style={[estilos.muestra, { backgroundColor: color, opacity: Math.max(opacidad, 0.25) }]} />
@@ -77,14 +83,15 @@ function Leyenda({ variable }: { variable: Variable }) {
   );
 }
 
-const estilos = StyleSheet.create({
-  bloque: { gap: espacios.s },
-  leyenda: { flexDirection: 'row', flexWrap: 'wrap', gap: espacios.m },
-  item: { flexDirection: 'row', alignItems: 'center', gap: espacios.xs },
-  muestra: {
-    width: 14,
-    height: 14,
-    borderWidth: 1,
-    borderColor: colores.borde,
-  },
-});
+const crearEstilos = (colores: Colores) =>
+  StyleSheet.create({
+    bloque: { gap: espacios.s },
+    leyenda: { flexDirection: 'row', flexWrap: 'wrap', gap: espacios.m },
+    item: { flexDirection: 'row', alignItems: 'center', gap: espacios.xs },
+    muestra: {
+      width: 14,
+      height: 14,
+      borderWidth: 1,
+      borderColor: colores.borde,
+    },
+  });

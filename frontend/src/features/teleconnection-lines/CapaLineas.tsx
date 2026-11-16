@@ -7,7 +7,7 @@ import { Circle, G, Path } from 'react-native-svg';
 
 import type { Linea } from '@/shared/api/tipos';
 import { mismaCelda, type Coordenadas } from '@/shared/geo';
-import { colores } from '@/shared/tema';
+import { useTema } from '@/shared/useTema';
 
 import type { Arco } from './arco';
 import { estiloLinea } from './estilo';
@@ -21,6 +21,7 @@ type Props = {
 };
 
 export function CapaLineas({ lineas, arcos, mesVisible, destino }: Props) {
+  const { colores } = useTema();
   const origen = arcos[0]?.inicio;
   return (
     <G testID="mapa-lineas">
@@ -28,7 +29,7 @@ export function CapaLineas({ lineas, arcos, mesVisible, destino }: Props) {
         const arco = arcos[i];
         if (!arco) return null;
         const elegida = mismaCelda(destino, linea);
-        const estilo = estiloLinea(linea, mesVisible, elegida);
+        const estilo = estiloLinea(linea, mesVisible, elegida, colores);
         return (
           <G key={`${linea.tipo}-${linea.lat}-${linea.lon}`} testID={`linea-${i}`}>
             <Path
