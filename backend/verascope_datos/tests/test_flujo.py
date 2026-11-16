@@ -85,7 +85,7 @@ def test_flujo_completo(entorno):
     assert (r.tabla / "T2M.npy").exists() and np.load(r.tabla / "T2M.npy").shape[1] == len(meses)
 
     correr(entorno, "demos")
-    doc = json.loads((r.demos / "piura.json").read_text())
+    doc = json.loads((r.demos / "piura.json").read_text(encoding="utf-8"))
     assert len(doc["variables"]) == 13 and len(doc["variables"]["PRECTOTCORR"]["valores"]) == len(meses)
 
     correr(entorno, "empaquetar")
